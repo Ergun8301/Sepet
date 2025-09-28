@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, Building } from 'lucide-react';
 import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../lib/supabase';
 
@@ -13,6 +13,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const isMountedRef = useRef(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,6 +22,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     phone: '',
     accountType: 'personal',
   });
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -52,7 +60,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -70,7 +80,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     } catch (err: any) {
       setError(err.message || 'Social login failed');
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
