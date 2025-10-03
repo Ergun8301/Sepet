@@ -9,7 +9,7 @@ export type OfferRow = {
   price_before: number;
   price_after: number;
   discount_percent: number;
-  available_from: string | null;
+  available_from: string;
   available_until: string | null;
   is_active: boolean;
   location: unknown;
@@ -17,13 +17,9 @@ export type OfferRow = {
   merchant: {
     id: string;
     company_name: string;
-    full_address: string | null;
-    street: string | null;
-    city: string | null;
-    postal_code: string | null;
-    country: string | null;
     logo_url: string | null;
     avg_rating: number | null;
+    full_address: string | null;
   } | null;
 };
 
@@ -66,7 +62,7 @@ export async function getPublicOffers(limit = 20) {
     .select(`
       id, title, description, image_url, price_before, price_after, discount_percent,
       available_from, available_until, is_active, location, merchant_id,
-      merchant:merchants ( id, company_name, full_address, street, city, postal_code, country, logo_url, avg_rating )
+      merchant:merchants ( id, company_name, logo_url, avg_rating, full_address )
     `)
     .eq('is_active', true)
     .order('created_at', { ascending: false })

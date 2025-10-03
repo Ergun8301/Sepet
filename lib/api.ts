@@ -22,17 +22,14 @@ export interface Offer {
 export interface Merchant {
   id: string;
   company_name: string;
-  description: string;
   full_address: string;
-  street: string;
-  city: string;
-  postal_code: string;
-  country: string;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
   avg_rating: number;
-  total_reviews: number;
-  verified: boolean;
   logo_url?: string;
-  cover_image_url?: string;
+  points: number;
 }
 
 export interface BlogPost {
@@ -292,8 +289,7 @@ export const getMerchants = async (): Promise<Merchant[]> => {
   try {
     const { data, error } = await supabase!
       .from('merchants')
-      .select('id, company_name, description, full_address, street, city, postal_code, country, avg_rating, total_reviews, verified, logo_url, cover_image_url')
-      .eq('status', 'approved');
+      .select('id, company_name, full_address, street, city, postal_code, country, avg_rating, logo_url, points');
 
     if (error) throw error;
     return data || mockMerchants;

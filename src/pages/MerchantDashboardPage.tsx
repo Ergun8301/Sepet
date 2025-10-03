@@ -190,9 +190,9 @@ const MerchantDashboardPage = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Profile</h3>
               <p className="text-gray-600">{profile?.first_name} {profile?.last_name}</p>
               <p className="text-gray-600">{profile?.email}</p>
-              {profile?.full_address && (
+              {profile?.street && profile?.city && (
                 <p className="text-gray-600">
-                  {profile.full_address}
+                  {profile.street}, {profile.city}
                 </p>
               )}
             </div>
