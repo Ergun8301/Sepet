@@ -64,7 +64,7 @@ const MerchantsSection = () => {
 
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-bold text-gray-900">{merchant.business_name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{merchant.company_name}</h3>
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     <span className="text-sm text-gray-600">{merchant.rating}</span>

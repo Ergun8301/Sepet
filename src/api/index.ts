@@ -1,5 +1,27 @@
 import { supabase } from '../lib/supabaseClient';
 
+// Types
+export type OfferRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  price_before: number;
+  price_after: number;
+  discount_percent: number;
+  available_from: string | null;
+  available_until: string | null;
+  is_active: boolean;
+  location: unknown;
+  merchant_id: string;
+  merchant: {
+    id: string;
+    company_name: string;
+    logo_url: string | null;
+    avg_rating: number | null;
+  } | null;
+};
+
 // Location functions
 export const setClientLocation = async (lat: number, lon: number) => {
   const { error } = await supabase.rpc('set_client_location', { lat, lon });
@@ -33,6 +55,21 @@ export const getNearbyOffers = async (lat: number, lon: number, radius_km: numbe
   return data;
 };
 
+export async function getPublicOffers(limit = 20) {
+  const { data, error } = await supabase
+    .from('offers')
+    .select(`
+      id, title, description, image_url, price_before, price_after, discount_percent,
+      available_from, available_until, is_active, location, merchant_id,
+      merchant:merchants ( id, company_name, logo_url, avg_rating )
+    `)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data as OfferRow[];
+}
+
 export const getGenericOffers = async () => {
   const { data, error } = await supabase
     .from('offers')
@@ -57,7 +94,7 @@ export const getClientProfile = async (userId: string) => {
 export const getMerchantProfile = async (userId: string) => {
   const { data, error } = await supabase
     .from('merchants')
-    .select('*')
+    .select('id, company_name, first_name, last_name, phone, email, city, country, postal_code, created_at')
     .eq('id', userId)
     .single();
   if (error && error.code !== 'PGRST116') throw error;

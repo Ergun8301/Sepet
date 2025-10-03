@@ -12,6 +12,9 @@ interface Offer {
   price_after: number;
   available_until: string;
   distance_m?: number;
+  merchant?: {
+    company_name: string;
+  };
 }
 
 const CustomerAppPage = () => {

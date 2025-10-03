@@ -146,7 +146,7 @@ const ExplorePage = () => {
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
-                  <span className="font-medium">{offer.merchant.business_name}</span>
+                  <span className="font-medium">{offer.merchant.company_name}</span>
                   {!user && (
                     <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
                       Sign in to see location

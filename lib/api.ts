@@ -10,7 +10,7 @@ export interface Offer {
   discount_percentage: number;
   image_url: string;
   merchant: {
-    business_name: string;
+    company_name: string;
     address: string;
     rating: number;
   };
@@ -19,7 +19,7 @@ export interface Offer {
 
 export interface Merchant {
   id: string;
-  business_name: string;
+  company_name: string;
   description: string;
   address: string;
   rating: number;
@@ -109,7 +109,7 @@ const mockOffers: Offer[] = [
 const mockMerchants: Merchant[] = [
   {
     id: '1',
-    business_name: 'Green Kitchen',
+    company_name: 'Green Kitchen',
     description: 'Healthy, organic meals made with locally sourced ingredients',
     address: '123 Health St',
     rating: 4.8,
@@ -119,7 +119,7 @@ const mockMerchants: Merchant[] = [
   },
   {
     id: '2',
-    business_name: 'Nonna\'s Kitchen',
+    company_name: 'Nonna\'s Kitchen',
     description: 'Authentic Italian cuisine with traditional family recipes',
     address: '456 Italian Ave',
     rating: 4.9,
@@ -129,7 +129,7 @@ const mockMerchants: Merchant[] = [
   },
   {
     id: '3',
-    business_name: 'Burger Craft',
+    company_name: 'Burger Craft',
     description: 'Gourmet burgers made with premium grass-fed beef',
     address: '789 Food Court',
     rating: 4.7,
@@ -247,7 +247,7 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
       .from('offers')
       .select(`
         *,
-        merchant:merchants(business_name, address, rating)
+        merchant:merchants(company_name, address, rating)
       `)
       .eq('status', 'active')
       .gt('available_until', new Date().toISOString());
@@ -268,7 +268,7 @@ export const getMerchants = async (): Promise<Merchant[]> => {
   try {
     const { data, error } = await supabase!
       .from('merchants')
-      .select('*')
+      .select('id, company_name, description, address, rating, total_reviews, verified, logo_url, cover_image_url')
       .eq('status', 'approved');
 
     if (error) throw error;

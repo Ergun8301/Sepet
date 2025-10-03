@@ -31,7 +31,7 @@ const DevTestPage = () => {
     
     // Test 1: Can read public offers
     await runTest('Read Generic Offers', async () => {
-      const offers = await getGenericOffers();
+      const offers = await getPublicOffers();
       return Array.isArray(offers);
     });
 
