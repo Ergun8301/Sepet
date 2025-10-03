@@ -5,6 +5,9 @@ import HomePage from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
 import MerchantsPage from './pages/MerchantsPage';
 import DownloadPage from './pages/DownloadPage';
+import AuthPage from './pages/AuthPage';
+import ProfileCompletePage from './pages/ProfileCompletePage';
+import ProfilePage from './pages/ProfilePage';
 import Footer from './components/Footer';
 
 function App() {
@@ -18,6 +21,9 @@ function App() {
             <Route path="/offers" element={<ExplorePage />} />
             <Route path="/merchants" element={<MerchantsPage />} />
             <Route path="/download" element={<DownloadPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/profile/complete" element={<ProfileCompletePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </main>
         <Footer />

@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { signOut } from '../../lib/api';
-import AuthModal from './AuthModal';
 
 const Header = () => {
-  const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     setIsUserMenuOpen(false);
+    navigate('/');
   };
 
   const getUserDisplayName = () => {
-    if (profile?.first_name) return profile.first_name;
-    if (profile?.last_name) return profile.last_name;
     return user?.email?.split('@')[0] || 'User';
   };
 
@@ -79,14 +78,14 @@ const Header = () => {
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <a
-                        href="/account"
+                        href="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <User className="w-4 h-4 mr-2" />
-                        My Account
+                        My Profile
                       </a>
                       <a
-                        href="/settings"
+                        href="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <Settings className="w-4 h-4 mr-2" />
@@ -104,7 +103,7 @@ const Header = () => {
                 </div>
               ) : (
                 <button
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => navigate('/auth')}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
                 >
                   Sign In
@@ -139,9 +138,6 @@ const Header = () => {
           )}
         </nav>
       </header>
-
-      {/* Auth Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 };

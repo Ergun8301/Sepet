@@ -407,6 +407,79 @@ export const resetPassword = async (email: string) => {
   return { data, error };
 };
 
+export const updatePassword = async (newPassword: string) => {
+  if (!isSupabaseAvailable()) {
+    return { error: new Error('Service not available') };
+  }
+
+  const { error } = await supabase!.auth.updateUser({
+    password: newPassword
+  });
+  return { error };
+};
+
+// Client Profile Functions
+export const getClientProfile = async (userId: string) => {
+  if (!isSupabaseAvailable()) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('clients')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.warn('Error fetching client profile:', error);
+    return null;
+  }
+};
+
+export const updateClientProfile = async (userId: string, profileData: any) => {
+  if (!isSupabaseAvailable()) {
+    throw new Error('Service not available');
+  }
+
+  const { data, error } = await supabase!
+    .from('clients')
+    .upsert({
+      id: userId,
+      ...profileData,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const uploadProfilePhoto = async (file: File, userId: string): Promise<string> => {
+  if (!isSupabaseAvailable()) {
+    throw new Error('Service not available');
+  }
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${userId}-${Math.random()}.${fileExt}`;
+  const filePath = `profiles/${fileName}`;
+
+  const { error: uploadError } = await supabase!.storage
+    .from('avatars')
+    .upload(filePath, file);
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase!.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+};
+
 export const getCurrentUser = () => {
   if (!isSupabaseAvailable()) {
     return Promise.resolve({ data: { user: null }, error: null });
