@@ -3,7 +3,7 @@ import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { 
-  getPublicOffers, 
+  getGenericOffers, 
   getNearbyOffers, 
   createOffer, 
   setClientLocation, 
@@ -30,8 +30,8 @@ const DevTestPage = () => {
     setIsRunning(true);
     
     // Test 1: Can read public offers
-    await runTest('Read Public Offers', async () => {
-      const offers = await getPublicOffers();
+    await runTest('Read Generic Offers', async () => {
+      const offers = await getGenericOffers();
       return Array.isArray(offers);
     });
 
