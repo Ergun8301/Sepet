@@ -414,14 +414,15 @@ export const signOut = async () => {
     return { error: null };
   }
 
-  const { error } = await supabase!.auth.signOut();
-  
-  // If session doesn't exist, treat as successful logout
-  if (error && error.message === 'Session from session_id claim in JWT does not exist') {
+  try {
+    const { error } = await supabase!.auth.signOut();
+    return { error };
+  } catch (err: any) {
+    // If there's any auth error during signOut, treat as successful
+    // since the goal is to clear the local session
+    console.warn('SignOut error (treating as success):', err);
     return { error: null };
   }
-  
-  return { error };
 };
 
 export const resetPassword = async (email: string) => {
