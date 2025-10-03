@@ -6,8 +6,11 @@ import ExplorePage from './pages/ExplorePage';
 import MerchantsPage from './pages/MerchantsPage';
 import DownloadPage from './pages/DownloadPage';
 import AuthPage from './pages/AuthPage';
-import ProfileCompletePage from './pages/ProfileCompletePage';
-import ProfilePage from './pages/ProfilePage';
+import CustomerOnboardingPage from './pages/CustomerOnboardingPage';
+import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
+import CustomerAppPage from './pages/CustomerAppPage';
+import MerchantDashboardPage from './pages/MerchantDashboardPage';
+import DevTestPage from './pages/DevTestPage';
 import Footer from './components/Footer';
 
 function App() {
@@ -22,8 +25,11 @@ function App() {
             <Route path="/merchants" element={<MerchantsPage />} />
             <Route path="/download" element={<DownloadPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/profile/complete" element={<ProfileCompletePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/onboarding/customer" element={<CustomerOnboardingPage />} />
+            <Route path="/onboarding/merchant" element={<MerchantOnboardingPage />} />
+            <Route path="/app" element={<CustomerAppPage />} />
+            <Route path="/merchant/dashboard" element={<MerchantDashboardPage />} />
+            <Route path="/dev" element={<DevTestPage />} />
           </Routes>
         </main>
         <Footer />
