@@ -190,6 +190,13 @@ const MerchantDashboardPage = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Profile</h3>
               <p className="text-gray-600">{profile?.first_name} {profile?.last_name}</p>
               <p className="text-gray-600">{profile?.email}</p>
+              {(profile?.street || profile?.city) && (
+                <p className="text-gray-600">
+                  {[profile?.street, profile?.city, profile?.postal_code, profile?.country]
+                    .filter(Boolean)
+                    .join(', ')}
+                </p>
+              )}
             </div>
             <button
               onClick={handleLocationUpdate}

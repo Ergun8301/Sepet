@@ -15,6 +15,7 @@ const MerchantOnboardingPage = () => {
     first_name: '',
     last_name: '',
     phone: '',
+    street: '',
     city: '',
     country: 'FR',
     postal_code: '',
@@ -156,6 +157,15 @@ const MerchantOnboardingPage = () => {
                 Business Location
               </h3>
               
+              <input
+                type="text"
+                name="street"
+                placeholder="Street Address"
+                value={formData.street}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
