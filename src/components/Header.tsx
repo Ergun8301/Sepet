@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { signOut } from '../lib/supabase';
+import { signOut } from '../../lib/api';
 import AuthModal from './AuthModal';
 
 const Header = () => {

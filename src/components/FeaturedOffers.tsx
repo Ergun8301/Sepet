@@ -1,79 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Heart } from 'lucide-react';
-
-interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  original_price: number;
-  discounted_price: number;
-  discount_percentage: number;
-  image_url: string;
-  merchant: {
-    business_name: string;
-    address: string;
-    rating: number;
-  };
-  available_until: string;
-}
+import { getActiveOffers, type Offer } from '../../lib/api';
 
 const FeaturedOffers = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Default offers for demo
-  const defaultOffers: Offer[] = [
-    {
-      id: '1',
-      title: 'Fresh Mediterranean Bowl',
-      description: 'Quinoa, grilled vegetables, feta cheese, and tahini dressing',
-      original_price: 15.99,
-      discounted_price: 9.99,
-      discount_percentage: 38,
-      image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
-      merchant: {
-        business_name: 'Green Kitchen',
-        address: '123 Health St',
-        rating: 4.8,
-      },
-      available_until: '2025-01-20T18:00:00Z',
-    },
-    {
-      id: '2',
-      title: 'Artisan Pizza Margherita',
-      description: 'Hand-tossed dough, san marzano tomatoes, fresh mozzarella',
-      original_price: 18.50,
-      discounted_price: 12.99,
-      discount_percentage: 30,
-      image_url: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
-      merchant: {
-        business_name: 'Nonna\'s Kitchen',
-        address: '456 Italian Ave',
-        rating: 4.9,
-      },
-      available_until: '2025-01-20T20:00:00Z',
-    },
-    {
-      id: '3',
-      title: 'Gourmet Burger & Fries',
-      description: 'Grass-fed beef, artisan bun, crispy sweet potato fries',
-      original_price: 22.00,
-      discounted_price: 14.99,
-      discount_percentage: 32,
-      image_url: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
-      merchant: {
-        business_name: 'Burger Craft',
-        address: '789 Food Court',
-        rating: 4.7,
-      },
-      available_until: '2025-01-20T21:00:00Z',
-    },
-  ];
 
   useEffect(() => {
-    // For now, use default offers. In production, fetch from Supabase
-    setOffers(defaultOffers);
-    setLoading(false);
+    const fetchOffers = async () => {
+      try {
+        const data = await getActiveOffers();
+        setOffers(data);
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOffers();
   }, []);
 
   const formatTimeLeft = (dateString: string) => {

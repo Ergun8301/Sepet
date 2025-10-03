@@ -1,42 +1,40 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Award } from 'lucide-react';
+import { getMerchants, type Merchant } from '../../lib/api';
 
 const MerchantsSection = () => {
-  const merchants = [
-    {
-      id: '1',
-      name: 'Green Kitchen',
-      description: 'Healthy, organic meals made with locally sourced ingredients',
-      image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
-      rating: 4.8,
-      reviews: 124,
-      address: '123 Health St',
-      verified: true,
-      specialties: ['Organic', 'Vegan', 'Gluten-Free']
-    },
-    {
-      id: '2',
-      name: 'Nonna\'s Kitchen',
-      description: 'Authentic Italian cuisine with traditional family recipes',
-      image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
-      rating: 4.9,
-      reviews: 89,
-      address: '456 Italian Ave',
-      verified: true,
-      specialties: ['Italian', 'Pizza', 'Pasta']
-    },
-    {
-      id: '3',
-      name: 'Burger Craft',
-      description: 'Gourmet burgers made with premium grass-fed beef',
-      image: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
-      rating: 4.7,
-      reviews: 156,
-      address: '789 Food Court',
-      verified: true,
-      specialties: ['Burgers', 'American', 'Craft Beer']
-    }
-  ];
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMerchants = async () => {
+      try {
+        const data = await getMerchants();
+        setMerchants(data);
+      } catch (error) {
+        console.error('Error fetching merchants:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMerchants();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-80 animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white py-16">
@@ -66,11 +64,11 @@ const MerchantsSection = () => {
 
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-bold text-gray-900">{merchant.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{merchant.business_name}</h3>
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     <span className="text-sm text-gray-600">{merchant.rating}</span>
-                    <span className="text-sm text-gray-400">({merchant.reviews})</span>
+                    <span className="text-sm text-gray-400">({merchant.total_reviews})</span>
                   </div>
                 </div>
 
@@ -81,16 +79,12 @@ const MerchantsSection = () => {
                   <span>{merchant.address}</span>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {merchant.specialties.map((specialty, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
-                    >
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
+                {merchant.verified && (
+                  <div className="flex items-center mb-4">
+                    <Award className="w-4 h-4 text-green-500 mr-1" />
+                    <span className="text-sm text-green-600">Verified Merchant</span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center text-sm text-green-600">

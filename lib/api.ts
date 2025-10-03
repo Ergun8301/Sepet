@@ -1,0 +1,416 @@
+import { supabase, isSupabaseAvailable } from './supabaseClient';
+
+// Types
+export interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  original_price: number;
+  discounted_price: number;
+  discount_percentage: number;
+  image_url: string;
+  merchant: {
+    business_name: string;
+    address: string;
+    rating: number;
+  };
+  available_until: string;
+}
+
+export interface Merchant {
+  id: string;
+  business_name: string;
+  description: string;
+  address: string;
+  rating: number;
+  total_reviews: number;
+  verified: boolean;
+  logo_url?: string;
+  cover_image_url?: string;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author_id: string;
+  featured_image_url?: string;
+  published_at: string;
+  created_at: string;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  logo_url: string;
+  website_url?: string;
+  description?: string;
+}
+
+export interface BannerSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  image_url: string;
+  cta_text: string;
+  cta_link: string;
+}
+
+// Données de démonstration
+const mockOffers: Offer[] = [
+  {
+    id: '1',
+    title: 'Fresh Mediterranean Bowl',
+    description: 'Quinoa, grilled vegetables, feta cheese, and tahini dressing',
+    original_price: 15.99,
+    discounted_price: 9.99,
+    discount_percentage: 38,
+    image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+    merchant: {
+      business_name: 'Green Kitchen',
+      address: '123 Health St',
+      rating: 4.8,
+    },
+    available_until: '2025-01-20T18:00:00Z',
+  },
+  {
+    id: '2',
+    title: 'Artisan Pizza Margherita',
+    description: 'Hand-tossed dough, san marzano tomatoes, fresh mozzarella',
+    original_price: 18.50,
+    discounted_price: 12.99,
+    discount_percentage: 30,
+    image_url: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
+    merchant: {
+      business_name: 'Nonna\'s Kitchen',
+      address: '456 Italian Ave',
+      rating: 4.9,
+    },
+    available_until: '2025-01-20T20:00:00Z',
+  },
+  {
+    id: '3',
+    title: 'Gourmet Burger & Fries',
+    description: 'Grass-fed beef, artisan bun, crispy sweet potato fries',
+    original_price: 22.00,
+    discounted_price: 14.99,
+    discount_percentage: 32,
+    image_url: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
+    merchant: {
+      business_name: 'Burger Craft',
+      address: '789 Food Court',
+      rating: 4.7,
+    },
+    available_until: '2025-01-20T21:00:00Z',
+  },
+];
+
+const mockMerchants: Merchant[] = [
+  {
+    id: '1',
+    business_name: 'Green Kitchen',
+    description: 'Healthy, organic meals made with locally sourced ingredients',
+    address: '123 Health St',
+    rating: 4.8,
+    total_reviews: 124,
+    verified: true,
+    logo_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+  },
+  {
+    id: '2',
+    business_name: 'Nonna\'s Kitchen',
+    description: 'Authentic Italian cuisine with traditional family recipes',
+    address: '456 Italian Ave',
+    rating: 4.9,
+    total_reviews: 89,
+    verified: true,
+    logo_url: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
+  },
+  {
+    id: '3',
+    business_name: 'Burger Craft',
+    description: 'Gourmet burgers made with premium grass-fed beef',
+    address: '789 Food Court',
+    rating: 4.7,
+    total_reviews: 156,
+    verified: true,
+    logo_url: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
+  }
+];
+
+const mockBlogPosts: BlogPost[] = [
+  {
+    id: '1',
+    title: '10 Ways to Reduce Food Waste at Home',
+    excerpt: 'Simple tips and tricks to minimize food waste in your kitchen while saving money and helping the environment.',
+    content: 'Full article content...',
+    author_id: '1',
+    featured_image_url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
+    published_at: '2025-01-15T10:00:00Z',
+    created_at: '2025-01-15T10:00:00Z',
+  },
+  {
+    id: '2',
+    title: 'The Rise of Conscious Eating',
+    excerpt: 'How mindful food choices are shaping the future of dining and creating positive environmental impact.',
+    content: 'Full article content...',
+    author_id: '2',
+    featured_image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+    published_at: '2025-01-12T10:00:00Z',
+    created_at: '2025-01-12T10:00:00Z',
+  },
+  {
+    id: '3',
+    title: 'Supporting Local Restaurants',
+    excerpt: 'Why choosing local eateries makes a difference for your community and how ResQ Food helps.',
+    content: 'Full article content...',
+    author_id: '3',
+    featured_image_url: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=400',
+    published_at: '2025-01-10T10:00:00Z',
+    created_at: '2025-01-10T10:00:00Z',
+  }
+];
+
+const mockPartners: Partner[] = [
+  {
+    id: '1',
+    name: 'FoodTech Solutions',
+    logo_url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Leading food technology platform'
+  },
+  {
+    id: '2',
+    name: 'Green Delivery',
+    logo_url: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Sustainable delivery solutions'
+  },
+  {
+    id: '3',
+    name: 'Organic Farms',
+    logo_url: 'https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Fresh organic produce supplier'
+  },
+  {
+    id: '4',
+    name: 'Fresh Market',
+    logo_url: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Local fresh food marketplace'
+  },
+  {
+    id: '5',
+    name: 'Eco Foods',
+    logo_url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Sustainable food solutions'
+  },
+  {
+    id: '6',
+    name: 'City Restaurants',
+    logo_url: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=150',
+    website_url: 'https://example.com',
+    description: 'Restaurant association partner'
+  }
+];
+
+const mockBannerSlides: BannerSlide[] = [
+  {
+    id: '1',
+    title: 'Save money, save food together',
+    subtitle: 'Discover amazing deals on delicious meals and help reduce food waste',
+    image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    cta_text: 'Explore Offers',
+    cta_link: '#offers',
+  },
+  {
+    id: '2',
+    title: 'Fresh ingredients daily',
+    subtitle: 'Partner with us to reach more customers and grow your business',
+    image_url: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    cta_text: 'Join as Merchant',
+    cta_link: '/auth',
+  },
+];
+
+// API Functions
+export const getActiveOffers = async (): Promise<Offer[]> => {
+  if (!isSupabaseAvailable()) {
+    return mockOffers;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('offers')
+      .select(`
+        *,
+        merchant:merchants(business_name, address, rating)
+      `)
+      .eq('status', 'active')
+      .gt('available_until', new Date().toISOString());
+
+    if (error) throw error;
+    return data || mockOffers;
+  } catch (error) {
+    console.warn('Error fetching offers, using mock data:', error);
+    return mockOffers;
+  }
+};
+
+export const getMerchants = async (): Promise<Merchant[]> => {
+  if (!isSupabaseAvailable()) {
+    return mockMerchants;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('merchants')
+      .select('*')
+      .eq('status', 'approved');
+
+    if (error) throw error;
+    return data || mockMerchants;
+  } catch (error) {
+    console.warn('Error fetching merchants, using mock data:', error);
+    return mockMerchants;
+  }
+};
+
+export const getBlogPosts = async (): Promise<BlogPost[]> => {
+  if (!isSupabaseAvailable()) {
+    return mockBlogPosts;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('blog_posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(3);
+
+    if (error) throw error;
+    return data || mockBlogPosts;
+  } catch (error) {
+    console.warn('Error fetching blog posts, using mock data:', error);
+    return mockBlogPosts;
+  }
+};
+
+export const getPartners = async (): Promise<Partner[]> => {
+  if (!isSupabaseAvailable()) {
+    return mockPartners;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('partners')
+      .select('*')
+      .order('display_order');
+
+    if (error) throw error;
+    return data || mockPartners;
+  } catch (error) {
+    console.warn('Error fetching partners, using mock data:', error);
+    return mockPartners;
+  }
+};
+
+export const getBannerSlides = async (): Promise<BannerSlide[]> => {
+  if (!isSupabaseAvailable()) {
+    return mockBannerSlides;
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('banner_slides')
+      .select('*')
+      .eq('active', true)
+      .order('display_order');
+
+    if (error) throw error;
+    return data || mockBannerSlides;
+  } catch (error) {
+    console.warn('Error fetching banner slides, using mock data:', error);
+    return mockBannerSlides;
+  }
+};
+
+// Auth Functions
+export const signUp = async (email: string, password: string, userData: any) => {
+  if (!isSupabaseAvailable()) {
+    return { data: null, error: new Error('Service non disponible pour le moment') };
+  }
+
+  const { data, error } = await supabase!.auth.signUp({
+    email,
+    password,
+    options: {
+      data: userData,
+    },
+  });
+  return { data, error };
+};
+
+export const signIn = async (email: string, password: string) => {
+  if (!isSupabaseAvailable()) {
+    return { data: null, error: new Error('Service non disponible pour le moment') };
+  }
+
+  const { data, error } = await supabase!.auth.signInWithPassword({
+    email,
+    password,
+  });
+  return { data, error };
+};
+
+export const signInWithGoogle = async () => {
+  if (!isSupabaseAvailable()) {
+    return { data: null, error: new Error('Service non disponible pour le moment') };
+  }
+
+  const { data, error } = await supabase!.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  return { data, error };
+};
+
+export const signInWithFacebook = async () => {
+  if (!isSupabaseAvailable()) {
+    return { data: null, error: new Error('Service non disponible pour le moment') };
+  }
+
+  const { data, error } = await supabase!.auth.signInWithOAuth({
+    provider: 'facebook',
+  });
+  return { data, error };
+};
+
+export const signOut = async () => {
+  if (!isSupabaseAvailable()) {
+    return { error: null };
+  }
+
+  const { error } = await supabase!.auth.signOut();
+  return { error };
+};
+
+export const resetPassword = async (email: string) => {
+  if (!isSupabaseAvailable()) {
+    return { data: null, error: new Error('Service non disponible pour le moment') };
+  }
+
+  const { data, error } = await supabase!.auth.resetPasswordForEmail(email);
+  return { data, error };
+};
+
+export const getCurrentUser = () => {
+  if (!isSupabaseAvailable()) {
+    return Promise.resolve({ data: { user: null }, error: null });
+  }
+
+  return supabase!.auth.getUser();
+};

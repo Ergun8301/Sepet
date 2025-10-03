@@ -1,40 +1,29 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
+import { getPartners, type Partner } from '../../lib/api';
 
 const PartnersCarousel = () => {
-  const partners = [
-    {
-      name: 'FoodTech Solutions',
-      logo: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Green Delivery',
-      logo: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Organic Farms',
-      logo: 'https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Fresh Market',
-      logo: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Eco Foods',
-      logo: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'City Restaurants',
-      logo: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Sustainable Eats',
-      logo: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=150'
-    },
-    {
-      name: 'Local Harvest',
-      logo: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=150'
-    }
-  ];
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const data = await getPartners();
+        setPartners(data);
+      } catch (error) {
+        console.error('Error fetching partners:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartners();
+  }, []);
+
+  if (loading || partners.length === 0) {
+    return null;
+  }
 
   return (
     <div className="bg-white py-8 border-b border-gray-100">
@@ -47,7 +36,7 @@ const PartnersCarousel = () => {
             {[...partners, ...partners, ...partners].map((partner, index) => (
               <div key={index} className="flex items-center space-x-3 flex-shrink-0">
                 <img
-                  src={partner.logo}
+                  src={partner.logo_url}
                   alt={partner.name}
                   className="w-10 h-10 rounded-full object-cover"
                 />

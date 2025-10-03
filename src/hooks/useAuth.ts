@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../../lib/supabaseClient';
 
 interface Profile {
   id: string;
@@ -17,8 +17,13 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseAvailable()) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase!.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -30,7 +35,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase!.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -44,8 +49,13 @@ export const useAuth = () => {
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    if (!isSupabaseAvailable()) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -53,7 +63,7 @@ export const useAuth = () => {
 
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist, create one
-        const { data: newProfile, error: createError } = await supabase
+        const { data: newProfile, error: createError } = await supabase!
           .from('profiles')
           .insert([
             {
@@ -83,8 +93,11 @@ export const useAuth = () => {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
+    if (!isSupabaseAvailable()) {
+      return { data: null, error: new Error('Service non disponible') };
+    }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('profiles')
       .update(updates)
       .eq('id', user.id)

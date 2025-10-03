@@ -1,44 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-interface BannerSlide {
-  id: string;
-  title: string;
-  subtitle: string;
-  image_url: string;
-  cta_text: string;
-  cta_link: string;
-}
+import { getBannerSlides, type BannerSlide } from '../../lib/api';
 
 const Banner = () => {
   const [slides, setSlides] = useState<BannerSlide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Default slides if database is not available
-  const defaultSlides: BannerSlide[] = [
-    {
-      id: '1',
-      title: 'Save money, save food together',
-      subtitle: 'Discover amazing deals on delicious meals and help reduce food waste',
-      image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      cta_text: 'Explore Offers',
-      cta_link: '/offers',
-    },
-    {
-      id: '2',
-      title: 'Fresh ingredients daily',
-      subtitle: 'Partner with us to reach more customers and grow your business',
-      image_url: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      cta_text: 'Join as Merchant',
-      cta_link: '/auth',
-    },
-  ];
 
   useEffect(() => {
-    // For now, use default slides. In production, fetch from Supabase
-    setSlides(defaultSlides);
-    setLoading(false);
+    const fetchSlides = async () => {
+      try {
+        const data = await getBannerSlides();
+        setSlides(data);
+      } catch (error) {
+        console.error('Error fetching banner slides:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSlides();
   }, []);
 
   useEffect(() => {

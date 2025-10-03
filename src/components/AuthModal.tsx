@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, Building } from 'lucide-react';
-import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../lib/supabase';
+import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../../lib/api';
 
 interface AuthModalProps {
   isOpen: boolean;

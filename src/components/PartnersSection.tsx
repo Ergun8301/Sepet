@@ -1,58 +1,39 @@
 import React from 'react';
-
-interface Partner {
-  id: string;
-  name: string;
-  logo_url: string;
-  website_url: string;
-  description: string;
-}
+import { useState, useEffect } from 'react';
+import { getPartners, type Partner } from '../../lib/api';
 
 const PartnersSection = () => {
-  const partners: Partner[] = [
-    {
-      id: '1',
-      name: 'FoodTech Solutions',
-      logo_url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Leading food technology platform'
-    },
-    {
-      id: '2',
-      name: 'Green Delivery',
-      logo_url: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Sustainable delivery solutions'
-    },
-    {
-      id: '3',
-      name: 'Organic Farms',
-      logo_url: 'https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Fresh organic produce supplier'
-    },
-    {
-      id: '4',
-      name: 'Fresh Market',
-      logo_url: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Local fresh food marketplace'
-    },
-    {
-      id: '5',
-      name: 'Eco Foods',
-      logo_url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Sustainable food solutions'
-    },
-    {
-      id: '6',
-      name: 'City Restaurants',
-      logo_url: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=200',
-      website_url: 'https://example.com',
-      description: 'Restaurant association partner'
-    }
-  ];
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const data = await getPartners();
+        setPartners(data);
+      } catch (error) {
+        console.error('Error fetching partners:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartners();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-24 animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 py-16">
@@ -76,7 +57,7 @@ const PartnersSection = () => {
                 className="h-12 w-full object-contain mx-auto mb-3 grayscale group-hover:grayscale-0 transition-all"
               />
               <h3 className="font-medium text-gray-900 text-sm mb-1">{partner.name}</h3>
-              <p className="text-xs text-gray-500">{partner.description}</p>
+              <p className="text-xs text-gray-500">{partner.description || 'Partner'}</p>
             </div>
           ))}
         </div>
