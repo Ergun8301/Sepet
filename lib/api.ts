@@ -270,7 +270,7 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
         *,
         merchant:merchants(company_name, full_address, street, city, avg_rating)
       `)
-      .eq('status', 'active')
+      .eq('is_active', true)
       .gt('available_until', new Date().toISOString());
 
     if (error) throw error;
