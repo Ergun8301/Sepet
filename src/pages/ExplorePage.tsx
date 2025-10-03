@@ -3,7 +3,7 @@ import { Clock, MapPin, Star, Heart, ArrowRight } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
-const FeaturedOffers = () => {
+const ExplorePage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -12,8 +12,8 @@ const FeaturedOffers = () => {
     const fetchOffers = async () => {
       try {
         const data = await getActiveOffers();
-        // Show only first 6 offers for homepage
-        setOffers(data.slice(0, 6));
+        // Show only first 10 offers for teaser
+        setOffers(data.slice(0, 10));
       } catch (error) {
         console.error('Error fetching offers:', error);
       } finally {
@@ -39,7 +39,7 @@ const FeaturedOffers = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 py-20">
+      <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -52,15 +52,17 @@ const FeaturedOffers = () => {
   }
 
   return (
-    <div className="bg-gray-50 py-20">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Offers</h2>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore Offers</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover amazing deals from local restaurants. Sign up to see full details and reserve your favorites!
+            Discover amazing deals from local restaurants and help reduce food waste
           </p>
         </div>
 
+        {/* Offers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {offers.map((offer) => (
             <div key={offer.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
@@ -124,30 +126,33 @@ const FeaturedOffers = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Start Saving?</h3>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Join thousands of food lovers who are saving money while helping reduce food waste. 
-            Sign up now to access all offers and start reserving your favorite meals!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/offers"
-              className="bg-green-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors inline-flex items-center"
-            >
-              View All Offers
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </a>
-            {!user && (
-              <button className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors">
-                Sign Up Free
-              </button>
-            )}
+        {!user && (
+          <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Ready to Save Money and Reduce Waste?</h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Sign up now to see full offer details, exact locations, and reserve your favorite meals. 
+              Join thousands of food lovers making a difference!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/auth?mode=signup"
+                className="bg-green-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors inline-flex items-center"
+              >
+                Sign Up Now
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </a>
+              <a
+                href="/auth?mode=signin"
+                className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              >
+                Already have an account? Sign In
+              </a>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default FeaturedOffers;
+export default ExplorePage;

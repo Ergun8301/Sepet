@@ -22,20 +22,20 @@ const Header = () => {
   };
 
   const navigation = [
-    { name: 'Offers', href: '/offers' },
-    { name: 'Merchants', href: '/merchants' },
-    { name: 'Download App', href: '#download-app' },
+    { name: 'Explore Offers', href: '/offers' },
+    { name: 'For Merchants', href: '/merchants' },
+    { name: 'Download App', href: '/download' },
   ];
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <a href="#hero" className="flex items-center">
+                <a href="/" className="flex items-center">
                   <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
                     <span className="text-white font-bold text-lg">R</span>
                   </div>

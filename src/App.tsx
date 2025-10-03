@@ -1,78 +1,28 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
-import PartnersCarousel from './components/PartnersCarousel';
-import Banner from './components/Banner';
-import PromoBanner from './components/PromoBanner';
-import FeaturedOffers from './components/FeaturedOffers';
-import AboutSection from './components/AboutSection';
-import FAQSection from './components/FAQSection';
-import BlogSection from './components/BlogSection';
-import MerchantReviewsSection from './components/MerchantReviewsSection';
-import PartnersSection from './components/PartnersSection';
-import DownloadAppSection from './components/DownloadAppSection';
-import MerchantsSection from './components/MerchantsSection';
+import HomePage from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
+import MerchantsPage from './pages/MerchantsPage';
+import DownloadPage from './pages/DownloadPage';
 import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Promotional Banner */}
-      <PromoBanner />
-      
-      {/* Header */}
-      <Header />
-      
-      {/* Hero Section */}
-      <section id="hero">
-        <Banner />
-      </section>
-      
-      {/* Partners Carousel */}
-      <PartnersCarousel />
-      
-      {/* Offers Section */}
-      <section id="offers">
-        <FeaturedOffers />
-      </section>
-      
-      {/* Merchants Section */}
-      <section id="merchants">
-        <MerchantsSection />
-      </section>
-      
-      {/* About Us Section */}
-      <section id="about">
-        <AboutSection />
-      </section>
-      
-      {/* FAQ Section */}
-      <section id="faq">
-        <FAQSection />
-      </section>
-      
-      {/* Blog Section */}
-      <section id="blog">
-        <BlogSection />
-      </section>
-      
-      {/* Merchant Reviews Section */}
-      <section id="reviews">
-        <MerchantReviewsSection />
-      </section>
-      
-      {/* Partners Section */}
-      <section id="partners">
-        <PartnersSection />
-      </section>
-      
-      {/* Download App Section */}
-      <section id="download-app">
-        <DownloadAppSection />
-      </section>
-      
-      {/* Footer */}
-      <Footer />
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/offers" element={<ExplorePage />} />
+            <Route path="/merchants" element={<MerchantsPage />} />
+            <Route path="/download" element={<DownloadPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 

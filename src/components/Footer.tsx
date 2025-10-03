@@ -37,9 +37,9 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li><a href="/" className="text-gray-300 hover:text-green-400 transition-colors">Home</a></li>
-              <li><a href="/offers" className="text-gray-300 hover:text-green-400 transition-colors">Offers</a></li>
-              <li><a href="/merchants" className="text-gray-300 hover:text-green-400 transition-colors">Merchants</a></li>
-              <li><a href="/blog" className="text-gray-300 hover:text-green-400 transition-colors">Blog</a></li>
+              <li><a href="/offers" className="text-gray-300 hover:text-green-400 transition-colors">Explore Offers</a></li>
+              <li><a href="/merchants" className="text-gray-300 hover:text-green-400 transition-colors">For Merchants</a></li>
+              <li><a href="/download" className="text-gray-300 hover:text-green-400 transition-colors">Download App</a></li>
               <li><a href="/about" className="text-gray-300 hover:text-green-400 transition-colors">About Us</a></li>
             </ul>
           </div>
@@ -49,6 +49,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
               <li><a href="/faq" className="text-gray-300 hover:text-green-400 transition-colors">FAQ</a></li>
+              <li><a href="/blog" className="text-gray-300 hover:text-green-400 transition-colors">Blog</a></li>
               <li><a href="/contact" className="text-gray-300 hover:text-green-400 transition-colors">Contact Us</a></li>
               <li><a href="/help" className="text-gray-300 hover:text-green-400 transition-colors">Help Center</a></li>
               <li><a href="/privacy" className="text-gray-300 hover:text-green-400 transition-colors">Privacy Policy</a></li>
