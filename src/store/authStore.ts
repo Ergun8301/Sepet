@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         .from('merchants')
         .select('id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (merchant) {
         set({ userType: 'merchant' });
