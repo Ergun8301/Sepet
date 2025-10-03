@@ -25,15 +25,21 @@ const AppDownloadCTA = () => {
               href="#"
               className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors inline-flex items-center"
             >
-              <span className="text-lg mr-2">📱</span>
-              App Store
+              <img 
+                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                alt="Download on the App Store" 
+                className="h-8"
+              />
             </a>
             <a
               href="#"
-              className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors inline-flex items-center"
+              className="bg-transparent p-2 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center"
             >
-              <span className="text-lg mr-2">▶️</span>
-              Google Play
+              <img 
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                alt="Get it on Google Play" 
+                className="h-12"
+              />
             </a>
           </div>
         </div>

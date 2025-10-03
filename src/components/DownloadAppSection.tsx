@@ -20,28 +20,24 @@ const DownloadAppSection = () => {
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <a
                 href="#"
-                className="bg-black text-white px-6 py-3 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition-colors"
+                className="bg-black text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors"
               >
-                <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">📱</span>
-                </div>
-                <div className="text-left">
-                  <div className="text-xs text-gray-300">Download on the</div>
-                  <div className="font-semibold">App Store</div>
-                </div>
+                <img 
+                  src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                  alt="Download on the App Store" 
+                  className="h-10"
+                />
               </a>
               
               <a
                 href="#"
-                className="bg-black text-white px-6 py-3 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition-colors"
+                className="bg-transparent p-1 rounded-lg flex items-center justify-center hover:bg-white hover:bg-opacity-10 transition-colors"
               >
-                <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">▶️</span>
-                </div>
-                <div className="text-left">
-                  <div className="text-xs text-gray-300">Get it on</div>
-                  <div className="font-semibold">Google Play</div>
-                </div>
+                <img 
+                  src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                  alt="Get it on Google Play" 
+                  className="h-14"
+                />
               </a>
             </div>
 
