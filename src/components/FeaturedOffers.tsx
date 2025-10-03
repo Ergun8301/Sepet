@@ -82,7 +82,7 @@ const FeaturedOffers = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm text-gray-600">{offer.merchant.rating}</span>
+                    <span className="text-sm text-gray-600">{offer.merchant?.avg_rating || 'N/A'}</span>
                   </div>
                   <div className="flex items-center text-sm text-red-600">
                     <Clock className="w-4 h-4 mr-1" />
@@ -95,9 +95,9 @@ const FeaturedOffers = () => {
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
-                  <span>{offer.merchant.company_name}</span>
+                  <span>{offer.merchant?.company_name || 'Unknown Merchant'}</span>
                   {!user && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Sign in to see full address</span>}
-                  {user && offer.merchant.full_address && (
+                  {user && offer.merchant?.full_address && (
                     <span className="ml-2 text-xs text-gray-400">• {offer.merchant.full_address}</span>
                   )}
                 </div>

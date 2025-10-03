@@ -9,13 +9,13 @@ export interface Offer {
   discounted_price: number;
   discount_percentage: number;
   image_url: string;
-  merchant: {
-    company_name: string;
-    full_address: string;
+  merchant?: {
+    company_name?: string;
+    full_address?: string;
     street: string;
     city: string;
-    avg_rating: number;
-  };
+    avg_rating?: number;
+  } | null;
   available_until: string;
 }
 

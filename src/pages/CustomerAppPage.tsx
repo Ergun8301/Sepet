@@ -168,7 +168,7 @@ const CustomerAppPage = () => {
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                    -{calculateDiscount(offer.price_before, offer.price_after)}%
+                    -{offer.discount_percent}%
                   </div>
                 </div>
 
@@ -246,7 +246,7 @@ const CustomerAppPage = () => {
                   </span>
                 </div>
                 <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  -{calculateDiscount(selectedOffer.price_before, selectedOffer.price_after)}%
+                  -{selectedOffer.discount_percent}%
                 </div>
               </div>
 

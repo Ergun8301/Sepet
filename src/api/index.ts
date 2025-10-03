@@ -74,7 +74,10 @@ export async function getPublicOffers(limit = 20) {
 export const getGenericOffers = async () => {
   const { data, error } = await supabase
     .from('offers')
-    .select('*')
+    .select(`
+      *,
+      merchant:merchants(id, company_name, full_address, avg_rating)
+    `)
     .eq('is_active', true)
     .limit(12);
   if (error) throw error;
