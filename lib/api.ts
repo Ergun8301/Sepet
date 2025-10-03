@@ -14,7 +14,7 @@ export interface Offer {
     full_address: string;
     street: string;
     city: string;
-    rating: number;
+    avg_rating: number;
   };
   available_until: string;
 }
@@ -28,7 +28,7 @@ export interface Merchant {
   city: string;
   postal_code: string;
   country: string;
-  rating: number;
+  avg_rating: number;
   total_reviews: number;
   verified: boolean;
   logo_url?: string;
@@ -78,7 +78,7 @@ const mockOffers: Offer[] = [
       full_address: '123 Health St, Paris, 75001, France',
       street: '123 Health St',
       city: 'Paris',
-      rating: 4.8,
+      avg_rating: 4.8,
     },
     available_until: '2025-01-20T18:00:00Z',
   },
@@ -95,7 +95,7 @@ const mockOffers: Offer[] = [
       full_address: '456 Italian Ave, Lyon, 69001, France',
       street: '456 Italian Ave',
       city: 'Lyon',
-      rating: 4.9,
+      avg_rating: 4.9,
     },
     available_until: '2025-01-20T20:00:00Z',
   },
@@ -112,7 +112,7 @@ const mockOffers: Offer[] = [
       full_address: '789 Food Court, Marseille, 13001, France',
       street: '789 Food Court',
       city: 'Marseille',
-      rating: 4.7,
+      avg_rating: 4.7,
     },
     available_until: '2025-01-20T21:00:00Z',
   },
@@ -128,7 +128,7 @@ const mockMerchants: Merchant[] = [
     city: 'Paris',
     postal_code: '75001',
     country: 'France',
-    rating: 4.8,
+    avg_rating: 4.8,
     total_reviews: 124,
     verified: true,
     logo_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -142,7 +142,7 @@ const mockMerchants: Merchant[] = [
     city: 'Lyon',
     postal_code: '69001',
     country: 'France',
-    rating: 4.9,
+    avg_rating: 4.9,
     total_reviews: 89,
     verified: true,
     logo_url: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -156,7 +156,7 @@ const mockMerchants: Merchant[] = [
     city: 'Marseille',
     postal_code: '13001',
     country: 'France',
-    rating: 4.7,
+    avg_rating: 4.7,
     total_reviews: 156,
     verified: true,
     logo_url: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -271,7 +271,7 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
       .from('offers')
       .select(`
         *,
-        merchant:merchants(company_name, full_address, street, city, rating)
+        merchant:merchants(company_name, full_address, street, city, avg_rating)
       `)
       .eq('status', 'active')
       .gt('available_until', new Date().toISOString());
@@ -292,7 +292,7 @@ export const getMerchants = async (): Promise<Merchant[]> => {
   try {
     const { data, error } = await supabase!
       .from('merchants')
-      .select('id, company_name, description, full_address, street, city, postal_code, country, rating, total_reviews, verified, logo_url, cover_image_url')
+      .select('id, company_name, description, full_address, street, city, postal_code, country, avg_rating, total_reviews, verified, logo_url, cover_image_url')
       .eq('status', 'approved');
 
     if (error) throw error;
