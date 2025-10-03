@@ -14,6 +14,8 @@ interface Offer {
   distance_m?: number;
   merchant?: {
     company_name: string;
+    street?: string;
+    city?: string;
   };
 }
 

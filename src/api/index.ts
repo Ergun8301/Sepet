@@ -17,6 +17,10 @@ export type OfferRow = {
   merchant: {
     id: string;
     company_name: string;
+    street: string | null;
+    city: string | null;
+    postal_code: string | null;
+    country: string | null;
     logo_url: string | null;
     avg_rating: number | null;
   } | null;
@@ -61,7 +65,7 @@ export async function getPublicOffers(limit = 20) {
     .select(`
       id, title, description, image_url, price_before, price_after, discount_percent,
       available_from, available_until, is_active, location, merchant_id,
-      merchant:merchants ( id, company_name, logo_url, avg_rating )
+      merchant:merchants ( id, company_name, street, city, postal_code, country, logo_url, avg_rating )
     `)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
@@ -94,7 +98,7 @@ export const getClientProfile = async (userId: string) => {
 export const getMerchantProfile = async (userId: string) => {
   const { data, error } = await supabase
     .from('merchants')
-    .select('id, company_name, first_name, last_name, phone, email, city, country, postal_code, created_at')
+    .select('id, company_name, first_name, last_name, phone, email, street, city, country, postal_code, created_at')
     .eq('id', userId)
     .single();
   if (error && error.code !== 'PGRST116') throw error;

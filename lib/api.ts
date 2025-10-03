@@ -11,7 +11,8 @@ export interface Offer {
   image_url: string;
   merchant: {
     company_name: string;
-    address: string;
+    street: string;
+    city: string;
     rating: number;
   };
   available_until: string;
@@ -21,7 +22,10 @@ export interface Merchant {
   id: string;
   company_name: string;
   description: string;
-  address: string;
+  street: string;
+  city: string;
+  postal_code: string;
+  country: string;
   rating: number;
   total_reviews: number;
   verified: boolean;
@@ -68,8 +72,9 @@ const mockOffers: Offer[] = [
     discount_percentage: 38,
     image_url: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
     merchant: {
-      business_name: 'Green Kitchen',
-      address: '123 Health St',
+      company_name: 'Green Kitchen',
+      street: '123 Health St',
+      city: 'Paris',
       rating: 4.8,
     },
     available_until: '2025-01-20T18:00:00Z',
@@ -83,8 +88,9 @@ const mockOffers: Offer[] = [
     discount_percentage: 30,
     image_url: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
     merchant: {
-      business_name: 'Nonna\'s Kitchen',
-      address: '456 Italian Ave',
+      company_name: 'Nonna\'s Kitchen',
+      street: '456 Italian Ave',
+      city: 'Lyon',
       rating: 4.9,
     },
     available_until: '2025-01-20T20:00:00Z',
@@ -98,8 +104,9 @@ const mockOffers: Offer[] = [
     discount_percentage: 32,
     image_url: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
     merchant: {
-      business_name: 'Burger Craft',
-      address: '789 Food Court',
+      company_name: 'Burger Craft',
+      street: '789 Food Court',
+      city: 'Marseille',
       rating: 4.7,
     },
     available_until: '2025-01-20T21:00:00Z',
@@ -111,7 +118,10 @@ const mockMerchants: Merchant[] = [
     id: '1',
     company_name: 'Green Kitchen',
     description: 'Healthy, organic meals made with locally sourced ingredients',
-    address: '123 Health St',
+    street: '123 Health St',
+    city: 'Paris',
+    postal_code: '75001',
+    country: 'France',
     rating: 4.8,
     total_reviews: 124,
     verified: true,
@@ -121,7 +131,10 @@ const mockMerchants: Merchant[] = [
     id: '2',
     company_name: 'Nonna\'s Kitchen',
     description: 'Authentic Italian cuisine with traditional family recipes',
-    address: '456 Italian Ave',
+    street: '456 Italian Ave',
+    city: 'Lyon',
+    postal_code: '69001',
+    country: 'France',
     rating: 4.9,
     total_reviews: 89,
     verified: true,
@@ -131,7 +144,10 @@ const mockMerchants: Merchant[] = [
     id: '3',
     company_name: 'Burger Craft',
     description: 'Gourmet burgers made with premium grass-fed beef',
-    address: '789 Food Court',
+    street: '789 Food Court',
+    city: 'Marseille',
+    postal_code: '13001',
+    country: 'France',
     rating: 4.7,
     total_reviews: 156,
     verified: true,
@@ -268,7 +284,7 @@ export const getMerchants = async (): Promise<Merchant[]> => {
   try {
     const { data, error } = await supabase!
       .from('merchants')
-      .select('id, company_name, description, address, rating, total_reviews, verified, logo_url, cover_image_url')
+      .select('id, company_name, description, street, city, postal_code, country, rating, total_reviews, verified, logo_url, cover_image_url')
       .eq('status', 'approved');
 
     if (error) throw error;
