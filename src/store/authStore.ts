@@ -47,7 +47,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (merchant) {
         set({ userType: 'merchant' });
       } else {
-        set({ userType: 'customer' });
+        // Check if user is a client
+        const { data: client } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (client) {
+          set({ userType: 'customer' });
+        } else {
+          set({ userType: 'customer' }); // Default to customer
+        }
       }
     } catch (error) {
       console.error('Error checking user type:', error);

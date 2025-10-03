@@ -368,9 +368,6 @@ export const signUp = async (email: string, password: string, userData: any) => 
   const { data, error } = await supabase!.auth.signUp({
     email,
     password,
-    options: {
-      data: userData,
-    },
   });
   return { data, error };
 };
