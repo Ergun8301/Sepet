@@ -1,29 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
-import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../../lib/api';
-import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
+import { useAuthStore } from '../store/authStore';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user, loading } = useAuth();
-  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(
-    searchParams.get('mode') as 'signin' | 'signup' | 'forgot' || 'signin'
-  );
+  const { user, loading } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
+  const [isMerchant, setIsMerchant] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
   // Redirect if already authenticated
-  useEffect(() => {
+  React.useEffect(() => {
     if (user && !loading) {
-      navigate('/offers');
+      navigate('/app');
     }
   }, [user, loading, navigate]);
 
@@ -31,25 +28,28 @@ const AuthPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setSuccess('');
 
     try {
-      if (mode === 'signin') {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) throw error;
-        navigate('/offers');
-      } else if (mode === 'signup') {
-        const { error } = await signUp(formData.email, formData.password, {
+      if (activeTab === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
+          password: formData.password,
         });
         if (error) throw error;
-        setSuccess('Account created successfully! Please check your email for verification, then complete your profile.');
-        // After successful signup, redirect to profile completion
-        setTimeout(() => navigate('/profile/complete'), 2000);
-      } else if (mode === 'forgot') {
-        const { error } = await resetPassword(formData.email);
+        // Auth store will handle redirect based on user type
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
         if (error) throw error;
-        setSuccess('Password reset email sent! Please check your inbox.');
+        
+        // Redirect to appropriate onboarding
+        if (isMerchant) {
+          navigate('/onboarding/merchant');
+        } else {
+          navigate('/onboarding/customer');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -58,34 +58,23 @@ const AuthPage = () => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleGoogleAuth = async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      const { error } = provider === 'google' 
-        ? await signInWithGoogle() 
-        : await signInWithFacebook();
-      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + (isMerchant ? '/onboarding/merchant' : '/onboarding/customer')
+        }
+      });
       if (error) throw error;
-      navigate('/offers');
     } catch (err: any) {
-      setError(err.message || 'Social login failed');
+      setError(err.message || 'Google authentication failed');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({ email: '', password: '' });
-    setError('');
-    setSuccess('');
-  };
-
-  const switchMode = (newMode: 'signin' | 'signup' | 'forgot') => {
-    setMode(newMode);
-    resetForm();
-    navigate(`/auth?mode=${newMode}`, { replace: true });
   };
 
   if (loading) {
@@ -118,60 +107,73 @@ const AuthPage = () => {
             </div>
             <span className="font-bold text-2xl text-gray-900">ResQ Food</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            {mode === 'signin' && 'Welcome back'}
-            {mode === 'signup' && 'Create your account'}
-            {mode === 'forgot' && 'Reset your password'}
-          </h2>
-          <p className="mt-2 text-gray-600">
-            {mode === 'signin' && 'Sign in to start saving on delicious meals'}
-            {mode === 'signup' && 'Join thousands saving food and money'}
-            {mode === 'forgot' && 'Enter your email to receive reset instructions'}
-          </p>
         </div>
 
         <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
-          {/* Error/Success Messages */}
+          {/* Tabs */}
+          <div className="flex mb-6">
+            <button
+              onClick={() => setActiveTab('signin')}
+              className={`flex-1 py-2 px-4 text-center font-medium rounded-l-lg ${
+                activeTab === 'signin'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => setActiveTab('signup')}
+              className={`flex-1 py-2 px-4 text-center font-medium rounded-r-lg ${
+                activeTab === 'signup'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* Merchant Toggle (only for signup) */}
+          {activeTab === 'signup' && (
+            <div className="mb-6">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={isMerchant}
+                  onChange={(e) => setIsMerchant(e.target.checked)}
+                  className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">I am a Merchant</span>
+              </label>
+            </div>
+          )}
+
+          {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
               {error}
             </div>
           )}
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
-              {success}
-            </div>
-          )}
 
-          {/* Social Login (only for signin/signup) */}
-          {mode !== 'forgot' && (
-            <div className="space-y-3 mb-6">
-              <button
-                onClick={() => handleSocialLogin('google')}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 mr-3" />
-                Continue with Google
-              </button>
-              <button
-                onClick={() => handleSocialLogin('facebook')}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                <div className="w-5 h-5 mr-3 bg-blue-600 rounded"></div>
-                Continue with Facebook
-              </button>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
-                </div>
-              </div>
+          {/* Google Auth */}
+          <button
+            onClick={handleGoogleAuth}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium mb-6"
+          >
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 mr-3" />
+            Continue with Google
+          </button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
             </div>
-          )}
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">or</span>
+            </div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -187,84 +189,42 @@ const AuthPage = () => {
               />
             </div>
 
-            {mode !== 'forgot' && (
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            )}
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
 
             <button
               type="submit"
               disabled={isLoading}
               className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : 
-                mode === 'signin' ? 'Sign In' : 
-                mode === 'signup' ? 'Create Account' : 
-                'Send Reset Email'
-              }
+              {isLoading ? 'Loading...' : activeTab === 'signin' ? 'Sign In' : 'Sign Up'}
             </button>
           </form>
 
-          {/* Footer Links */}
-          <div className="mt-6 text-center space-y-3">
-            {mode === 'signin' && (
-              <>
-                <button
-                  onClick={() => switchMode('forgot')}
-                  className="text-green-600 hover:text-green-700 text-sm font-medium"
-                >
-                  Forgot your password?
-                </button>
-                <div className="text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <button
-                    onClick={() => switchMode('signup')}
-                    className="text-green-600 hover:text-green-700 font-medium"
-                  >
-                    Sign up
-                  </button>
-                </div>
-              </>
-            )}
-            {mode === 'signup' && (
-              <div className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <button
-                  onClick={() => switchMode('signin')}
-                  className="text-green-600 hover:text-green-700 font-medium"
-                >
-                  Sign in
-                </button>
-              </div>
-            )}
-            {mode === 'forgot' && (
-              <div className="text-sm text-gray-600">
-                Remember your password?{' '}
-                <button
-                  onClick={() => switchMode('signin')}
-                  className="text-green-600 hover:text-green-700 font-medium"
-                >
-                  Sign in
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Forgot Password */}
+          {activeTab === 'signin' && (
+            <div className="mt-6 text-center">
+              <button className="text-green-600 hover:text-green-700 text-sm font-medium">
+                Forgot your password?
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
