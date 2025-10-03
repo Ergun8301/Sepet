@@ -76,7 +76,7 @@ const MerchantsSection = () => {
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
-                  <span>{merchant.street && merchant.city ? `${merchant.street}, ${merchant.city}` : merchant.city || 'Location not specified'}</span>
+                  <span>{merchant.full_address || (merchant.street && merchant.city ? `${merchant.street}, ${merchant.city}` : merchant.city || 'Location not specified')}</span>
                 </div>
 
                 {merchant.verified && (

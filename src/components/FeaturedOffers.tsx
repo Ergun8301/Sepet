@@ -96,7 +96,10 @@ const FeaturedOffers = () => {
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
                   <span>{offer.merchant.company_name}</span>
-                  {!user && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Sign in to see location</span>}
+                  {!user && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Sign in to see full address</span>}
+                  {user && offer.merchant.full_address && (
+                    <span className="ml-2 text-xs text-gray-400">• {offer.merchant.full_address}</span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">

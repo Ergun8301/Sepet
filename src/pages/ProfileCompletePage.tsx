@@ -14,10 +14,6 @@ const ProfileCompletePage = () => {
     first_name: '',
     last_name: '',
     phone: '',
-    street: '',
-    city: '',
-    postal_code: '',
-    country: 'FR',
     profile_photo_url: '',
   });
 

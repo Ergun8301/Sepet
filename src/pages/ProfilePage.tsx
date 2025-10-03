@@ -10,10 +10,7 @@ interface ClientProfile {
   last_name: string;
   phone: string;
   email: string;
-  street: string;
-  city: string;
-  postal_code: string;
-  country: string;
+  full_address: string;
   profile_photo_url: string;
 }
 
@@ -30,10 +27,7 @@ const ProfilePage = () => {
     last_name: '',
     phone: '',
     email: '',
-    street: '',
-    city: '',
-    postal_code: '',
-    country: 'FR',
+    full_address: '',
     profile_photo_url: '',
   });
   const [passwordData, setPasswordData] = useState({
