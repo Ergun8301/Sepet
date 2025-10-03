@@ -415,6 +415,12 @@ export const signOut = async () => {
   }
 
   const { error } = await supabase!.auth.signOut();
+  
+  // If session doesn't exist, treat as successful logout
+  if (error && error.message === 'Session from session_id claim in JWT does not exist') {
+    return { error: null };
+  }
+  
   return { error };
 };
 
