@@ -65,25 +65,36 @@ const MerchantsPage = () => {
     <>
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">Turn Waste into Revenue</h1>
-              <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+        <div className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=1200)` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>
+          </div>
+
+          {/* Content Overlay */}
+          <div className="relative h-full flex items-center justify-center">
+            <div className="text-center text-white px-4 max-w-4xl">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Turn Waste into Revenue
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
                 Join our network of forward-thinking restaurants. Attract new customers, 
                 reduce food waste, and boost your bottom line with ResQ Food.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center text-lg shadow-lg"
+                  className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors inline-flex items-center text-lg shadow-lg"
                 >
                   Become a Partner
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>
                 <a
                   href="#benefits"
-                  className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors text-lg"
+                  className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors text-lg"
                 >
                   Learn More
                 </a>
