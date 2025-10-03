@@ -4,13 +4,16 @@ import HowItWorks from '../components/HowItWorks';
 import FeaturedOffers from '../components/FeaturedOffers';
 import ForMerchantsSection from '../components/ForMerchantsSection';
 import DownloadAppSection from '../components/DownloadAppSection';
+import AppDownloadCTA from '../components/AppDownloadCTA';
 
 const HomePage = () => {
   return (
     <div>
       <HeroBanner />
+      <AppDownloadCTA />
       <HowItWorks />
       <FeaturedOffers />
+      <AppDownloadCTA />
       <ForMerchantsSection />
       <DownloadAppSection />
     </div>

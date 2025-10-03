@@ -77,6 +77,15 @@ const Footer = () => {
                   City, State 12345
                 </span>
               </div>
+              
+              {/* App Download in Footer */}
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <p className="text-green-400 font-medium mb-3">Get notified instantly</p>
+                <div className="bg-white rounded-lg p-4 w-32 h-32 flex items-center justify-center mb-3">
+                  <div className="text-6xl">📱</div>
+                </div>
+                <p className="text-xs text-gray-400">Scan to download our app</p>
+              </div>
             </div>
           </div>
         </div>
