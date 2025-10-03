@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from './components/Header';
+import PartnersCarousel from './components/PartnersCarousel';
 import Banner from './components/Banner';
 import PromoBanner from './components/PromoBanner';
 import FeaturedOffers from './components/FeaturedOffers';
@@ -20,6 +21,9 @@ function App() {
       
       {/* Header */}
       <Header />
+      
+      {/* Partners Carousel */}
+      <PartnersCarousel />
       
       {/* Hero Section */}
       <section id="hero">
