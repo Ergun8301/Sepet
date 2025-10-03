@@ -90,7 +90,7 @@ export const getClientProfile = async (userId: string) => {
     .from('clients')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
   if (error && error.code !== 'PGRST116') throw error;
   return data;
 };
@@ -100,7 +100,7 @@ export const getMerchantProfile = async (userId: string) => {
     .from('merchants')
     .select('id, company_name, first_name, last_name, phone, email, full_address, street, city, country, postal_code, created_at')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
   if (error && error.code !== 'PGRST116') throw error;
   return data;
 };

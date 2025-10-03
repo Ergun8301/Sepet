@@ -449,7 +449,7 @@ export const getClientProfile = async (userId: string) => {
       .from('clients')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
