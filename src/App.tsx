@@ -22,13 +22,13 @@ function App() {
       {/* Header */}
       <Header />
       
-      {/* Partners Carousel */}
-      <PartnersCarousel />
-      
       {/* Hero Section */}
       <section id="hero">
         <Banner />
       </section>
+      
+      {/* Partners Carousel */}
+      <PartnersCarousel />
       
       {/* Offers Section */}
       <section id="offers">
