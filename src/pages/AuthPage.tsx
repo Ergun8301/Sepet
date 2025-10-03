@@ -102,50 +102,22 @@ const AuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Insert into appropriate table
+        // Store form data for onboarding completion
+        sessionStorage.setItem('registrationData', JSON.stringify({
+          ...formData,
+          userType
+        }));
+        
+        // Set location if available
+        await setUserLocation(data.user.id, userType);
+        
+        setSuccess('Account created successfully!');
+        
+        // Redirect to appropriate onboarding page
         if (userType === 'merchant') {
-          const { error: merchantError } = await supabase
-            .from('merchants')
-            .insert({
-              id: data.user.id,
-              email: formData.email,
-              company_name: formData.company_name,
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              phone: formData.phone,
-              city: formData.city,
-              postal_code: formData.postal_code,
-              country: formData.country,
-            });
-          
-          if (merchantError) throw merchantError;
-          
-          // Set location if available
-          await setUserLocation(data.user.id, 'merchant');
-          
-          setSuccess('Merchant account created successfully!');
-          setTimeout(() => navigate('/merchant/dashboard'), 2000);
+          setTimeout(() => navigate('/onboarding/merchant'), 2000);
         } else {
-          const { error: clientError } = await supabase
-            .from('clients')
-            .insert({
-              id: data.user.id,
-              email: formData.email,
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              phone: formData.phone,
-              city: formData.city,
-              postal_code: formData.postal_code,
-              country: formData.country,
-            });
-          
-          if (clientError) throw clientError;
-          
-          // Set location if available
-          await setUserLocation(data.user.id, 'client');
-          
-          setSuccess('Account created successfully!');
-          setTimeout(() => navigate('/offers'), 2000);
+          setTimeout(() => navigate('/onboarding/customer'), 2000);
         }
       }
     } catch (err: any) {
