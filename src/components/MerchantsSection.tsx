@@ -58,9 +58,12 @@ const MerchantsSection = () => {
                 {merchant.verified && (
                   <div className="absolute top-4 right-4 bg-green-500 text-white p-2 rounded-full">
                     <Award className="w-4 h-4" />
+                  </div>
                 )}
               </div>
 
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{merchant.name}</h3>
 
                 <p className="text-gray-600 mb-3 text-sm">{merchant.description}</p>
 
