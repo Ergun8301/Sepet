@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
+const useMockDataAlways = import.meta.env.VITE_USE_MOCK_DATA_ALWAYS === 'true';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -10,6 +11,9 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 // Vérification de la disponibilité du client
 export const isSupabaseAvailable = () => {
+  if (useMockDataAlways) {
+    return false;
+  }
   return supabase !== null;
 };
 
