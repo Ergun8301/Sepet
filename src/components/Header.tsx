@@ -22,14 +22,9 @@ const Header = () => {
   };
 
   const navigation = [
-    { name: 'Home', href: '/' },
     { name: 'Offers', href: '/offers' },
     { name: 'Merchants', href: '/merchants' },
-    { name: 'Merchant Reviews', href: '/reviews' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'FAQ', href: '/faq' },
-    { name: 'About', href: '/about' },
-    { name: 'Partners', href: '/partners' },
+    { name: 'Download App', href: '#download-app' },
   ];
 
   return (
@@ -40,10 +35,12 @@ const Header = () => {
             {/* Logo */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
-                  <span className="text-white font-bold text-lg">R</span>
-                </div>
-                <span className="font-bold text-xl text-gray-900">ResQ Food</span>
+                <a href="#hero" className="flex items-center">
+                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
+                    <span className="text-white font-bold text-lg">R</span>
+                  </div>
+                  <span className="font-bold text-xl text-gray-900">ResQ Food</span>
+                </a>
               </div>
             </div>
 

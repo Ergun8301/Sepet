@@ -2,8 +2,14 @@ import React from 'react';
 import Header from './components/Header';
 import Banner from './components/Banner';
 import PromoBanner from './components/PromoBanner';
-import PartnersSlider from './components/PartnersSlider';
 import FeaturedOffers from './components/FeaturedOffers';
+import AboutSection from './components/AboutSection';
+import FAQSection from './components/FAQSection';
+import BlogSection from './components/BlogSection';
+import MerchantReviewsSection from './components/MerchantReviewsSection';
+import PartnersSection from './components/PartnersSection';
+import DownloadAppSection from './components/DownloadAppSection';
+import MerchantsSection from './components/MerchantsSection';
 import Footer from './components/Footer';
 
 function App() {
@@ -15,14 +21,50 @@ function App() {
       {/* Header */}
       <Header />
       
-      {/* Main Hero Banner */}
-      <Banner />
+      {/* Hero Section */}
+      <section id="hero">
+        <Banner />
+      </section>
       
-      {/* Partners Slider */}
-      <PartnersSlider />
+      {/* Offers Section */}
+      <section id="offers">
+        <FeaturedOffers />
+      </section>
       
-      {/* Featured Offers */}
-      <FeaturedOffers />
+      {/* Merchants Section */}
+      <section id="merchants">
+        <MerchantsSection />
+      </section>
+      
+      {/* About Us Section */}
+      <section id="about">
+        <AboutSection />
+      </section>
+      
+      {/* FAQ Section */}
+      <section id="faq">
+        <FAQSection />
+      </section>
+      
+      {/* Blog Section */}
+      <section id="blog">
+        <BlogSection />
+      </section>
+      
+      {/* Merchant Reviews Section */}
+      <section id="reviews">
+        <MerchantReviewsSection />
+      </section>
+      
+      {/* Partners Section */}
+      <section id="partners">
+        <PartnersSection />
+      </section>
+      
+      {/* Download App Section */}
+      <section id="download-app">
+        <DownloadAppSection />
+      </section>
       
       {/* Footer */}
       <Footer />
