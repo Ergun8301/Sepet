@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, Download } from 'lucide-react';
+import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -9,14 +9,14 @@ const ExplorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { user } = useAuth();
 
-  const categories = ['All', 'Bakery', 'Fruits', 'Ready Meals', 'Pizza', 'Burgers', 'Healthy'];
+  const categories = ['All', 'Bakery', 'Fruits', 'Ready Meals', 'Drinks'];
 
   useEffect(() => {
     const fetchOffers = async () => {
       try {
         const data = await getActiveOffers();
-        // Show first 12 offers for better grid display
-        setOffers(data.slice(0, 12));
+        // Show first 6 offers for better grid display
+        setOffers(data.slice(0, 6));
       } catch (error) {
         console.error('Error fetching offers:', error);
       } finally {
@@ -44,10 +44,10 @@ const ExplorePage = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Top Banner Skeleton */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 py-12">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="h-8 bg-white bg-opacity-20 rounded w-64 mx-auto mb-4"></div>
-            <div className="h-4 bg-white bg-opacity-20 rounded w-48 mx-auto"></div>
+            <div className="h-8 bg-white bg-opacity-20 rounded w-64 mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 bg-white bg-opacity-20 rounded w-48 mx-auto animate-pulse"></div>
           </div>
         </div>
         
@@ -65,7 +65,7 @@ const ExplorePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-green-500 to-green-600 py-12">
+      <div className="bg-gradient-to-r from-green-500 to-green-600 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Save up to 75% on local deals
@@ -76,22 +76,22 @@ const ExplorePage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter Bar */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
+        <div className="mb-12">
+          <div className="flex items-center mb-6">
             <Filter className="w-5 h-5 text-gray-600 mr-2" />
             <h3 className="text-lg font-semibold text-gray-900">Filter by category</h3>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                className={`px-6 py-3 rounded-full font-medium transition-all ${
                   selectedCategory === category
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-green-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-green-300'
                 }`}
               >
                 {category}
@@ -101,7 +101,7 @@ const ExplorePage = () => {
         </div>
 
         {/* Offers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {offers.map((offer) => (
             <div key={offer.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
               <div className="relative">
@@ -168,7 +168,7 @@ const ExplorePage = () => {
         </div>
 
         {/* Bottom CTA Section */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+        <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Unlock full access by signing up or downloading the app
           </h2>
@@ -177,7 +177,7 @@ const ExplorePage = () => {
             Get instant notifications for new deals near you!
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <a
               href="/auth?mode=signup"
               className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors inline-flex items-center text-lg shadow-lg"
@@ -194,9 +194,27 @@ const ExplorePage = () => {
             </a>
           </div>
 
-          <div className="flex items-center justify-center text-gray-500">
-            <Download className="w-4 h-4 mr-2" />
-            <span className="text-sm">Available on iOS and Android</span>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="#"
+              className="transition-transform hover:scale-105"
+            >
+              <img 
+                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                alt="Download on the App Store" 
+                className="h-12"
+              />
+            </a>
+            <a
+              href="#"
+              className="transition-transform hover:scale-105"
+            >
+              <img 
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                alt="Get it on Google Play" 
+                className="h-12"
+              />
+            </a>
           </div>
         </div>
       </div>

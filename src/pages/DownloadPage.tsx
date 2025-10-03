@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Download, Bell, MapPin, Star, QrCode } from 'lucide-react';
+import { Smartphone, Bell, MapPin, Star, QrCode } from 'lucide-react';
 
 const DownloadPage = () => {
   const features = [
@@ -24,44 +24,54 @@ const DownloadPage = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Download the ResQ Food App</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">Download the ResQ Food App</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Get the best food rescue experience on your mobile device. Never miss a deal again!
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left side - QR Code and Download */}
           <div className="text-center">
             <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
-              <div className="w-48 h-48 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-48 h-48 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-6">
                 <QrCode className="w-24 h-24 text-gray-400" />
               </div>
-              <p className="text-sm text-gray-600 mb-4">Scan to download</p>
+              <p className="text-gray-600 mb-6 font-medium">Scan to download</p>
+              
+              {/* Download Text */}
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  Get notified instantly. Download our app today.
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Never miss a deal from your favorite restaurants. Get push notifications for new offers near you.
+                </p>
+              </div>
               
               {/* Download Buttons */}
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <a
                   href="#"
-                  className="bg-black text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors w-full"
+                  className="transition-transform hover:scale-105"
                 >
                   <img 
                     src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
                     alt="Download on the App Store" 
-                    className="h-10"
+                    className="h-14 mx-auto"
                   />
                 </a>
                 
                 <a
                   href="#"
-                  className="bg-white border border-gray-300 px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors w-full"
+                  className="transition-transform hover:scale-105"
                 >
                   <img 
                     src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
                     alt="Get it on Google Play" 
-                    className="h-12"
+                    className="h-14 mx-auto"
                   />
                 </a>
               </div>
@@ -86,19 +96,19 @@ const DownloadPage = () => {
 
           {/* Right side - Features */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
               Why Download the App?
             </h2>
             
-            <div className="space-y-6 mb-8">
+            <div className="space-y-8 mb-8">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-start space-x-4">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <feature.icon className="w-6 h-6 text-green-600" />
+                  <div className="bg-green-100 p-4 rounded-lg">
+                    <feature.icon className="w-8 h-8 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
+                    <h3 className="font-semibold text-gray-900 mb-2 text-lg">{feature.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               ))}
@@ -106,7 +116,7 @@ const DownloadPage = () => {
 
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="font-semibold text-green-800 mb-2">📱 Activate Notifications</h3>
-              <p className="text-green-700 text-sm">
+              <p className="text-green-700 leading-relaxed">
                 Enable push notifications to never miss a deal. Get alerted when your favorite restaurants post new offers!
               </p>
             </div>
@@ -114,11 +124,11 @@ const DownloadPage = () => {
         </div>
 
         {/* Phone Mockup Section */}
-        <div className="bg-white rounded-2xl p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Experience ResQ Food on Mobile</h2>
+        <div className="bg-white rounded-2xl p-12 text-center shadow-lg">
+          <h2 className="text-3xl font-bold text-gray-900 mb-12">Experience ResQ Food on Mobile</h2>
           
-          <div className="flex justify-center">
-            <div className="relative mx-auto w-64 h-96 bg-gray-900 rounded-3xl p-2 shadow-2xl">
+          <div className="flex justify-center relative">
+            <div className="mx-auto w-64 h-96 bg-gray-900 rounded-3xl p-2 shadow-2xl">
               <div className="w-full h-full bg-white rounded-2xl overflow-hidden relative">
                 {/* Phone screen content */}
                 <div className="bg-gradient-to-br from-green-400 to-green-500 h-24 flex items-center justify-center">
@@ -166,23 +176,15 @@ const DownloadPage = () => {
                 </div>
               </div>
             </div>
-
-            {/* Floating elements */}
-            <div className="absolute -top-4 -right-4 bg-white rounded-full p-3 shadow-lg">
-              <Download className="w-6 h-6 text-green-500" />
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-full p-3 shadow-lg">
-              <Smartphone className="w-6 h-6 text-green-500" />
-            </div>
           </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600 mb-4">Ready to start saving money and reducing waste?</p>
+        <div className="text-center mt-16">
+          <p className="text-gray-600 mb-6 text-lg">Ready to start saving money and reducing waste?</p>
           <a
             href="/"
-            className="bg-green-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors inline-block"
+            className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors inline-block text-lg"
           >
             Explore Offers Now
           </a>

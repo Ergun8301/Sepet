@@ -63,7 +63,8 @@ const HeroBanner = () => {
             alt={slide.alt}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          {/* Dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>
         </div>
       ))}
 
@@ -75,7 +76,7 @@ const HeroBanner = () => {
             <span className="text-green-400">Save Food</span>,{' '}
             <br />Save the Planet
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
             Discover amazing deals on delicious meals from local restaurants while helping reduce food waste. 
             Join the food rescue movement today!
           </p>

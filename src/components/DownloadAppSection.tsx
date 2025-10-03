@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Download, QrCode } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 
 const DownloadAppSection = () => {
   return (
@@ -11,27 +11,30 @@ const DownloadAppSection = () => {
             <h2 className="text-4xl font-bold mb-6">
               Download Our App
             </h2>
-            <p className="text-xl text-green-100 mb-8">
-              Get the best food rescue experience on your mobile device. Activate notifications 
-              to never miss a deal from your favorite restaurants.
-            </p>
+            <div className="mb-8">
+              <p className="text-2xl font-semibold text-white mb-4">
+                Get notified instantly. Download our app today.
+              </p>
+              <p className="text-xl text-green-100">
+                Never miss a deal from your favorite restaurants. Get push notifications for new offers near you.
+              </p>
+            </div>
 
             {/* Download Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <a
                 href="#"
-                className="bg-black text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="transition-transform hover:scale-105"
               >
                 <img 
                   src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
                   alt="Download on the App Store" 
-                  className="h-10"
+                  className="h-14"
                 />
               </a>
-              
               <a
                 href="#"
-                className="bg-transparent p-1 rounded-lg flex items-center justify-center hover:bg-white hover:bg-opacity-10 transition-colors"
+                className="transition-transform hover:scale-105"
               >
                 <img 
                   src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
@@ -58,23 +61,13 @@ const DownloadAppSection = () => {
             </div>
           </div>
 
-          {/* Right side - QR Code and Phone */}
+          {/* Right side - QR Code */}
           <div className="text-center">
             <div className="bg-white rounded-2xl p-8 shadow-2xl inline-block">
               <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
                 <QrCode className="w-24 h-24 text-gray-400" />
               </div>
               <p className="text-gray-600 font-medium">Scan to download</p>
-            </div>
-            
-            <div className="mt-6">
-              <a
-                href="/download"
-                className="bg-white text-green-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors inline-flex items-center"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Page
-              </a>
             </div>
           </div>
         </div>
