@@ -89,7 +89,7 @@ const MerchantAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Insert into merchants table
+        // Create merchant profile
         const { error: insertError } = await supabase
           .from('merchants')
           .insert({
@@ -99,12 +99,12 @@ const MerchantAuthPage = () => {
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
+            street: '', // Will be updated later if needed
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
           });
 
-        if (insertError) throw insertError;
 
         // Set location if available
         await setMerchantLocation();

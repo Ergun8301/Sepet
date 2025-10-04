@@ -94,9 +94,12 @@ const CustomerAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Use upsertClientProfile to handle profile creation/update
-        try {
-          await updateClientProfile(data.user.id, {
+        // Create client profile
+        const { error: insertError } = await supabase
+          .from('clients')
+          .insert({
+            id: data.user.id,
+            email: formData.email,
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
@@ -104,10 +107,10 @@ const CustomerAuthPage = () => {
             postal_code: formData.postal_code,
             country: formData.country,
           });
-          console.log('Profile updated successfully');
-        } catch (profileError: any) {
-          console.error('Profile update error:', profileError);
-          throw new Error('Failed to save profile information');
+
+        if (insertError) {
+          console.error('Profile creation error:', insertError);
+          throw new Error('Failed to create profile');
         }
 
         // Set location if available
