@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Navigation } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { updateClientProfile, setClientLocation } from '../../lib/api';
+import { updateClientProfile } from '../../lib/api';
+import { setClientLocation } from '../api';
 
 const CustomerOnboardingPage = () => {
   const navigate = useNavigate();
