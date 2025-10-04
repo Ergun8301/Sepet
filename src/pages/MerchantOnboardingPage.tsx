@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Navigation, Building } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from '../lib/supabaseClient';
 import { upsertMerchantProfile, setMerchantLocation } from '../api';
 
 const MerchantOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
@@ -20,6 +20,27 @@ const MerchantOnboardingPage = () => {
     country: 'FR',
     postal_code: '',
   });
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth/merchant');
+        return;
+      }
+      setUser(user);
+
+      if (user.user_metadata) {
+        setFormData(prev => ({
+          ...prev,
+          company_name: user.user_metadata.company_name || '',
+          first_name: user.user_metadata.first_name || '',
+          last_name: user.user_metadata.last_name || '',
+        }));
+      }
+    };
+    getUser();
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -58,7 +79,14 @@ const MerchantOnboardingPage = () => {
       await upsertMerchantProfile({
         id: user.id,
         email: user.email,
-        ...formData,
+        company_name: formData.company_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        phone: formData.phone,
+        street: formData.street,
+        city: formData.city,
+        postal_code: formData.postal_code,
+        country: formData.country,
       });
 
       navigate('/merchant/dashboard');

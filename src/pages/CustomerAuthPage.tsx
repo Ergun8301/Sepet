@@ -96,6 +96,11 @@ const CustomerAuthPage = () => {
           email: formData.email,
           password: formData.password,
           options: {
+            data: {
+              user_type: 'client',
+              first_name: formData.first_name,
+              last_name: formData.last_name
+            }
           }
         });
         

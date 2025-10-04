@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Navigation } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { updateClientProfile } from '../../lib/api';
-import { setClientLocation } from '../api';
+import { supabase } from '../lib/supabaseClient';
+import { upsertClientProfile, setClientLocation } from '../api';
 
 const CustomerOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
@@ -19,6 +18,26 @@ const CustomerOnboardingPage = () => {
     country: 'FR',
     postal_code: '',
   });
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth/customer');
+        return;
+      }
+      setUser(user);
+
+      if (user.user_metadata) {
+        setFormData(prev => ({
+          ...prev,
+          first_name: user.user_metadata.first_name || '',
+          last_name: user.user_metadata.last_name || '',
+        }));
+      }
+    };
+    getUser();
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -54,9 +73,15 @@ const CustomerOnboardingPage = () => {
     setError('');
 
     try {
-      await updateClientProfile(user.id, {
-        ...formData,
+      await upsertClientProfile({
+        id: user.id,
         email: user.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        phone: formData.phone,
+        city: formData.city,
+        postal_code: formData.postal_code,
+        country: formData.country,
       });
 
       navigate('/app');

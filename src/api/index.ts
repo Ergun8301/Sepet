@@ -115,6 +115,16 @@ export const upsertMerchantProfile = async (profile: any) => {
   return data;
 };
 
+export const upsertClientProfile = async (profile: any) => {
+  const { data, error } = await supabase
+    .from('clients')
+    .upsert(profile)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
 // Merchant offers management
 export const getMerchantOffers = async (merchantId: string) => {
   const { data, error } = await supabase

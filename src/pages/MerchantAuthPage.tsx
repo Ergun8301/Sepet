@@ -84,6 +84,14 @@ const MerchantAuthPage = () => {
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: {
+            data: {
+              user_type: 'merchant',
+              company_name: formData.company_name,
+              first_name: formData.first_name,
+              last_name: formData.last_name
+            }
+          }
         });
         
         if (error) throw error;
