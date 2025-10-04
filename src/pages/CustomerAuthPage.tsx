@@ -89,27 +89,43 @@ const CustomerAuthPage = () => {
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: {
+            data: {
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              phone: formData.phone,
+              city: formData.city,
+              postal_code: formData.postal_code,
+              country: formData.country,
+              street: '',
+              full_address: `${formData.city}, ${formData.postal_code}, ${formData.country}`
+            }
+          }
         });
         
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
         // Create client profile
-        const { error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from('clients')
-          .insert({
+          .upsert({
             id: data.user.id,
             email: formData.email,
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
+            street: '',
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
+            full_address: `${formData.city}, ${formData.postal_code}, ${formData.country}`
+          }, {
+            onConflict: 'id'
           });
 
-        if (insertError) {
-          console.error('Profile creation error:', insertError);
+        if (upsertError) {
+          console.error('Profile creation error:', upsertError);
           throw new Error('Failed to create profile');
         }
 
