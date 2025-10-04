@@ -89,7 +89,11 @@ const MerchantAuthPage = () => {
               user_type: 'merchant',
               company_name: formData.company_name,
               first_name: formData.first_name,
-              last_name: formData.last_name
+              last_name: formData.last_name,
+              phone: formData.phone,
+              city: formData.city,
+              postal_code: formData.postal_code,
+              country: formData.country
             }
           }
         });
@@ -97,32 +101,15 @@ const MerchantAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Create merchant profile
-        const { error: insertError } = await supabase
-          .from('merchants')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            company_name: formData.company_name,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone: formData.phone,
-            street: '',
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
-          });
-
-        if (insertError) {
-          console.error('Merchant profile creation error:', insertError);
-          throw new Error('Failed to create merchant profile');
-        }
+        // Profile is automatically created by database trigger
+        // Wait a moment to ensure trigger completes
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Set location if available
         await setMerchantLocation();
-        
+
         setSuccess('Merchant account created successfully! Redirecting...');
-        setTimeout(() => navigate('/merchant/dashboard'), 2000);
+        setTimeout(() => navigate('/merchant/dashboard'), 1500);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');

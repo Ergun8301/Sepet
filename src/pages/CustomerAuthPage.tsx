@@ -99,7 +99,11 @@ const CustomerAuthPage = () => {
             data: {
               user_type: 'client',
               first_name: formData.first_name,
-              last_name: formData.last_name
+              last_name: formData.last_name,
+              phone: formData.phone,
+              city: formData.city,
+              postal_code: formData.postal_code,
+              country: formData.country
             }
           }
         });
@@ -107,30 +111,15 @@ const CustomerAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Create client profile immediately
-        const { error: profileError } = await supabase
-          .from('clients')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone: formData.phone,
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw new Error('Failed to create client profile');
-        }
+        // Profile is automatically created by database trigger
+        // Wait a moment to ensure trigger completes
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Set location if available
         await setCustomerLocation();
 
         setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => navigate('/app'), 2000);
+        setTimeout(() => navigate('/app'), 1500);
       }
     } catch (err: any) {
       // Handle rate limiting error specifically
