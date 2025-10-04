@@ -71,6 +71,13 @@ const CustomerAuthPage = () => {
     setError('');
     setSuccess('');
 
+    // Client-side password validation
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (activeTab === 'login') {
         const { error } = await supabase.auth.signInWithPassword({
@@ -85,53 +92,17 @@ const CustomerAuthPage = () => {
         // Redirect to customer offers page
         navigate('/offers');
       } else {
-        // Registration flow
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            data: {
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              phone: formData.phone,
-              city: formData.city,
-              postal_code: formData.postal_code,
-              country: formData.country,
-              street: '',
-              full_address: `${formData.city}, ${formData.postal_code}, ${formData.country}`
-            }
-          }
-        });
         
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
         // Create client profile
-        const { error: insertError } = await supabase
-          .from('clients')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone: formData.phone,
-            street: '',
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
-            created_at: new Date().toISOString()
-          });
-
-        if (insertError) {
-          console.error('Client profile creation error:', insertError);
-          throw new Error('Failed to create client profile');
-        }
-
-        // Set location if available
-        await setCustomerLocation();
-        
         setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => navigate('/offers'), 2000);
+        setTimeout(() => navigate('/onboarding/customer'), 2000);
       }
     } catch (err: any) {
       // Handle rate limiting error specifically

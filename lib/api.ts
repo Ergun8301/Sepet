@@ -471,11 +471,13 @@ export const updateClientProfile = async (userId: string, profileData: any) => {
   try {
     const { data, error } = await supabase!
       .from('clients')
-      .update({
+      .upsert({
+        id: userId,
         ...profileData,
-        updated_at: new Date().toISOString(),
+        created_at: profileData.created_at || new Date().toISOString(),
+      }, {
+        onConflict: 'id'
       })
-      .eq('id', userId)
       .select()
       .single();
     
