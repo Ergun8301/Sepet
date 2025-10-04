@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { upsertClientProfile } from '../api';
-import { upsertClientProfile } from '../api';
 
 const CustomerAuthPage = () => {
   const navigate = useNavigate();
