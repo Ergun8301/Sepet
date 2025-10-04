@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { upsertClientProfile } from '../api';
+import { updateClientProfile } from '../../lib/api';
 
 const CustomerAuthPage = () => {
   const navigate = useNavigate();
@@ -96,8 +96,7 @@ const CustomerAuthPage = () => {
 
         // Use upsertClientProfile to handle profile creation/update
         try {
-          await upsertClientProfile({
-            id: data.user.id,
+          await updateClientProfile(data.user.id, {
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
