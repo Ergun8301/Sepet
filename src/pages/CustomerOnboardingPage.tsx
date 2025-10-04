@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Navigation } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { upsertClientProfile, setClientLocation } from '../api';
+import { updateClientProfile, setClientLocation } from '../../lib/api';
 
 const CustomerOnboardingPage = () => {
   const navigate = useNavigate();
@@ -53,10 +53,9 @@ const CustomerOnboardingPage = () => {
     setError('');
 
     try {
-      await upsertClientProfile({
-        id: user.id,
-        email: user.email,
+      await updateClientProfile(user.id, {
         ...formData,
+        email: user.email,
       });
 
       navigate('/app');
