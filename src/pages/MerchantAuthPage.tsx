@@ -18,6 +18,7 @@ const MerchantAuthPage = () => {
     first_name: '',
     last_name: '',
     phone: '',
+    street: '',
     city: '',
     postal_code: '',
     country: 'FR',
@@ -91,6 +92,7 @@ const MerchantAuthPage = () => {
               first_name: formData.first_name,
               last_name: formData.last_name,
               phone: formData.phone,
+              street: formData.street,
               city: formData.city,
               postal_code: formData.postal_code,
               country: formData.country
@@ -269,8 +271,21 @@ const MerchantAuthPage = () => {
                   <input
                     type="tel"
                     name="phone"
-                    placeholder="Business Phone Number"
+                    placeholder="Numéro de téléphone professionnel"
                     value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Street Address */}
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="street"
+                    placeholder="Adresse du commerce (rue et numéro)"
+                    value={formData.street}
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
