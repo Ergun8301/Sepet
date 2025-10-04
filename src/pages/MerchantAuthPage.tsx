@@ -94,17 +94,22 @@ const MerchantAuthPage = () => {
           .from('merchants')
           .insert({
             id: data.user.id,
-            email: formData.email,
+            email: data.user.email,
             company_name: formData.company_name,
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
-            street: '', // Will be updated later if needed
+            street: '',
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
+            created_at: new Date().toISOString()
           });
 
+        if (insertError) {
+          console.error('Merchant profile creation error:', insertError);
+          throw new Error('Failed to create merchant profile');
+        }
 
         // Set location if available
         await setMerchantLocation();

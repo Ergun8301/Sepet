@@ -107,11 +107,11 @@ const CustomerAuthPage = () => {
         if (!data.user) throw new Error('Registration failed');
 
         // Create client profile
-        const { error: upsertError } = await supabase
+        const { error: insertError } = await supabase
           .from('clients')
-          .upsert({
+          .insert({
             id: data.user.id,
-            email: formData.email,
+            email: data.user.email,
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
@@ -119,14 +119,12 @@ const CustomerAuthPage = () => {
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
-            full_address: `${formData.city}, ${formData.postal_code}, ${formData.country}`
-          }, {
-            onConflict: 'id'
+            created_at: new Date().toISOString()
           });
 
-        if (upsertError) {
-          console.error('Profile creation error:', upsertError);
-          throw new Error('Failed to create profile');
+        if (insertError) {
+          console.error('Client profile creation error:', insertError);
+          throw new Error('Failed to create client profile');
         }
 
         // Set location if available
