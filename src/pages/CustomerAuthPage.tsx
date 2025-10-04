@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { upsertClientProfile } from '../api';
+import { upsertClientProfile } from '../api';
 
 const CustomerAuthPage = () => {
   const navigate = useNavigate();
@@ -94,27 +95,22 @@ const CustomerAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Update client profile data (trigger already created basic entry)
-        const { data: profileData, error: updateError } = await supabase
-          .from('clients')
-          .update({
+        // Use upsertClientProfile to handle profile creation/update
+        try {
+          await upsertClientProfile({
+            id: data.user.id,
             first_name: formData.first_name,
             last_name: formData.last_name,
             phone: formData.phone,
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
-          })
-          .eq('id', data.user.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Profile update error:', updateError);
+          });
+          console.log('Profile updated successfully');
+        } catch (profileError: any) {
+          console.error('Profile update error:', profileError);
           throw new Error('Failed to save profile information');
         }
-
-        console.log('Profile updated successfully:', profileData);
 
         // Set location if available
         await setCustomerLocation();
@@ -123,7 +119,12 @@ const CustomerAuthPage = () => {
         setTimeout(() => navigate('/offers'), 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      // Handle rate limiting error specifically
+      if (err.message?.includes('over_email_send_rate_limit')) {
+        setError('Too many registration attempts. Please wait a moment before trying again.');
+      } else {
+        setError(err.message || 'An error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
