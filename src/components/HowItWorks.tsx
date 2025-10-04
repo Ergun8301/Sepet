@@ -60,7 +60,7 @@ const HowItWorks = () => {
 
         <div className="text-center mt-12">
           <a
-            href="/offers"
+            href="/customer/teaser"
             className="bg-green-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors inline-block"
           >
             Start Saving Now

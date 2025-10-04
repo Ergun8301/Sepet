@@ -2,10 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
-import ExplorePage from './pages/ExplorePage';
+import CustomerTeaserPage from './pages/CustomerTeaserPage';
+import CustomerOffersPage from './pages/CustomerOffersPage';
+import CustomerAuthPage from './pages/CustomerAuthPage';
+import MerchantAuthPage from './pages/MerchantAuthPage';
+import MerchantInfoPage from './pages/MerchantInfoPage';
 import MerchantsPage from './pages/MerchantsPage';
 import DownloadPage from './pages/DownloadPage';
-import AuthPage from './pages/AuthPage';
 import CustomerOnboardingPage from './pages/CustomerOnboardingPage';
 import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import CustomerAppPage from './pages/CustomerAppPage';
@@ -21,10 +24,13 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/offers" element={<ExplorePage />} />
+            <Route path="/customer/teaser" element={<CustomerTeaserPage />} />
+            <Route path="/offers" element={<CustomerOffersPage />} />
+            <Route path="/customer/auth" element={<CustomerAuthPage />} />
+            <Route path="/merchant/auth" element={<MerchantAuthPage />} />
+            <Route path="/merchant/info" element={<MerchantInfoPage />} />
             <Route path="/merchants" element={<MerchantsPage />} />
             <Route path="/download" element={<DownloadPage />} />
-            <Route path="/auth" element={<AuthPage />} />
             <Route path="/onboarding/customer" element={<CustomerOnboardingPage />} />
             <Route path="/onboarding/merchant" element={<MerchantOnboardingPage />} />
             <Route path="/app" element={<CustomerAppPage />} />

@@ -83,14 +83,14 @@ const HeroBanner = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <a
-              href="/offers"
+              href="/customer/teaser"
               className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors inline-flex items-center text-lg shadow-lg"
             >
               Explore Offers
               <ArrowRight className="w-5 h-5 ml-2" />
             </a>
             <a
-              href="/merchants"
+              href="/merchant/info"
               className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors text-lg"
             >
               For Merchants

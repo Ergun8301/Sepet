@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Building, Navigation } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { useAuthStore } from '../store/authStore';
 
-const AuthPage = () => {
+const CustomerAuthPage = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [userType, setUserType] = useState<'client' | 'merchant'>('client');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -19,19 +16,11 @@ const AuthPage = () => {
     password: '',
     first_name: '',
     last_name: '',
-    company_name: '',
     phone: '',
     city: '',
     postal_code: '',
     country: 'FR',
   });
-
-  // Redirect if already authenticated
-  React.useEffect(() => {
-    if (user && !loading) {
-      navigate('/app');
-    }
-  }, [user, loading, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -48,9 +37,7 @@ const AuthPage = () => {
       });
 
       const { latitude, longitude } = position.coords;
-      
-      // Store location for later use after registration
-      sessionStorage.setItem('userLocation', JSON.stringify({ lat: latitude, lon: longitude }));
+      sessionStorage.setItem('customerLocation', JSON.stringify({ lat: latitude, lon: longitude }));
       setSuccess('Location saved! Will be used after registration.');
     } catch (err: any) {
       setError('Failed to get location. Please enable location services.');
@@ -59,22 +46,16 @@ const AuthPage = () => {
     }
   };
 
-  const setUserLocation = async (userId: string, userType: 'client' | 'merchant') => {
-    const locationData = sessionStorage.getItem('userLocation');
+  const setCustomerLocation = async () => {
+    const locationData = sessionStorage.getItem('customerLocation');
     if (!locationData) return;
 
     try {
       const { lat, lon } = JSON.parse(locationData);
-      
-      if (userType === 'client') {
-        await supabase.rpc('set_client_location', { lat, lon });
-      } else {
-        await supabase.rpc('set_merchant_location', { lat, lon });
-      }
-      
-      sessionStorage.removeItem('userLocation');
+      await supabase.rpc('set_client_location', { lat, lon });
+      sessionStorage.removeItem('customerLocation');
     } catch (error) {
-      console.warn('Failed to set user location:', error);
+      console.warn('Failed to set customer location:', error);
     }
   };
 
@@ -91,7 +72,12 @@ const AuthPage = () => {
           password: formData.password,
         });
         if (error) throw error;
-        // Auth store will handle redirect based on user type
+        
+        // Set location if available
+        await setCustomerLocation();
+        
+        // Redirect to customer offers page
+        navigate('/offers');
       } else {
         // Registration flow
         const { data, error } = await supabase.auth.signUp({
@@ -102,23 +88,27 @@ const AuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Store form data for onboarding completion
-        sessionStorage.setItem('registrationData', JSON.stringify({
-          ...formData,
-          userType
-        }));
-        
+        // Insert into clients table
+        const { error: insertError } = await supabase
+          .from('clients')
+          .insert({
+            id: data.user.id,
+            email: formData.email,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            phone: formData.phone,
+            city: formData.city,
+            postal_code: formData.postal_code,
+            country: formData.country,
+          });
+
+        if (insertError) throw insertError;
+
         // Set location if available
-        await setUserLocation(data.user.id, userType);
+        await setCustomerLocation();
         
-        setSuccess('Account created successfully!');
-        
-        // Redirect to appropriate onboarding page
-        if (userType === 'merchant') {
-          setTimeout(() => navigate('/onboarding/merchant'), 2000);
-        } else {
-          setTimeout(() => navigate('/onboarding/customer'), 2000);
-        }
+        setSuccess('Account created successfully! Redirecting...');
+        setTimeout(() => navigate('/offers'), 2000);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -146,14 +136,6 @@ const AuthPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -176,6 +158,8 @@ const AuthPage = () => {
             </div>
             <span className="font-bold text-2xl text-gray-900">ResQ Food</span>
           </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Customer Access</h2>
+          <p className="text-gray-600">Access exclusive offers and save on delicious meals</p>
         </div>
 
         <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
@@ -202,32 +186,6 @@ const AuthPage = () => {
               Register
             </button>
           </div>
-
-          {/* User Type Tabs (only for registration) */}
-          {activeTab === 'register' && (
-            <div className="flex mb-6">
-              <button
-                onClick={() => setUserType('client')}
-                className={`flex-1 py-2 px-4 text-center font-medium rounded-l-lg ${
-                  userType === 'client'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Client
-              </button>
-              <button
-                onClick={() => setUserType('merchant')}
-                className={`flex-1 py-2 px-4 text-center font-medium rounded-r-lg ${
-                  userType === 'merchant'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Merchant
-              </button>
-            </div>
-          )}
 
           {/* Error/Success Messages */}
           {error && (
@@ -304,22 +262,6 @@ const AuthPage = () => {
             {/* Registration Fields */}
             {activeTab === 'register' && (
               <>
-                {/* Company Name (Merchant only) */}
-                {userType === 'merchant' && (
-                  <div className="relative">
-                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="company_name"
-                      placeholder="Company Name"
-                      value={formData.company_name}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                )}
-
                 {/* Personal Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="relative">
@@ -439,4 +381,4 @@ const AuthPage = () => {
   );
 };
 
-export default AuthPage;
+export default CustomerAuthPage;

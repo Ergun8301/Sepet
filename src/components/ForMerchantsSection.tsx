@@ -50,14 +50,14 @@ const ForMerchantsSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="/merchants"
+                href="/merchant/info"
                 className="bg-green-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors inline-flex items-center"
               >
                 Become a Partner
                 <ArrowRight className="w-4 h-4 ml-2" />
               </a>
               <a
-                href="/merchants#benefits"
+                href="/merchant/info#benefits"
                 className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
               >
                 Learn More

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { signOut } from '../../lib/api';
 
@@ -21,8 +21,8 @@ const Header = () => {
   };
 
   const navigation = [
-    { name: 'Explore Offers', href: '/offers' },
-    { name: 'For Merchants', href: '/merchants' },
+    { name: 'Explore Offers', href: '/customer/teaser' },
+    { name: 'For Merchants', href: '/merchant/info' },
     { name: 'Download App', href: '/download' },
   ];
 
@@ -102,12 +102,51 @@ const Header = () => {
                   )}
                 </div>
               ) : (
-                <button
-                  onClick={() => navigate('/auth')}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
-                >
-                  Sign In
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors inline-flex items-center"
+                  >
+                    Sign In
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
+                      <div className="px-4 py-2 text-xs text-gray-500 uppercase tracking-wide font-semibold">
+                        Choose Account Type
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          navigate('/customer/auth');
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-3" />
+                        <div className="text-left">
+                          <div className="font-medium">Customer Login</div>
+                          <div className="text-xs text-gray-500">Access exclusive offers</div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 ml-auto" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          navigate('/merchant/auth');
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Settings className="w-4 h-4 mr-3" />
+                        <div className="text-left">
+                          <div className="font-medium">Merchant Login</div>
+                          <div className="text-xs text-gray-500">Manage your business</div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 ml-auto" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Mobile menu button */}

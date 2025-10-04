@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone } from 'lucide-react';
+import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, User, LogOut } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
-const ExplorePage = () => {
+const CustomerOffersPage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const categories = ['All', 'Bakery', 'Fruits', 'Ready Meals', 'Drinks'];
 
@@ -15,8 +18,7 @@ const ExplorePage = () => {
     const fetchOffers = async () => {
       try {
         const data = await getActiveOffers();
-        // Show first 6 offers for better grid display
-        setOffers(data.slice(0, 6));
+        setOffers(data.slice(0, 12)); // Show more offers for authenticated users
       } catch (error) {
         console.error('Error fetching offers:', error);
       } finally {
@@ -26,6 +28,15 @@ const ExplorePage = () => {
 
     fetchOffers();
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const formatTimeLeft = (dateString: string) => {
     const now = new Date();
@@ -40,17 +51,18 @@ const ExplorePage = () => {
     return `${hours}h ${minutes}m left`;
   };
 
+  const getUserDisplayName = () => {
+    return user?.email?.split('@')[0] || 'Customer';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        {/* Top Banner Skeleton */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="h-8 bg-white bg-opacity-20 rounded w-64 mx-auto mb-4 animate-pulse"></div>
-            <div className="h-4 bg-white bg-opacity-20 rounded w-48 mx-auto animate-pulse"></div>
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
           </div>
         </div>
-        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -64,26 +76,47 @@ const ExplorePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200)` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>
-        </div>
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
+                <span className="text-white font-bold text-lg">R</span>
+              </div>
+              <span className="font-bold text-xl text-gray-900">ResQ Food</span>
+            </div>
 
-        {/* Content Overlay */}
-        <div className="relative h-full flex items-center justify-center">
-          <div className="text-center text-white px-4 max-w-4xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Save up to 75% on local deals
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-              Discover amazing discounts from restaurants near you. Fresh food, great prices, zero waste.
-            </p>
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-gray-700">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-green-600" />
+                </div>
+                <span className="font-medium">{getUserDisplayName()}</span>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="text-gray-600 hover:text-red-600 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-green-500 to-green-600 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Welcome back, {getUserDisplayName()}!
+          </h1>
+          <p className="text-xl text-green-100 max-w-2xl mx-auto">
+            Discover amazing local offers with full details, reviews, and reservation capabilities.
+          </p>
         </div>
       </div>
 
@@ -133,7 +166,7 @@ const ExplorePage = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium text-gray-700">{offer.merchant?.avg_rating || 'N/A'}</span>
+                    <span className="text-sm font-medium text-gray-700">{offer.merchant?.avg_rating || '4.8'}</span>
                   </div>
                   <div className="flex items-center text-sm text-red-600 font-medium">
                     <Clock className="w-4 h-4 mr-1" />
@@ -146,9 +179,8 @@ const ExplorePage = () => {
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
-                  <span className="font-medium">{offer.merchant?.company_name || 'Unknown Merchant'}</span>
-                  {!user && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Sign in to see full address</span>}
-                  {user && offer.merchant?.full_address && (
+                  <span className="font-medium">{offer.merchant?.company_name || 'Local Restaurant'}</span>
+                  {offer.merchant?.full_address && (
                     <span className="ml-2 text-xs text-gray-400">• {offer.merchant.full_address}</span>
                   )}
                 </div>
@@ -162,49 +194,26 @@ const ExplorePage = () => {
                       ${offer.original_price}
                     </span>
                   </div>
-                  {user ? (
-                    <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors shadow-md">
-                      Reserve Now
-                    </button>
-                  ) : (
-                    <button className="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
-                      Sign In to Reserve
-                    </button>
-                  )}
+                  <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors shadow-md">
+                    Reserve Now
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Bottom CTA Section */}
+        {/* App Download CTA */}
         <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Unlock full access by signing up or downloading the app
+            Get instant notifications with our mobile app
           </h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg">
-            Join thousands of food lovers who are saving money while helping reduce food waste. 
-            Get instant notifications for new deals near you!
+            Never miss a deal! Download our app to receive push notifications when new offers 
+            become available near you.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <a
-              href="/auth?mode=signup"
-              className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors inline-flex items-center text-lg shadow-lg"
-            >
-              Sign Up Now
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </a>
-            <a
-              href="/download"
-              className="bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors inline-flex items-center text-lg shadow-lg"
-            >
-              <Smartphone className="w-5 h-5 mr-2" />
-              Download App
-            </a>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href="#"
               className="transition-transform hover:scale-105"
@@ -212,7 +221,7 @@ const ExplorePage = () => {
               <img 
                 src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
                 alt="Download on the App Store" 
-                className="h-12"
+                className="h-14"
               />
             </a>
             <a
@@ -222,9 +231,14 @@ const ExplorePage = () => {
               <img 
                 src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
                 alt="Get it on Google Play" 
-                className="h-12"
+                className="h-14"
               />
             </a>
+          </div>
+
+          <div className="flex items-center justify-center text-green-600">
+            <Smartphone className="w-5 h-5 mr-2" />
+            <span className="font-medium">Available on iOS and Android</span>
           </div>
         </div>
       </div>
@@ -232,4 +246,4 @@ const ExplorePage = () => {
   );
 };
 
-export default ExplorePage;
+export default CustomerOffersPage;
