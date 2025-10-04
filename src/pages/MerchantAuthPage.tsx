@@ -111,7 +111,6 @@ const MerchantAuthPage = () => {
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
-            created_at: new Date().toISOString()
           });
 
         if (insertError) {

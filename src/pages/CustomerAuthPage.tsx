@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { updateClientProfile } from '../../lib/api';
+import { upsertClientProfile } from '../api';
 
 const CustomerAuthPage = () => {
   const navigate = useNavigate();
@@ -103,13 +103,34 @@ const CustomerAuthPage = () => {
             }
           }
         });
-        
+
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Create client profile
+        // Create client profile immediately
+        const { error: profileError } = await supabase
+          .from('clients')
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            phone: formData.phone,
+            city: formData.city,
+            postal_code: formData.postal_code,
+            country: formData.country,
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw new Error('Failed to create client profile');
+        }
+
+        // Set location if available
+        await setCustomerLocation();
+
         setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => navigate('/onboarding/customer'), 2000);
+        setTimeout(() => navigate('/app'), 2000);
       }
     } catch (err: any) {
       // Handle rate limiting error specifically
