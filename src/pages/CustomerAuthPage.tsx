@@ -89,8 +89,59 @@ const CustomerAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Upsert client profile (handles trigger-created entries)
-        const profileResult = await upsertClientProfile({
+        // Update client profile data (trigger already created basic entry)
+        const { data: profileData, error: updateError } = await supabase
+          .from('clients')
+          .update({
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            phone: formData.phone,
+            city: formData.city,
+            postal_code: formData.postal_code,
+            country: formData.country,
+          })
+          .eq('id', data.user.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Profile update error:', updateError);
+          throw new Error('Failed to save profile information');
+        }
+
+        console.log('Profile updated successfully:', profileData);
+
+        // Set location if available
+        await setCustomerLocation();
+        
+        setSuccess('Account created successfully! Redirecting...');
+        setTimeout(() => navigate('/offers'), 2000);
+      }
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.message || 'An error occurred during registration');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setCustomerLocation = async () => {
+    const locationData = sessionStorage.getItem('customerLocation');
+    if (!locationData) return;
+
+    try {
+      const { lat, lon } = JSON.parse(locationData);
+      const { error } = await supabase.rpc('set_client_location', { lat, lon });
+      if (error) {
+        console.warn('Failed to set location:', error);
+      } else {
+        console.log('Location set successfully');
+        sessionStorage.removeItem('customerLocation');
+      }
+    } catch (error) {
+      console.warn('Failed to set customer location:', error);
+    }
+  };
           id: data.user.id,
           email: formData.email,
           first_name: formData.first_name,

@@ -465,21 +465,31 @@ export const getClientProfile = async (userId: string) => {
 
 export const updateClientProfile = async (userId: string, profileData: any) => {
   if (!isSupabaseAvailable()) {
-    throw new Error('Service not available');
+    return { success: false, error: 'Service not available' };
   }
 
-  const { data, error } = await supabase!
     .from('clients')
     .upsert({
       id: userId,
       ...profileData,
       updated_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase!
+      .from('clients')
+      .upsert(profile, { onConflict: 'id' })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Upsert error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Upsert exception:', err);
+    return { success: false, error: err.message };
+  }
 };
 
 export const uploadProfilePhoto = async (file: File, userId: string): Promise<string> => {
