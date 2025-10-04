@@ -468,28 +468,25 @@ export const updateClientProfile = async (userId: string, profileData: any) => {
     return { success: false, error: 'Service not available' };
   }
 
-    .from('clients')
-    .upsert({
-      id: userId,
-      ...profileData,
-      updated_at: new Date().toISOString(),
-    }
-    )
   try {
     const { data, error } = await supabase!
       .from('clients')
-      .upsert(profile, { onConflict: 'id' })
+      .update({
+        ...profileData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
       .select()
       .single();
     
     if (error) {
-      console.error('Upsert error:', error);
+      console.error('Update error:', error);
       return { success: false, error: error.message };
     }
     
     return { success: true, data };
   } catch (err: any) {
-    console.error('Upsert exception:', err);
+    console.error('Update exception:', err);
     return { success: false, error: err.message };
   }
 };
