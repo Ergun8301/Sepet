@@ -473,6 +473,8 @@ export const updateClientProfile = async (userId: string, profileData: any) => {
       id: userId,
       ...profileData,
       updated_at: new Date().toISOString(),
+    }
+    )
   try {
     const { data, error } = await supabase!
       .from('clients')
