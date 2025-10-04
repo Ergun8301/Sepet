@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User, Phone, MapPin, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { upsertClientProfile } from '../api';
 
 const CustomerAuthPage = () => {
   const navigate = useNavigate();
@@ -88,21 +89,19 @@ const CustomerAuthPage = () => {
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
 
-        // Insert into clients table
-        const { error: insertError } = await supabase
-          .from('clients')
-          .insert({
-            id: data.user.id,
-            email: formData.email,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone: formData.phone,
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
-          });
+        // Upsert client profile (handles trigger-created entries)
+        const profileResult = await upsertClientProfile({
+          id: data.user.id,
+          email: formData.email,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          city: formData.city,
+          postal_code: formData.postal_code,
+          country: formData.country,
+        });
 
-        if (insertError) throw insertError;
+        if (!profileResult.success) throw new Error(profileResult.error);
 
         // Set location if available
         await setCustomerLocation();
