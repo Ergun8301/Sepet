@@ -96,6 +96,8 @@ const CustomerAuthPage = () => {
           email: formData.email,
           password: formData.password,
           options: {
+          }
+        });
         
         if (error) throw error;
         if (!data.user) throw new Error('Registration failed');
