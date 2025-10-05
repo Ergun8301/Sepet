@@ -1,148 +1,232 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, MapPin, Clock, DollarSign, ToggleLeft, ToggleRight, Trash2, Navigation } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { getMerchantProfile, getMerchantOffers, createOffer, toggleOfferActive, deleteOffer, setMerchantLocation } from '../api';
+import { Plus, X, Upload, Calendar, DollarSign, Package, Clock, Star, Pause, Play, Edit2, Trash2, Share2, ChevronDown, User, Settings, LogOut, Store } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
 
-interface Offer {
+interface Product {
   id: string;
-  title: string;
+  name: string;
   description: string;
-  price_before: number;
-  price_after: number;
-  available_from: string;
-  available_until: string;
-  is_active: boolean;
+  image: string;
+  oldPrice: number;
+  newPrice: number;
+  startDate: string;
+  endDate: string;
+  quantity: number;
+  status: 'active' | 'paused' | 'expired';
+  rating: number;
+  reviews: number;
 }
 
 const MerchantDashboardPage = () => {
-  const { user } = useAuthStore();
-  const [profile, setProfile] = useState<any>(null);
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [merchantProfile, setMerchantProfile] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
-    price_before: '',
-    price_after: '',
-    available_from: '',
-    available_until: '',
+    image: '',
+    oldPrice: '',
+    newPrice: '',
+    startDate: '',
+    endDate: '',
+    quantity: ''
   });
 
   useEffect(() => {
-    loadData();
+    loadMerchantData();
   }, [user]);
 
-  const loadData = async () => {
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const loadMerchantData = async () => {
     if (!user) return;
 
     try {
-      setLoading(true);
-      const [profileData, offersData] = await Promise.all([
-        getMerchantProfile(user.id),
-        getMerchantOffers(user.id)
+      const { data: profile } = await supabase
+        .from('merchants')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      setMerchantProfile(profile);
+
+      setProducts([
+        {
+          id: '1',
+          name: 'Fresh Croissants Box',
+          description: '6 buttery croissants from this morning',
+          image: 'https://images.pexels.com/photos/2135677/pexels-photo-2135677.jpeg?auto=compress&cs=tinysrgb&w=400',
+          oldPrice: 12.00,
+          newPrice: 7.20,
+          startDate: '2025-10-05T08:00',
+          endDate: '2025-10-05T18:00',
+          quantity: 8,
+          status: 'active',
+          rating: 4.8,
+          reviews: 24
+        },
+        {
+          id: '2',
+          name: 'Organic Salad Bowl',
+          description: 'Fresh mixed greens with seasonal vegetables',
+          image: 'https://images.pexels.com/photos/1059905/pexels-photo-1059905.jpeg?auto=compress&cs=tinysrgb&w=400',
+          oldPrice: 9.50,
+          newPrice: 5.70,
+          startDate: '2025-10-05T11:00',
+          endDate: '2025-10-05T15:00',
+          quantity: 5,
+          status: 'active',
+          rating: 4.6,
+          reviews: 18
+        },
+        {
+          id: '3',
+          name: 'Artisan Bread Loaf',
+          description: 'Whole grain sourdough bread',
+          image: 'https://images.pexels.com/photos/1775043/pexels-photo-1775043.jpeg?auto=compress&cs=tinysrgb&w=400',
+          oldPrice: 5.00,
+          newPrice: 3.00,
+          startDate: '2025-10-04T08:00',
+          endDate: '2025-10-04T20:00',
+          quantity: 0,
+          status: 'expired',
+          rating: 4.9,
+          reviews: 42
+        }
       ]);
-      
-      setProfile(profileData);
-      setOffers(offersData || []);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading merchant data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLocationUpdate = async () => {
-    setLocationLoading(true);
+  const calculateDiscount = () => {
+    const old = parseFloat(formData.oldPrice);
+    const newP = parseFloat(formData.newPrice);
+    if (old && newP && old > newP) {
+      return Math.round(((old - newP) / old) * 100);
+    }
+    return 0;
+  };
 
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
+  const calculateTimeLeft = (endDate: string) => {
+    const now = new Date();
+    const end = new Date(endDate);
+    const diff = end.getTime() - now.getTime();
 
-      const { latitude, longitude } = position.coords;
-      await setMerchantLocation(latitude, longitude);
-      alert('Location updated successfully!');
-    } catch (error) {
-      console.error('Error updating location:', error);
-      alert('Failed to update location. Please enable location services.');
-    } finally {
-      setLocationLoading(false);
+    if (diff < 0) return 'Expired';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''} left`;
+    }
+    if (hours > 0) return `${hours}h ${minutes}m left`;
+    return `${minutes}m left`;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleCreateOffer = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePublish = () => {
+    const newProduct: Product = {
+      id: Date.now().toString(),
+      name: formData.name,
+      description: formData.description,
+      image: formData.image || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+      oldPrice: parseFloat(formData.oldPrice),
+      newPrice: parseFloat(formData.newPrice),
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      quantity: parseInt(formData.quantity),
+      status: 'active',
+      rating: 0,
+      reviews: 0
+    };
 
-    try {
-      // Get current location for the offer
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      await createOffer({
-        title: formData.title,
-        description: formData.description,
-        price_before: parseFloat(formData.price_before),
-        price_after: parseFloat(formData.price_after),
-        available_from: formData.available_from,
-        available_until: formData.available_until,
-        lat: latitude,
-        lon: longitude,
-      });
-
-      setShowCreateForm(false);
-      setFormData({
-        title: '',
-        description: '',
-        price_before: '',
-        price_after: '',
-        available_from: '',
-        available_until: '',
-      });
-      
-      // Reload offers
-      const offersData = await getMerchantOffers(user!.id);
-      setOffers(offersData || []);
-    } catch (error) {
-      console.error('Error creating offer:', error);
-      alert('Failed to create offer. Please try again.');
-    }
+    setProducts([newProduct, ...products]);
+    setShowAddModal(false);
+    setFormData({
+      name: '',
+      description: '',
+      image: '',
+      oldPrice: '',
+      newPrice: '',
+      startDate: '',
+      endDate: '',
+      quantity: ''
+    });
+    setToast({ message: 'Product published successfully!', type: 'success' });
   };
 
-  const handleToggleActive = async (offerId: string, currentActive: boolean) => {
-    try {
-      await toggleOfferActive(offerId, !currentActive);
-      
-      // Update local state
-      setOffers(offers.map(offer => 
-        offer.id === offerId 
-          ? { ...offer, is_active: !currentActive }
-          : offer
-      ));
-    } catch (error) {
-      console.error('Error toggling offer:', error);
-      alert('Failed to update offer status.');
-    }
+  const toggleProductStatus = (productId: string) => {
+    setProducts(products.map(p =>
+      p.id === productId
+        ? { ...p, status: p.status === 'active' ? 'paused' : 'active' }
+        : p
+    ));
+    setToast({ message: 'Product status updated', type: 'success' });
   };
 
-  const handleDeleteOffer = async (offerId: string) => {
-    if (!confirm('Are you sure you want to delete this offer?')) return;
-
-    try {
-      await deleteOffer(offerId);
-      setOffers(offers.filter(offer => offer.id !== offerId));
-    } catch (error) {
-      console.error('Error deleting offer:', error);
-      alert('Failed to delete offer.');
-    }
+  const deleteProduct = (productId: string) => {
+    setProducts(products.filter(p => p.id !== productId));
+    setToast({ message: 'Product deleted', type: 'success' });
   };
 
-  const calculateDiscount = (priceBefore: number, priceAfter: number) => {
-    return Math.round(((priceBefore - priceAfter) / priceBefore) * 100);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
+  const shareProduct = (platform: string, product: Product) => {
+    const url = `https://resqfood.com/product/${product.id}`;
+    const text = `Check out ${product.name} at ${calculateDiscount()}% off!`;
+
+    let shareUrl = '';
+    switch(platform) {
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'instagram':
+        setToast({ message: 'Copy link to share on Instagram', type: 'success' });
+        navigator.clipboard.writeText(url);
+        return;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, '_blank');
+    }
   };
 
   if (loading) {
@@ -153,262 +237,378 @@ const MerchantDashboardPage = () => {
     );
   }
 
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'paused': return 'bg-yellow-100 text-yellow-800';
+      case 'expired': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Dashboard Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {profile?.company_name || 'Merchant Dashboard'}
-              </h1>
-              <p className="text-gray-600">Manage your offers and reduce food waste</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{offers.filter(o => o.is_active).length}</div>
-                <div className="text-sm text-gray-600">Active Offers</div>
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+          toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white`}>
+          {toast.message}
+        </div>
+      )}
+
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                <Store className="w-6 h-6 text-white" />
               </div>
+              <div>
+                <h1 className="font-bold text-lg text-gray-900">
+                  {merchantProfile?.business_name || 'My Business'}
+                </h1>
+                <p className="text-xs text-gray-500">Merchant Dashboard</p>
+              </div>
+            </div>
+
+            <div className="relative">
               <button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors inline-flex items-center"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Offer
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-green-600" />
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-600" />
               </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <button
+                    onClick={() => {
+                      navigate('/merchant/profile');
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/merchant/settings');
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </button>
+                  <hr className="my-2" />
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Card */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Profile</h3>
-              <p className="text-gray-600">{profile?.first_name} {profile?.last_name}</p>
-              <p className="text-gray-600">{profile?.email}</p>
-              {profile?.street && profile?.city && (
-                <p className="text-gray-600">
-                  {profile.street}, {profile.city}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={handleLocationUpdate}
-              disabled={locationLoading}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 inline-flex items-center"
-            >
-              <Navigation className="w-4 h-4 mr-2" />
-              {locationLoading ? 'Updating...' : 'Update Location'}
-            </button>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">My Products</h2>
+            <p className="text-gray-600 mt-1">{products.length} total products</p>
           </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Product
+          </button>
         </div>
 
-        {/* Offers Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">My Offers</h3>
-          </div>
-          
-          {offers.length === 0 ? (
-            <div className="text-center py-12">
-              <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No offers yet</h3>
-              <p className="text-gray-600 mb-4">Create your first offer to start reducing food waste.</p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
-              >
-                Create Offer
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Discount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Available Until
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {offers.map((offer) => (
-                    <tr key={offer.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{offer.title}</div>
-                        <div className="text-sm text-gray-500">{offer.description.substring(0, 50)}...</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          €{offer.price_after} <span className="text-gray-400 line-through">€{offer.price_before}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          -{calculateDiscount(offer.price_before, offer.price_after)}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(offer.available_until).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          offer.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {offer.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => handleToggleActive(offer.id, offer.is_active)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            {offer.is_active ? (
-                              <ToggleRight className="w-5 h-5" />
-                            ) : (
-                              <ToggleLeft className="w-5 h-5" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleDeleteOffer(offer.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Create Offer Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Create New Offer</h2>
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ×
-                </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map(product => (
+            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+              <div className="relative h-48">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>
+                  {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                </div>
               </div>
 
-              <form onSubmit={handleCreateOffer} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+              <div className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (€)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price_before}
-                      onChange={(e) => setFormData({ ...formData, price_before: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      required
-                    />
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-xs text-gray-500 line-through">${product.oldPrice.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-green-600">${product.newPrice.toFixed(2)}</span>
+                    </div>
+                    <span className="text-xs font-medium text-green-600">
+                      -{Math.round(((product.oldPrice - product.newPrice) / product.oldPrice) * 100)}% off
+                    </span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price (€)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price_after}
-                      onChange={(e) => setFormData({ ...formData, price_after: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      required
-                    />
+                  <div className="text-right">
+                    <div className="flex items-center text-yellow-500 mb-1">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="text-sm font-medium ml-1">{product.rating || 'New'}</span>
+                    </div>
+                    {product.reviews > 0 && (
+                      <span className="text-xs text-gray-500">{product.reviews} reviews</span>
+                    )}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Available From</label>
-                  <input
-                    type="datetime-local"
-                    value={formData.available_from}
-                    onChange={(e) => setFormData({ ...formData, available_from: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    required
-                  />
+                <div className="flex items-center justify-between text-sm mb-4">
+                  <div className="flex items-center text-gray-600">
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>{calculateTimeLeft(product.endDate)}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Package className="w-4 h-4 mr-1" />
+                    <span>{product.quantity} left</span>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Available Until</label>
-                  <input
-                    type="datetime-local"
-                    value={formData.available_until}
-                    onChange={(e) => setFormData({ ...formData, available_until: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    required
-                  />
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => toggleProductStatus(product.id)}
+                    className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      product.status === 'active'
+                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    }`}
+                    disabled={product.status === 'expired'}
+                  >
+                    {product.status === 'active' ? (
+                      <><Pause className="w-4 h-4 mr-1" /> Pause</>
+                    ) : (
+                      <><Play className="w-4 h-4 mr-1" /> Activate</>
+                    )}
+                  </button>
+                  <button className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => deleteProduct(product.id)}
+                    className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateForm(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    Create Offer
-                  </button>
+                <div className="mt-3 pt-3 border-t">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600 font-medium">Share:</span>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => shareProduct('whatsapp', product)}
+                        className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200 transition-colors"
+                        title="WhatsApp"
+                      >
+                        <Share2 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => shareProduct('facebook', product)}
+                        className="p-2 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors"
+                        title="Facebook"
+                      >
+                        <Share2 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => shareProduct('instagram', product)}
+                        className="p-2 bg-pink-100 text-pink-600 rounded hover:bg-pink-200 transition-colors"
+                        title="Instagram"
+                      >
+                        <Share2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </form>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {products.length === 0 && (
+          <div className="text-center py-12">
+            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
+            <p className="text-gray-600 mb-6">Get started by adding your first product</p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Your First Product
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Fresh Croissants Box"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe your product..."
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  {formData.image ? (
+                    <div className="relative">
+                      <img src={formData.image} alt="Preview" className="max-h-48 mx-auto rounded" />
+                      <button
+                        onClick={() => setFormData({ ...formData, image: '' })}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Click to upload image</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price ($)</label>
+                  <input
+                    type="number"
+                    name="oldPrice"
+                    value={formData.oldPrice}
+                    onChange={handleInputChange}
+                    placeholder="12.00"
+                    step="0.01"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price ($)</label>
+                  <input
+                    type="number"
+                    name="newPrice"
+                    value={formData.newPrice}
+                    onChange={handleInputChange}
+                    placeholder="7.20"
+                    step="0.01"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {calculateDiscount() > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-green-800 font-medium">
+                    Discount: {calculateDiscount()}% off
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity Available</label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  placeholder="10"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Location:</strong> {merchantProfile?.address || 'Will be set from your profile'}
+                </p>
+              </div>
+
+              <button
+                onClick={handlePublish}
+                disabled={!formData.name || !formData.oldPrice || !formData.newPrice || !formData.quantity}
+                className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Publish Product
+              </button>
             </div>
           </div>
         </div>

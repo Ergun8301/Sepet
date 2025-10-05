@@ -13,6 +13,8 @@ import CustomerOnboardingPage from './pages/CustomerOnboardingPage';
 import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import CustomerAppPage from './pages/CustomerAppPage';
 import MerchantDashboardPage from './pages/MerchantDashboardPage';
+import MerchantProfilePage from './pages/MerchantProfilePage';
+import MerchantSettingsPage from './pages/MerchantSettingsPage';
 import DevTestPage from './pages/DevTestPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
@@ -37,6 +39,8 @@ function App() {
             <Route path="/onboarding/merchant" element={<MerchantOnboardingPage />} />
             <Route path="/app" element={<CustomerAppPage />} />
             <Route path="/merchant/dashboard" element={<MerchantDashboardPage />} />
+            <Route path="/merchant/profile" element={<MerchantProfilePage />} />
+            <Route path="/merchant/settings" element={<MerchantSettingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/dev" element={<DevTestPage />} />
