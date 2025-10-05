@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Globe, CreditCard as Edit, Save, X, Lock } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Globe, CreditCard as Edit, Save, X, Lock, Heart, Award, Clock, Tag } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 
@@ -395,6 +395,117 @@ const ProfilePage = () => {
                 <Lock className="w-5 h-5 mr-2" />
                 Change Password
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Favorite Stores Section */}
+        <div className="bg-white rounded-lg shadow-md p-8 mt-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Heart className="w-6 h-6 text-red-500 mr-3" />
+            Favorite Stores
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold text-gray-900">Bakery du Marché</h3>
+                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+              </div>
+              <p className="text-sm text-gray-600 mb-3">Fresh pastries and artisan bread daily</p>
+              <div className="flex items-center">
+                <Tag className="w-4 h-4 text-green-600 mr-1" />
+                <span className="text-green-600 font-medium text-sm">Up to -30%</span>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold text-gray-900">Green Table</h3>
+                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+              </div>
+              <p className="text-sm text-gray-600 mb-3">Organic meals and healthy options</p>
+              <div className="flex items-center">
+                <Tag className="w-4 h-4 text-green-600 mr-1" />
+                <span className="text-green-600 font-medium text-sm">Up to -40%</span>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold text-gray-900">Café du Parc</h3>
+                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+              </div>
+              <p className="text-sm text-gray-600 mb-3">Coffee, sandwiches, and light meals</p>
+              <div className="flex items-center">
+                <Tag className="w-4 h-4 text-green-600 mr-1" />
+                <span className="text-green-600 font-medium text-sm">Up to -25%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* My Points Section */}
+        <div className="bg-white rounded-lg shadow-md p-8 mt-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Award className="w-6 h-6 text-yellow-500 mr-3" />
+            My Points
+          </h2>
+
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between">
+            <div className="flex items-center mb-4 md:mb-0">
+              <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-4">
+                <span className="text-white font-bold text-2xl">124</span>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">124 Points</p>
+                <p className="text-gray-600 mt-1">Earn points by saving food and shopping with your favorite stores.</p>
+              </div>
+            </div>
+            <button className="px-6 py-3 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors">
+              See rewards
+            </button>
+          </div>
+        </div>
+
+        {/* Recent Activity Section */}
+        <div className="bg-white rounded-lg shadow-md p-8 mt-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Clock className="w-6 h-6 text-blue-500 mr-3" />
+            Recent Activity
+          </h2>
+
+          <div className="space-y-4">
+            <div className="flex items-start border-l-4 border-green-500 pl-4 py-2">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                <Tag className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Picked up 2 bakery boxes from Le Fournil</p>
+                <p className="text-sm text-green-600">-40% discount</p>
+                <p className="text-xs text-gray-500 mt-1">2 days ago</p>
+              </div>
+            </div>
+
+            <div className="flex items-start border-l-4 border-green-500 pl-4 py-2">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                <Tag className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Saved 1 ready meal from Green Table</p>
+                <p className="text-sm text-green-600">-25% discount</p>
+                <p className="text-xs text-gray-500 mt-1">5 days ago</p>
+              </div>
+            </div>
+
+            <div className="flex items-start border-l-4 border-red-500 pl-4 py-2">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                <Heart className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Added Café du Parc to favorites</p>
+                <p className="text-xs text-gray-500 mt-1">1 week ago</p>
+              </div>
             </div>
           </div>
         </div>
