@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { signOut } from '../../lib/api';
 
@@ -137,7 +137,7 @@ const Header = () => {
                         }}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <Settings className="w-4 h-4 mr-3" />
+                        <Store className="w-4 h-4 mr-3" />
                         <div className="text-left">
                           <div className="font-medium">Merchant Login</div>
                           <div className="text-xs text-gray-500">Manage your business</div>
