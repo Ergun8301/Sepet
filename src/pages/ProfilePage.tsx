@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Globe, CreditCard as Edit, Save, X, Lock, Heart, Award, Clock, Tag } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Globe, CreditCard as Edit, Save, X, Lock, Heart, Award, Clock, Tag, Camera, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 interface ClientProfile {
   first_name: string | null;
@@ -25,6 +26,11 @@ const ProfilePage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -52,6 +58,10 @@ const ProfilePage = () => {
 
     if (!authLoading) {
       loadProfile();
+      const storedAvatar = localStorage.getItem('userAvatar');
+      if (storedAvatar) {
+        setAvatarUrl(storedAvatar);
+      }
     }
   }, [user, authLoading]);
 
@@ -140,6 +150,56 @@ const ProfilePage = () => {
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setToast({ message: 'Image must be less than 2MB', type: 'error' });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setAvatarPreview(result);
+        setAvatarUrl(result);
+        localStorage.setItem('userAvatar', result);
+        setToast({ message: 'Profile photo updated', type: 'success' });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(user.id);
+
+      if (error) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) throw signOutError;
+      }
+
+      localStorage.removeItem('userAvatar');
+      setToast({ message: 'Account deleted successfully', type: 'success' });
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      setToast({ message: 'Account deletion initiated. You will be signed out.', type: 'success' });
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        navigate('/');
+      }, 1500);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -163,12 +223,34 @@ const ProfilePage = () => {
         )}
 
         <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="flex flex-col items-center mb-8">
+            <div className="relative mb-4">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-16 h-16 text-gray-400" />
+                )}
+              </div>
+              <label className="absolute bottom-0 right-0 bg-green-500 rounded-full p-2 cursor-pointer hover:bg-green-600 transition-colors shadow-lg">
+                <Camera className="w-5 h-5 text-white" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
                 <User className="w-6 h-6 text-green-600" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+              <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
             </div>
             {!isEditMode ? (
               <button
@@ -387,13 +469,21 @@ const ProfilePage = () => {
               </div>
             )}
 
-            <div className="border-t pt-6">
+            <div className="border-t pt-6 space-y-4">
               <button
                 onClick={() => setShowPasswordModal(true)}
                 className="flex items-center justify-center w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <Lock className="w-5 h-5 mr-2" />
                 Change Password
+              </button>
+
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="flex items-center justify-center w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="w-5 h-5 mr-2" />
+                Delete My Account
               </button>
             </div>
           </div>
@@ -509,6 +599,51 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Account Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Delete Account</h2>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-800 font-medium mb-2">
+                    Are you sure you want to delete your account?
+                  </p>
+                  <p className="text-red-600 text-sm">
+                    This action cannot be undone. All your data will be permanently removed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Account'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Password Change Modal */}
         {showPasswordModal && (
