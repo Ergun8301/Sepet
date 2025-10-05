@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Upload, Package, Clock, Star, Pause, Play, CreditCard as Edit2, Trash2, Share2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
@@ -21,13 +20,12 @@ interface Offer {
 }
 
 const MerchantDashboardPage = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showAddProductModal, openAddProductModal, closeAddProductModal } = useAddProduct();
-  const [merchantProfile, setMerchantProfile] = useState<any>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -39,10 +37,9 @@ const MerchantDashboardPage = () => {
     available_from: '',
     available_until: ''
   });
-  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
-    loadMerchantData();
+    loadOffers();
   }, [user]);
 
   useEffect(() => {
@@ -52,21 +49,21 @@ const MerchantDashboardPage = () => {
     }
   }, [toast]);
 
-  const loadMerchantData = async () => {
+  const loadOffers = async () => {
     if (!user) return;
 
     try {
-      const [profileResult, offersResult] = await Promise.all([
-        supabase.from('merchants').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('offers').select('*').eq('merchant_id', user.id).order('created_at', { ascending: false })
-      ]);
+      const { data, error } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('merchant_id', user.id)
+        .order('created_at', { ascending: false });
 
-      if (profileResult.data) setMerchantProfile(profileResult.data);
-      if (offersResult.data) setOffers(offersResult.data);
-      if (offersResult.error) throw offersResult.error;
+      if (error) throw error;
+      setOffers(data || []);
     } catch (error: any) {
-      console.error('Error loading merchant data:', error);
-      setToast({ message: error.message || 'Failed to load data', type: 'error' });
+      console.error('Error loading offers:', error);
+      setToast({ message: error.message || 'Failed to load offers', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -75,7 +72,7 @@ const MerchantDashboardPage = () => {
   const getOfferStatus = (offer: Offer): 'active' | 'paused' | 'expired' => {
     const now = new Date();
     const availableUntil = new Date(offer.available_until);
-    
+
     if (now > availableUntil) return 'expired';
     if (!offer.is_active) return 'paused';
     return 'active';
@@ -93,10 +90,10 @@ const MerchantDashboardPage = () => {
 
     if (hours > 24) {
       const days = Math.floor(hours / 24);
-      return `${days} day${days > 1 ? 's' : ''} left`;
+      return days + ' day' + (days > 1 ? 's' : '') + ' left';
     }
-    if (hours > 0) return `${hours}h ${minutes}m left`;
-    return `${minutes}m left`;
+    if (hours > 0) return hours + 'h ' + minutes + 'm left';
+    return minutes + 'm left';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -122,20 +119,24 @@ const MerchantDashboardPage = () => {
     try {
       let imageUrl = null;
       if (formData.image) {
-        imageUrl = await uploadImage(formData.image, `offer-images/${user.id}/${Date.now()}`);
+        imageUrl = await uploadImage(formData.image, 'offer-images/' + user.id + '/' + Date.now());
       }
 
-      const { data, error } = await supabase.from('offers').insert([{
-        merchant_id: user.id,
-        title: formData.title,
-        description: formData.description,
-        image_url: imageUrl,
-        price_before: parseFloat(formData.price_before),
-        price_after: parseFloat(formData.price_after),
-        available_from: formData.available_from,
-        available_until: formData.available_until,
-        is_active: true
-      }]).select().single();
+      const { data, error } = await supabase
+        .from('offers')
+        .insert([{
+          merchant_id: user.id,
+          title: formData.title,
+          description: formData.description,
+          image_url: imageUrl,
+          price_before: parseFloat(formData.price_before),
+          price_after: parseFloat(formData.price_after),
+          available_from: formData.available_from,
+          available_until: formData.available_until,
+          is_active: true
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -200,12 +201,6 @@ const MerchantDashboardPage = () => {
     }
   };
 
-  const shareOffer = (offer: Offer) => {
-    const text = `${offer.title} - ${offer.discount_percent}% off! Only ${offer.price_after}€`;
-    navigator.clipboard.writeText(text);
-    setToast({ message: 'Product details copied to clipboard', type: 'success' });
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -226,9 +221,7 @@ const MerchantDashboardPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
-          toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white`}>
+        <div className={'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ' + (toast.type === 'success' ? 'bg-green-500' : 'bg-red-500') + ' text-white'}>
           {toast.message}
         </div>
       )}
@@ -259,7 +252,7 @@ const MerchantDashboardPage = () => {
                     alt={offer.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                  <div className={'absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ' + getStatusColor(status)}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </div>
                 </div>
@@ -271,8 +264,8 @@ const MerchantDashboardPage = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="flex items-baseline space-x-2">
-                        <span className="text-xs text-gray-500 line-through">{offer.price_before.toFixed(2)}€</span>
-                        <span className="text-lg font-bold text-green-600">{offer.price_after.toFixed(2)}€</span>
+                        <span className="text-xs text-gray-500 line-through">{offer.price_before.toFixed(2)} euro</span>
+                        <span className="text-lg font-bold text-green-600">{offer.price_after.toFixed(2)} euro</span>
                       </div>
                       <span className="text-xs font-medium text-green-600">
                         -{offer.discount_percent}% off
@@ -280,23 +273,15 @@ const MerchantDashboardPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-sm mb-4">
-                    <div className="flex items-center text-gray-600">
-                      <Clock className="w-4 h-4 mr-1" />
-                      <span>{calculateTimeLeft(offer.available_until)}</span>
-                    </div>
+                  <div className="flex items-center text-sm mb-4 text-gray-600">
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>{calculateTimeLeft(offer.available_until)}</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => toggleOfferStatus(offer.id, offer.is_active)}
-                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        status === 'active'
-                          ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                          : status === 'paused'
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                      }`}
+                      className={'flex-1 flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (status === 'active' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : status === 'paused' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 cursor-not-allowed')}
                       disabled={status === 'expired'}
                     >
                       {status === 'active' ? (
@@ -308,14 +293,9 @@ const MerchantDashboardPage = () => {
                     <button
                       onClick={() => deleteOffer(offer.id)}
                       className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                      title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => shareOffer(offer)}
-                      className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
-                    >
-                      <Share2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -342,13 +322,10 @@ const MerchantDashboardPage = () => {
 
       {showAddProductModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
-              <button
-                onClick={closeAddProductModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={closeAddProductModal} className="text-gray-400 hover:text-gray-600">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -395,12 +372,7 @@ const MerchantDashboardPage = () => {
                     <label className="cursor-pointer">
                       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Click to upload image</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                     </label>
                   )}
                 </div>
@@ -408,7 +380,7 @@ const MerchantDashboardPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (€)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (euro)</label>
                   <input
                     type="number"
                     name="price_before"
@@ -420,7 +392,7 @@ const MerchantDashboardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price (€)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price (euro)</label>
                   <input
                     type="number"
                     name="price_after"
@@ -435,7 +407,7 @@ const MerchantDashboardPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Date & Time</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Date and Time</label>
                   <input
                     type="datetime-local"
                     name="available_from"
@@ -445,7 +417,7 @@ const MerchantDashboardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date & Time</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date and Time</label>
                   <input
                     type="datetime-local"
                     name="available_until"
@@ -456,15 +428,9 @@ const MerchantDashboardPage = () => {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
-                  <strong>Location:</strong> {merchantProfile?.street}, {merchantProfile?.city}
-                </p>
-              </div>
-
               <button
                 onClick={handlePublish}
-                disabled={isPublishing || !formData.title || !formData.price_before || !formData.price_after}
+                disabled={isPublishing || !formData.title || !formData.description || !formData.price_before || !formData.price_after || !formData.available_from || !formData.available_until}
                 className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPublishing ? 'Publishing...' : 'Publish Product'}
