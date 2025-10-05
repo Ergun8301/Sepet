@@ -85,7 +85,7 @@ const Header = () => {
                         My Profile
                       </a>
                       <a
-                        href="/profile"
+                        href="/settings"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <Settings className="w-4 h-4 mr-2" />

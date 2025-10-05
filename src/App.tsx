@@ -14,6 +14,8 @@ import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import CustomerAppPage from './pages/CustomerAppPage';
 import MerchantDashboardPage from './pages/MerchantDashboardPage';
 import DevTestPage from './pages/DevTestPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import Footer from './components/Footer';
 
 function App() {
@@ -35,6 +37,8 @@ function App() {
             <Route path="/onboarding/merchant" element={<MerchantOnboardingPage />} />
             <Route path="/app" element={<CustomerAppPage />} />
             <Route path="/merchant/dashboard" element={<MerchantDashboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/dev" element={<DevTestPage />} />
           </Routes>
         </main>
