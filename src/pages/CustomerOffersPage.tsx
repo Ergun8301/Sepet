@@ -58,11 +58,6 @@ const CustomerOffersPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-          </div>
-        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -76,50 +71,6 @@ const CustomerOffersPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-white font-bold text-lg">R</span>
-              </div>
-              <span className="font-bold text-xl text-gray-900">ResQ Food</span>
-            </div>
-
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-700">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-green-600" />
-                </div>
-                <span className="font-medium">{getUserDisplayName()}</span>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="text-gray-600 hover:text-red-600 transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-green-500 to-green-600 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Welcome back, {getUserDisplayName()}!
-          </h1>
-          <p className="text-xl text-green-100 max-w-2xl mx-auto">
-            Discover amazing local offers with full details, reviews, and reservation capabilities.
-          </p>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter Bar */}
         <div className="mb-12">
