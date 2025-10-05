@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Upload, Calendar, DollarSign, Package, Clock, Star, Pause, Play, CreditCard as Edit2, Trash2, Share2, ChevronDown, User, Settings, LogOut, Store } from 'lucide-react';
+import { Plus, X, Upload, Package, Clock, Star, Pause, Play, Edit2, Trash2, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
+import { useAddProduct } from '../contexts/AddProductContext';
 
 interface Product {
   id: string;
@@ -22,11 +23,10 @@ interface Product {
 const MerchantDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showAddProductModal, openAddProductModal, closeAddProductModal } = useAddProduct();
   const [merchantProfile, setMerchantProfile] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -173,7 +173,7 @@ const MerchantDashboardPage = () => {
     };
 
     setProducts([newProduct, ...products]);
-    setShowAddModal(false);
+    closeAddProductModal();
     setFormData({
       name: '',
       description: '',
@@ -201,14 +201,9 @@ const MerchantDashboardPage = () => {
     setToast({ message: 'Product deleted', type: 'success' });
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
-
   const shareProduct = (platform: string, product: Product) => {
     const url = `https://resqfood.com/product/${product.id}`;
-    const text = `Check out ${product.name} at ${calculateDiscount()}% off!`;
+    const text = `Check out ${product.name} at ${Math.round(((product.oldPrice - product.newPrice) / product.oldPrice) * 100)}% off!`;
 
     let shareUrl = '';
     switch(platform) {
@@ -256,69 +251,6 @@ const MerchantDashboardPage = () => {
         </div>
       )}
 
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                <Store className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="font-bold text-lg text-gray-900">
-                  {merchantProfile?.business_name || 'My Business'}
-                </h1>
-                <p className="text-xs text-gray-500">Merchant Dashboard</p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-green-600" />
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-600" />
-              </button>
-
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  <button
-                    onClick={() => {
-                      navigate('/merchant/profile');
-                      setShowUserMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigate('/merchant/settings');
-                      setShowUserMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </button>
-                  <hr className="my-2" />
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -326,7 +258,7 @@ const MerchantDashboardPage = () => {
             <p className="text-gray-600 mt-1">{products.length} total products</p>
           </div>
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={openAddProductModal}
             className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm"
           >
             <Plus className="w-5 h-5 mr-2" />
@@ -450,7 +382,7 @@ const MerchantDashboardPage = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
             <p className="text-gray-600 mb-6">Get started by adding your first product</p>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={openAddProductModal}
               className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -460,13 +392,13 @@ const MerchantDashboardPage = () => {
         )}
       </div>
 
-      {showAddModal && (
+      {showAddProductModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={closeAddProductModal}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-6 h-6" />

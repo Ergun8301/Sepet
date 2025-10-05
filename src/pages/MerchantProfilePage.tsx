@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Store, Mail, Phone, MapPin, FileText, Camera, Save, X, ArrowLeft } from 'lucide-react';
+import { Store, Mail, Phone, MapPin, FileText, Camera, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
@@ -132,14 +132,6 @@ const MerchantProfilePage = () => {
             {toast.message}
           </div>
         )}
-
-        <button
-          onClick={() => navigate('/merchant/dashboard')}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Dashboard
-        </button>
 
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="flex flex-col items-center mb-8">

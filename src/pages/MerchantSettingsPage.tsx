@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Bell, Package, TrendingDown, Check, AlertTriangle, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Settings, Bell, Package, TrendingDown, Check, AlertTriangle, Trash2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
@@ -92,14 +92,6 @@ const MerchantSettingsPage = () => {
             Settings updated
           </div>
         )}
-
-        <button
-          onClick={() => navigate('/merchant/dashboard')}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Dashboard
-        </button>
 
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="flex items-center mb-6">
