@@ -67,32 +67,6 @@ const MerchantInfoPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-white font-bold text-lg">R</span>
-              </div>
-              <span className="font-bold text-xl text-gray-900">ResQ Food</span>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex items-center space-x-6">
-              <a href="/" className="text-gray-600 hover:text-green-500 font-medium">Home</a>
-              <button
-                onClick={() => navigate('/merchant/auth')}
-                className="bg-green-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
-              >
-                Partner Login
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Section */}
       <div className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden">
         {/* Background Image */}

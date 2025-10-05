@@ -48,11 +48,6 @@ const CustomerTeaserPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-          </div>
-        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -67,29 +62,6 @@ const CustomerTeaserPage = () => {
   return (
     <>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              {/* Logo */}
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-2">
-                  <span className="text-white font-bold text-lg">R</span>
-                </div>
-                <span className="font-bold text-xl text-gray-900">ResQ Food</span>
-              </div>
-
-              {/* Sign In Button */}
-              <button
-                onClick={() => navigate('/customer/auth')}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
-              >
-                Sign In
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
