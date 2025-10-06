@@ -225,7 +225,6 @@ const MerchantDashboardPage = () => {
           image_url: imageUrl,
           price_before: parseFloat(formData.price_before),
           price_after: parseFloat(formData.price_after),
-          discount_percent: discountPercent > 0 ? discountPercent : null,
           quantity: parseInt(formData.quantity) || 0,
           available_from: formData.available_from,
           available_until: formData.available_until,
@@ -235,6 +234,15 @@ const MerchantDashboardPage = () => {
         .single();
 
       if (error) throw error;
+
+      if (data && discountPercent > 0) {
+        await supabase
+          .from('offers')
+          .update({ discount_percent: discountPercent })
+          .eq('id', data.id);
+
+        data.discount_percent = discountPercent;
+      }
 
       setOffers([data, ...offers]);
       closeAddProductModal();
