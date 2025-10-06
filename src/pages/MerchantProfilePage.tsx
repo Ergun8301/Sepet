@@ -87,9 +87,16 @@ const MerchantProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setToast({ message: 'Please upload a valid image (jpg, jpeg, png, webp)', type: 'error' });
+    const MAX_SIZE = 5 * 1024 * 1024;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/avif'];
+
+    if (file.size > MAX_SIZE) {
+      setToast({ message: 'Image trop volumineuse (max. 5 Mo). Réduis la taille ou compresse-la avant d\'envoyer.', type: 'error' });
+      return;
+    }
+
+    if (!validTypes.includes(file.type.toLowerCase())) {
+      setToast({ message: 'Format non pris en charge. Formats acceptés : JPG, PNG, WEBP, HEIC, HEIF, AVIF.', type: 'error' });
       return;
     }
 

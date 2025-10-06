@@ -34,9 +34,16 @@ const ProfileCompletePage = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setError('Please upload a valid image (jpg, jpeg, png, webp)');
+    const MAX_SIZE = 5 * 1024 * 1024;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/avif'];
+
+    if (file.size > MAX_SIZE) {
+      setError('Image trop volumineuse (max. 5 Mo). Réduis la taille ou compresse-la avant d\'envoyer.');
+      return;
+    }
+
+    if (!validTypes.includes(file.type.toLowerCase())) {
+      setError('Format non pris en charge. Formats acceptés : JPG, PNG, WEBP, HEIC, HEIF, AVIF.');
       return;
     }
 
