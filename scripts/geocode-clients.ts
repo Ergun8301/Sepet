@@ -82,14 +82,13 @@ async function updateClientLocation(
   status: 'success' | 'not_found' | 'http_error'
 ): Promise<void> {
   if (coords && status === 'success') {
-    const { error } = await supabase
-      .from('clients')
-      .update({
-        location: `SRID=4326;POINT(${coords.lon} ${coords.lat})`,
-        geocode_status: status,
-        geocoded_at: new Date().toISOString()
-      })
-      .eq('id', clientId);
+    // Utiliser RPC pour mettre à jour avec PostGIS
+    const { error } = await supabase.rpc('update_client_location', {
+      client_id: clientId,
+      longitude: coords.lon,
+      latitude: coords.lat,
+      status: status
+    });
 
     if (error) {
       console.error(`Failed to update client ${clientId}:`, error);
