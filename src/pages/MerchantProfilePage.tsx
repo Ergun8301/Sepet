@@ -3,7 +3,7 @@ import { Store, Mail, Phone, MapPin, FileText, Camera, Save, User as UserIcon, G
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
-import { uploadImage } from '../lib/uploadImage';
+import { uploadImageToSupabase } from '../lib/uploadImage';
 
 interface MerchantProfile {
   company_name: string | null;
@@ -87,10 +87,25 @@ const MerchantProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setToast({ message: 'Please upload a valid image (jpg, jpeg, png, webp)', type: 'error' });
+      return;
+    }
+
     setIsUploadingLogo(true);
     try {
-      const publicUrl = await uploadImage(file, `merchant-logos/${user.id}`);
-      setEditedProfile(prev => prev ? { ...prev, logo_url: publicUrl } : null);
+      const path = `merchant-logos/${user.id}.jpg`;
+      const publicUrl = await uploadImageToSupabase(file, path);
+
+      const { error: updateError } = await supabase
+        .from('merchants')
+        .update({ logo_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      await loadProfile();
       setToast({ message: 'Logo uploaded successfully', type: 'success' });
     } catch (error: any) {
       console.error('Error uploading logo:', error);

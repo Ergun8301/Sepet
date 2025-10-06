@@ -3,7 +3,7 @@ import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2 } from 'lucide-rea
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
-import { uploadImage } from '../lib/uploadImage';
+import { uploadImageToSupabase } from '../lib/uploadImage';
 
 interface Offer {
   id: string;
@@ -103,6 +103,12 @@ const MerchantDashboardPage = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        setToast({ message: 'Please upload a valid image (jpg, jpeg, png, webp)', type: 'error' });
+        return;
+      }
+
       setFormData({ ...formData, image: file });
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -119,7 +125,9 @@ const MerchantDashboardPage = () => {
     try {
       let imageUrl = null;
       if (formData.image) {
-        imageUrl = await uploadImage(formData.image, 'offer-images/' + user.id + '/' + Date.now());
+        const randomId = crypto.randomUUID();
+        const path = `offers/${user.id}/${randomId}.jpg`;
+        imageUrl = await uploadImageToSupabase(formData.image, path);
       }
 
       const { data, error } = await supabase

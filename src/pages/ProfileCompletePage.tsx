@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Camera, Save } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { updateClientProfile, uploadProfilePhoto } from '../../lib/api';
+import { supabase } from '../lib/supabaseClient';
+import { uploadImageToSupabase } from '../lib/uploadImage';
 
 const ProfileCompletePage = () => {
   const navigate = useNavigate();
@@ -33,9 +34,16 @@ const ProfileCompletePage = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setError('Please upload a valid image (jpg, jpeg, png, webp)');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const photoUrl = await uploadProfilePhoto(file, user.id);
+      const path = `client-photos/${user.id}.jpg`;
+      const photoUrl = await uploadImageToSupabase(file, path);
       setProfileData(prev => ({ ...prev, profile_photo_url: photoUrl }));
       setSuccess('Photo uploaded successfully!');
     } catch (err: any) {
@@ -54,10 +62,23 @@ const ProfileCompletePage = () => {
     setSuccess('');
 
     try {
-      await updateClientProfile(user.id, {
-        ...profileData,
-        email: user.email || '',
-      });
+      const { error: updateError } = await supabase
+        .from('clients')
+        .upsert({
+          id: user.id,
+          email: user.email || '',
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          phone: profileData.phone,
+          profile_photo_url: profileData.profile_photo_url,
+          street: profileData.street,
+          city: profileData.city,
+          postal_code: profileData.postal_code,
+          country: profileData.country,
+        }, { onConflict: 'id' });
+
+      if (updateError) throw updateError;
+
       setSuccess('Profile completed successfully!');
       setTimeout(() => navigate('/offers'), 2000);
     } catch (err: any) {

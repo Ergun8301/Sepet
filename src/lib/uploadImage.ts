@@ -1,22 +1,18 @@
 import { supabase } from './supabaseClient';
 
-export const uploadImage = async (file: File, path: string): Promise<string> => {
+export const uploadImageToSupabase = async (file: File, path: string): Promise<string> => {
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${path}.${fileExt}`;
-
-    const { data, error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('media')
-      .upload(fileName, file, {
-        cacheControl: '3600',
+      .upload(path, file, {
         upsert: true
       });
 
-    if (error) throw error;
+    if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
       .from('media')
-      .getPublicUrl(fileName);
+      .getPublicUrl(path);
 
     return publicUrl;
   } catch (error) {
@@ -24,3 +20,5 @@ export const uploadImage = async (file: File, path: string): Promise<string> => 
     throw error;
   }
 };
+
+export const uploadImage = uploadImageToSupabase;
