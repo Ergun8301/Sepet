@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Globe, CreditCard as Edit, Save, X, Lock, Heart, Award, Clock, Tag, Camera } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
+import { uploadImageToSupabase } from '../lib/uploadImage';
 
 interface ClientProfile {
   first_name: string | null;
@@ -12,6 +13,7 @@ interface ClientProfile {
   city: string | null;
   postal_code: string | null;
   country: string | null;
+  profile_photo_url: string | null;
 }
 
 const ProfilePage = () => {
@@ -26,6 +28,7 @@ const ProfilePage = () => {
   const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -37,13 +40,16 @@ const ProfilePage = () => {
       try {
         const { data, error } = await supabase
           .from('clients')
-          .select('first_name, last_name, email, phone, street, city, postal_code, country')
+          .select('first_name, last_name, email, phone, street, city, postal_code, country, profile_photo_url')
           .eq('id', user.id)
           .maybeSingle();
 
         if (error) throw error;
         setProfile(data);
         setEditedProfile(data);
+        if (data?.profile_photo_url) {
+          setAvatarUrl(data.profile_photo_url);
+        }
       } catch (error) {
         console.error('Error loading profile:', error);
       } finally {
@@ -53,10 +59,6 @@ const ProfilePage = () => {
 
     if (!authLoading) {
       loadProfile();
-      const storedAvatar = localStorage.getItem('userAvatar');
-      if (storedAvatar) {
-        setAvatarUrl(storedAvatar);
-      }
     }
   }, [user, authLoading]);
 
@@ -145,22 +147,42 @@ const ProfilePage = () => {
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setToast({ message: 'Image must be less than 2MB', type: 'error' });
-        return;
-      }
+    if (!file || !user) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setAvatarUrl(result);
-        localStorage.setItem('userAvatar', result);
-        setToast({ message: 'Profile photo updated', type: 'success' });
-      };
-      reader.readAsDataURL(file);
+    const MAX_SIZE = 5 * 1024 * 1024;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/avif'];
+
+    if (file.size > MAX_SIZE) {
+      setToast({ message: 'Image trop volumineuse (max. 5 Mo). Réduis la taille ou compresse-la avant d\'envoyer.', type: 'error' });
+      return;
+    }
+
+    if (!validTypes.includes(file.type.toLowerCase())) {
+      setToast({ message: 'Format non pris en charge. Formats acceptés : JPG, PNG, WEBP, HEIC, HEIF, AVIF.', type: 'error' });
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    try {
+      const path = `client-photos/${user.id}.jpg`;
+      const photoUrl = await uploadImageToSupabase(file, path);
+
+      const { error: updateError } = await supabase
+        .from('clients')
+        .update({ profile_photo_url: photoUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(photoUrl);
+      setToast({ message: 'Photo de profil mise à jour', type: 'success' });
+    } catch (error: any) {
+      console.error('Error uploading photo:', error);
+      setToast({ message: error.message || 'Échec du téléchargement', type: 'error' });
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -196,13 +218,20 @@ const ProfilePage = () => {
                   <User className="w-16 h-16 text-gray-400" />
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 bg-green-500 rounded-full p-2 cursor-pointer hover:bg-green-600 transition-colors shadow-lg">
-                <Camera className="w-5 h-5 text-white" />
+              <label className={`absolute bottom-0 right-0 bg-green-500 rounded-full p-2 cursor-pointer hover:bg-green-600 transition-colors shadow-lg ${
+                isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''
+              }`}>
+                {isUploadingPhoto ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-white" />
+                )}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,image/avif"
                   onChange={handleAvatarChange}
                   className="hidden"
+                  disabled={isUploadingPhoto}
                 />
               </label>
             </div>
