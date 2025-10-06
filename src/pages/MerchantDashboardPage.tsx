@@ -168,16 +168,13 @@ const MerchantDashboardPage = () => {
   };
 
   useEffect(() => {
-    if (formData.startNow) {
-      const now = new Date();
-      setFormData(prev => ({
-        ...prev,
-        available_from: now.toISOString().slice(0, 16)
-      }));
-      if (formData.duration) {
-        updateEndDate(formData.duration, 'duration');
-      }
-    }
+    const now = new Date();
+    const twoHoursLater = new Date(now.getTime() + 120 * 60000);
+    setFormData(prev => ({
+      ...prev,
+      available_from: now.toISOString().slice(0, 16),
+      available_until: twoHoursLater.toISOString().slice(0, 16)
+    }));
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,7 +225,7 @@ const MerchantDashboardPage = () => {
           image_url: imageUrl,
           price_before: parseFloat(formData.price_before),
           price_after: parseFloat(formData.price_after),
-          discount_percent: discountPercent,
+          discount_percent: discountPercent > 0 ? discountPercent : null,
           quantity: parseInt(formData.quantity) || 0,
           available_from: formData.available_from,
           available_until: formData.available_until,
@@ -324,7 +321,7 @@ const MerchantDashboardPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {toast && (
-        <div className={'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ' + (toast.type === 'success' ? 'bg-green-500' : 'bg-red-500') + ' text-white'}>
+        <div className={'fixed top-4 right-4 z-[9999] px-6 py-3 rounded-lg shadow-lg ' + (toast.type === 'success' ? 'bg-green-500' : 'bg-red-500') + ' text-white'}>
           {toast.message}
         </div>
       )}
