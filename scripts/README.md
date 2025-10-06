@@ -50,76 +50,96 @@ npm run geocode:all
 - `http_error` : Erreur lors de l'appel API
 - `NULL` : Pas encore géocodé
 
-## Edge Function Supabase (Planification automatique)
+## Edge Function Supabase - Geocode Scheduler
 
-Une Edge Function Supabase est déployée pour exécuter le géocodage automatiquement.
+Une Edge Function Supabase `geocode-scheduler` est déployée et configurée pour exécuter le géocodage automatiquement chaque nuit.
+
+### Fonctionnalité
+
+La fonction :
+- Lit automatiquement `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` depuis `Deno.env`
+- Géocode d'abord les clients, puis les marchands où `location IS NULL`
+- Utilise l'API Nominatim avec respect strict de la limite (1 req/s)
+- User-Agent : `resqfood-geocoder/1.0 (contact@example.com)`
+- Met à jour `location`, `geocode_status`, et `geocoded_at`
+- Ne supprime aucune donnée
 
 ### URL de la fonction
 
 ```
-https://xrqmqfiqtyskbkmxydnc.supabase.co/functions/v1/geocode-scheduled
+https://xrqmqfiqtyskbkmxydnc.supabase.co/functions/v1/geocode-scheduler
 ```
 
-### Test manuel
+### Test manuel de l'Edge Function
 
+**Option 1 : Via curl**
 ```bash
-curl -X POST "https://xrqmqfiqtyskbkmxydnc.supabase.co/functions/v1/geocode-scheduled" \
-  -H "Authorization: Bearer VOTRE_ANON_KEY"
+curl -X POST "https://xrqmqfiqtyskbkmxydnc.supabase.co/functions/v1/geocode-scheduler" \
+  -H "Content-Type: application/json" \
+  -d '{}'
 ```
 
-### Planification CRON (chaque nuit à 02h Europe/Paris)
-
-Pour activer la planification automatique, vous devez configurer un CRON job dans Supabase :
-
-1. Allez dans votre projet Supabase Dashboard
-2. Naviguez vers **Database** > **Extensions**
-3. Activez l'extension `pg_cron` si elle n'est pas déjà activée
-4. Allez dans **SQL Editor** et exécutez :
-
+**Option 2 : Via la base de données (recommandé)**
 ```sql
--- Créer une fonction wrapper qui appelle l'Edge Function
-CREATE OR REPLACE FUNCTION trigger_geocoding()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  response text;
-BEGIN
-  SELECT content::text INTO response
-  FROM http((
-    'POST',
-    'https://xrqmqfiqtyskbkmxydnc.supabase.co/functions/v1/geocode-scheduled',
-    ARRAY[http_header('Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'))],
-    'application/json',
-    '{}'
-  )::http_request);
-
-  RAISE NOTICE 'Geocoding triggered: %', response;
-END;
-$$;
-
--- Planifier l'exécution chaque nuit à 02h (Europe/Paris = UTC+1 ou UTC+2 selon saison)
--- Pour 02h Europe/Paris en hiver (UTC+1) = 01h UTC
--- Pour 02h Europe/Paris en été (UTC+2) = 00h UTC
--- On utilise 01h UTC comme compromis
-SELECT cron.schedule(
-  'nightly-geocoding',
-  '0 1 * * *',  -- Tous les jours à 01h UTC (02h CET / 03h CEST)
-  'SELECT trigger_geocoding();'
-);
+SELECT trigger_geocoding_scheduler();
 ```
 
-### Vérifier les tâches CRON planifiées
+Cette commande SQL déclenche l'Edge Function et retourne le résultat du géocodage.
+
+### Planification automatique (CRON)
+
+**La planification est déjà configurée !**
+
+Un job CRON a été automatiquement créé lors du déploiement :
+
+- **Nom du job** : `nightly-geocoding-scheduler`
+- **Horaire** : Tous les jours à 01:00 UTC (= 02:00 CET / 03:00 CEST)
+- **Expression CRON** : `0 1 * * *`
+- **Commande** : `SELECT trigger_geocoding_scheduler();`
+
+### Vérifier la planification
 
 ```sql
-SELECT * FROM cron.job;
+SELECT jobid, jobname, schedule, command, active
+FROM cron.job
+WHERE jobname = 'nightly-geocoding-scheduler';
+```
+
+**Résultat attendu :**
+```
+jobid | jobname                      | schedule   | command                                | active
+------|------------------------------|------------|----------------------------------------|-------
+1     | nightly-geocoding-scheduler  | 0 1 * * *  | SELECT trigger_geocoding_scheduler();  | true
+```
+
+### Voir l'historique d'exécution
+
+```sql
+SELECT jobid, runid, job_pid, status, return_message, start_time, end_time
+FROM cron.job_run_details
+WHERE jobid = (SELECT jobid FROM cron.job WHERE jobname = 'nightly-geocoding-scheduler')
+ORDER BY start_time DESC
+LIMIT 10;
 ```
 
 ### Désactiver la planification
 
+Si vous souhaitez désactiver temporairement le géocodage automatique :
+
 ```sql
-SELECT cron.unschedule('nightly-geocoding');
+SELECT cron.unschedule('nightly-geocoding-scheduler');
+```
+
+### Réactiver la planification
+
+Pour réactiver après désactivation :
+
+```sql
+SELECT cron.schedule(
+  'nightly-geocoding-scheduler',
+  '0 1 * * *',
+  'SELECT trigger_geocoding_scheduler();'
+);
 ```
 
 ## Notes importantes
