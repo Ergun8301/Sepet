@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2, Edit } from 'lucide-react';
+import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2, CreditCard as Edit } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
