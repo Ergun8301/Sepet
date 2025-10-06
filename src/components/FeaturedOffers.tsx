@@ -61,6 +61,17 @@ const FeaturedOffers = () => {
           </p>
         </div>
 
+        {offers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 mb-6">
+              No offers available yet. Check back soon!
+            </p>
+            <p className="text-gray-500">
+              Merchants can add offers through their dashboard.
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {offers.map((offer) => (
             <div key={offer.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
@@ -148,6 +159,8 @@ const FeaturedOffers = () => {
             )}
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

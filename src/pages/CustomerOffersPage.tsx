@@ -261,6 +261,16 @@ const CustomerOffersPage = () => {
         </div>
 
         {/* Offers Grid */}
+        {displayOffers.length === 0 && !isLoading ? (
+          <div className="text-center py-16">
+            <p className="text-xl text-gray-600 mb-4">
+              No offers available at the moment
+            </p>
+            <p className="text-gray-500">
+              Check back soon for new deals from local merchants!
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {displayOffers.map((offer) => {
             const isNearbyOffer = 'distance_m' in offer;
@@ -335,6 +345,7 @@ const CustomerOffersPage = () => {
             );
           })}
         </div>
+        )}
 
         {/* App Download CTA */}
         <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
