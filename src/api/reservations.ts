@@ -27,20 +27,38 @@ export interface Reservation {
 
 export const createReservation = async (offerId: string, merchantId: string, quantity: number = 1) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log('Creating reservation:', { offerId, merchantId, quantity });
 
-    if (!user) {
-      return { success: false, error: 'User not authenticated' };
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      return { success: false, error: 'Failed to get session: ' + sessionError.message };
     }
+
+    if (!session || !session.user) {
+      console.error('No active session or user');
+      return { success: false, error: 'You must be logged in to make a reservation' };
+    }
+
+    const userId = session.user.id;
+    console.log('User authenticated:', userId);
 
     if (quantity < 1) {
       return { success: false, error: 'Quantity must be at least 1' };
     }
 
+    if (!merchantId) {
+      console.error('Missing merchant_id');
+      return { success: false, error: 'Invalid offer: missing merchant information' };
+    }
+
+    console.log('Inserting reservation into Supabase...');
     const { data, error } = await supabase
       .from('reservations')
       .insert({
-        client_id: user.id,
+        client_id: userId,
         merchant_id: merchantId,
         offer_id: offerId,
         quantity: quantity,
@@ -50,15 +68,20 @@ export const createReservation = async (offerId: string, merchantId: string, qua
       .single();
 
     if (error) {
-      console.error('Error creating reservation:', error);
+      console.error('Supabase error creating reservation:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return { success: false, error: error.message };
     }
 
-    console.log('Reservation created:', data);
+    console.log('Reservation created successfully:', data);
     return { success: true, data };
   } catch (err: any) {
     console.error('Exception creating reservation:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: err.message || 'An unexpected error occurred' };
   }
 };
 

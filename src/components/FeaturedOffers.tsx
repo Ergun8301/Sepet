@@ -50,25 +50,66 @@ const FeaturedOffers = () => {
   };
 
   const handleReserve = (offer: Offer) => {
-    if (!user) return;
+    console.log('Reserve button clicked', { user: user?.id, offer: offer.id });
+
+    if (!user) {
+      console.log('User not authenticated, cannot reserve');
+      setToast({ message: 'Please sign in to make a reservation', type: 'error' });
+      return;
+    }
+
+    if (!offer.merchant_id) {
+      console.error('Offer missing merchant_id:', offer);
+      setToast({ message: 'Invalid offer data', type: 'error' });
+      return;
+    }
+
+    console.log('Opening quantity modal for offer:', offer.id);
     setSelectedOffer(offer);
   };
 
   const handleConfirmReservation = async (quantity: number) => {
-    if (!selectedOffer || !user || !selectedOffer.merchant_id) return;
+    if (!selectedOffer) {
+      console.error('No offer selected');
+      return;
+    }
+
+    if (!user) {
+      console.error('User not authenticated');
+      setToast({ message: 'Please sign in to make a reservation', type: 'error' });
+      setSelectedOffer(null);
+      return;
+    }
+
+    if (!selectedOffer.merchant_id) {
+      console.error('Offer missing merchant_id');
+      setToast({ message: 'Invalid offer: missing merchant information', type: 'error' });
+      setSelectedOffer(null);
+      return;
+    }
+
+    console.log('Confirming reservation:', {
+      offerId: selectedOffer.id,
+      merchantId: selectedOffer.merchant_id,
+      quantity,
+      userId: user.id
+    });
 
     setReserving(true);
     try {
       const result = await createReservation(selectedOffer.id, selectedOffer.merchant_id, quantity);
 
       if (result.success) {
+        console.log('Reservation successful:', result.data);
         setToast({ message: 'Reservation created successfully!', type: 'success' });
         setSelectedOffer(null);
         fetchOffers();
       } else {
+        console.error('Reservation failed:', result.error);
         setToast({ message: result.error || 'Failed to create reservation', type: 'error' });
       }
     } catch (error: any) {
+      console.error('Exception during reservation:', error);
       setToast({ message: error.message || 'An error occurred', type: 'error' });
     } finally {
       setReserving(false);
