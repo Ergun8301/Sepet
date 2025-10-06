@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2 } from 'lucide-react';
+import { Plus, X, Upload, Package, Clock, Pause, Play, Trash2, Edit } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
@@ -17,6 +17,7 @@ interface Offer {
   available_until: string;
   is_active: boolean;
   created_at: string;
+  quantity: number;
 }
 
 const MerchantDashboardPage = () => {
@@ -34,8 +35,12 @@ const MerchantDashboardPage = () => {
     imagePreview: '',
     price_before: '',
     price_after: '',
+    quantity: '',
     available_from: '',
-    available_until: ''
+    available_until: '',
+    startNow: true,
+    duration: '2h',
+    customDuration: ''
   });
 
   useEffect(() => {
@@ -96,9 +101,84 @@ const MerchantDashboardPage = () => {
     return minutes + 'm left';
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === 'duration' || name === 'customDuration') {
+      updateEndDate(value, name === 'duration' ? 'duration' : 'custom');
+    }
   };
+
+  const calculateDiscount = (priceBefore: string, priceAfter: string): number => {
+    const before = parseFloat(priceBefore);
+    const after = parseFloat(priceAfter);
+    if (!before || !after || before <= 0) return 0;
+    return Math.round(((before - after) / before) * 100);
+  };
+
+  const updateEndDate = (durationValue: string, type: 'duration' | 'custom') => {
+    const startDate = formData.startNow ? new Date() : new Date(formData.available_from);
+    if (isNaN(startDate.getTime())) return;
+
+    let minutes = 0;
+    if (type === 'duration') {
+      switch(durationValue) {
+        case '30min': minutes = 30; break;
+        case '1h': minutes = 60; break;
+        case '2h': minutes = 120; break;
+        case '4h': minutes = 240; break;
+        case 'allday':
+          const endOfDay = new Date(startDate);
+          endOfDay.setHours(23, 59, 0, 0);
+          setFormData(prev => ({
+            ...prev,
+            available_until: endOfDay.toISOString().slice(0, 16)
+          }));
+          return;
+        case 'custom':
+          minutes = parseInt(formData.customDuration) || 0;
+          break;
+        default:
+          return;
+      }
+    } else {
+      minutes = parseInt(durationValue) || 0;
+    }
+
+    const endDate = new Date(startDate.getTime() + minutes * 60000);
+    setFormData(prev => ({
+      ...prev,
+      available_until: endDate.toISOString().slice(0, 16)
+    }));
+  };
+
+  const handleStartNowChange = (checked: boolean) => {
+    setFormData(prev => {
+      const newData = { ...prev, startNow: checked };
+      if (checked) {
+        const now = new Date();
+        newData.available_from = now.toISOString().slice(0, 16);
+      }
+      return newData;
+    });
+    if (checked && formData.duration) {
+      setTimeout(() => updateEndDate(formData.duration, 'duration'), 0);
+    }
+  };
+
+  useEffect(() => {
+    if (formData.startNow) {
+      const now = new Date();
+      setFormData(prev => ({
+        ...prev,
+        available_from: now.toISOString().slice(0, 16)
+      }));
+      if (formData.duration) {
+        updateEndDate(formData.duration, 'duration');
+      }
+    }
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,6 +217,8 @@ const MerchantDashboardPage = () => {
         imageUrl = await uploadImageToSupabase(formData.image, path);
       }
 
+      const discountPercent = calculateDiscount(formData.price_before, formData.price_after);
+
       const { data, error } = await supabase
         .from('offers')
         .insert([{
@@ -146,6 +228,8 @@ const MerchantDashboardPage = () => {
           image_url: imageUrl,
           price_before: parseFloat(formData.price_before),
           price_after: parseFloat(formData.price_after),
+          discount_percent: discountPercent,
+          quantity: parseInt(formData.quantity) || 0,
           available_from: formData.available_from,
           available_until: formData.available_until,
           is_active: true
@@ -164,10 +248,14 @@ const MerchantDashboardPage = () => {
         imagePreview: '',
         price_before: '',
         price_after: '',
+        quantity: '',
         available_from: '',
-        available_until: ''
+        available_until: '',
+        startNow: true,
+        duration: '2h',
+        customDuration: ''
       });
-      setToast({ message: 'Product published successfully!', type: 'success' });
+      setToast({ message: 'Offer published successfully', type: 'success' });
     } catch (error: any) {
       console.error('Error publishing product:', error);
       setToast({ message: error.message || 'Failed to publish product', type: 'error' });
@@ -282,15 +370,22 @@ const MerchantDashboardPage = () => {
                         <span className="text-xs text-gray-500 line-through">{offer.price_before.toFixed(2)} euro</span>
                         <span className="text-lg font-bold text-green-600">{offer.price_after.toFixed(2)} euro</span>
                       </div>
-                      <span className="text-xs font-medium text-green-600">
-                        -{offer.discount_percent}% off
-                      </span>
+                      {offer.discount_percent && (
+                        <span className="text-xs font-medium text-green-600">
+                          -{offer.discount_percent}% off
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center text-sm mb-4 text-gray-600">
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span>{calculateTimeLeft(offer.available_until)}</span>
+                  <div className="flex items-center justify-between text-sm mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span>{calculateTimeLeft(offer.available_until)}</span>
+                    </div>
+                    <div className="text-gray-600">
+                      <span className="font-medium">Stock: {offer.quantity}</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -395,7 +490,7 @@ const MerchantDashboardPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (euro)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (€)</label>
                   <input
                     type="number"
                     name="price_before"
@@ -403,44 +498,115 @@ const MerchantDashboardPage = () => {
                     onChange={handleInputChange}
                     placeholder="12.00"
                     step="0.01"
+                    min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price (euro)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price (€)</label>
                   <input
                     type="number"
                     name="price_after"
                     value={formData.price_after}
                     onChange={handleInputChange}
-                    placeholder="7.20"
+                    placeholder="5.00"
                     step="0.01"
+                    min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Date and Time</label>
+              {formData.price_before && formData.price_after && parseFloat(formData.price_before) > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <span className="text-lg font-bold text-green-600">
+                    -{calculateDiscount(formData.price_before, formData.price_after)}% discount
+                  </span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity Available</label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  placeholder="10"
+                  min="0"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="flex items-center mb-3">
                   <input
-                    type="datetime-local"
-                    name="available_from"
-                    value={formData.available_from}
+                    type="checkbox"
+                    id="startNow"
+                    checked={formData.startNow}
+                    onChange={(e) => handleStartNowChange(e.target.checked)}
+                    className="w-4 h-4 text-green-500 rounded focus:ring-green-500"
+                  />
+                  <label htmlFor="startNow" className="ml-2 text-sm font-medium text-gray-700">
+                    Start: Now
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date and Time</label>
+                    <input
+                      type="datetime-local"
+                      name="available_from"
+                      value={formData.available_from}
+                      onChange={handleInputChange}
+                      disabled={formData.startNow}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date and Time</label>
+                    <input
+                      type="datetime-local"
+                      name="available_until"
+                      value={formData.available_until}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <select
+                    name="duration"
+                    value={formData.duration}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
+                  >
+                    <option value="30min">30 minutes</option>
+                    <option value="1h">1 hour</option>
+                    <option value="2h">2 hours</option>
+                    <option value="4h">4 hours</option>
+                    <option value="allday">All day (today)</option>
+                    <option value="custom">Custom</option>
+                  </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date and Time</label>
-                  <input
-                    type="datetime-local"
-                    name="available_until"
-                    value={formData.available_until}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
+
+                {formData.duration === 'custom' && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Custom Duration (minutes)</label>
+                    <input
+                      type="number"
+                      name="customDuration"
+                      value={formData.customDuration}
+                      onChange={handleInputChange}
+                      placeholder="120"
+                      min="1"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
               </div>
 
               <button
