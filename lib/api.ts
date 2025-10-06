@@ -9,6 +9,8 @@ export interface Offer {
   discounted_price: number;
   discount_percentage: number;
   image_url: string;
+  quantity?: number;
+  merchant_id?: string;
   merchant?: {
     company_name?: string;
     full_address?: string;
@@ -293,6 +295,8 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
       discounted_price: parseFloat(offer.price_after),
       discount_percentage: offer.discount_percent || Math.round(100 * (1 - parseFloat(offer.price_after) / parseFloat(offer.price_before))),
       image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+      quantity: offer.quantity || 0,
+      merchant_id: offer.merchant_id,
       merchant: offer.merchants ? {
         company_name: offer.merchants.company_name,
         full_address: `${offer.merchants.street || ''}, ${offer.merchants.city || ''}`.trim(),

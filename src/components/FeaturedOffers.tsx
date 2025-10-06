@@ -2,39 +2,77 @@ import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Heart, ArrowRight } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import { QuantityModal } from './QuantityModal';
+import { createReservation } from '../api/reservations';
 
 const FeaturedOffers = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [reserving, setReserving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const data = await getActiveOffers();
-        // Show only first 6 offers for homepage
-        setOffers(data.slice(0, 6));
-      } catch (error) {
-        console.error('Error fetching offers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOffers();
   }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const fetchOffers = async () => {
+    try {
+      setLoading(true);
+      const data = await getActiveOffers();
+      setOffers(data.slice(0, 6));
+    } catch (error) {
+      console.error('Error fetching offers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatTimeLeft = (dateString: string) => {
     const now = new Date();
     const end = new Date(dateString);
     const diff = end.getTime() - now.getTime();
-    
+
     if (diff <= 0) return 'Expired';
-    
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     return `${hours}h ${minutes}m left`;
+  };
+
+  const handleReserve = (offer: Offer) => {
+    if (!user) return;
+    setSelectedOffer(offer);
+  };
+
+  const handleConfirmReservation = async (quantity: number) => {
+    if (!selectedOffer || !user || !selectedOffer.merchant_id) return;
+
+    setReserving(true);
+    try {
+      const result = await createReservation(selectedOffer.id, selectedOffer.merchant_id, quantity);
+
+      if (result.success) {
+        setToast({ message: 'Reservation created successfully!', type: 'success' });
+        setSelectedOffer(null);
+        fetchOffers();
+      } else {
+        setToast({ message: result.error || 'Failed to create reservation', type: 'error' });
+      }
+    } catch (error: any) {
+      setToast({ message: error.message || 'An error occurred', type: 'error' });
+    } finally {
+      setReserving(false);
+    }
   };
 
   if (loading) {
@@ -123,8 +161,12 @@ const FeaturedOffers = () => {
                     </span>
                   </div>
                   {user ? (
-                    <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors">
-                      Reserve Now
+                    <button
+                      onClick={() => handleReserve(offer)}
+                      disabled={!offer.quantity || offer.quantity <= 0}
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {!offer.quantity || offer.quantity <= 0 ? 'Sold Out' : 'Reserve Now'}
                     </button>
                   ) : (
                     <button className="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
@@ -162,6 +204,32 @@ const FeaturedOffers = () => {
         </>
         )}
       </div>
+
+      {/* Quantity Modal */}
+      {selectedOffer && (
+        <QuantityModal
+          isOpen={true}
+          onClose={() => setSelectedOffer(null)}
+          onConfirm={handleConfirmReservation}
+          offerTitle={selectedOffer.title}
+          availableQuantity={selectedOffer.quantity || 0}
+          price={selectedOffer.discounted_price}
+          loading={reserving}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+          <div
+            className={`px-6 py-3 rounded-lg shadow-lg ${
+              toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white font-medium`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

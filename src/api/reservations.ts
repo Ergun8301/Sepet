@@ -5,6 +5,7 @@ export interface Reservation {
   client_id: string;
   merchant_id: string;
   offer_id: string;
+  quantity: number;
   status: 'pending' | 'confirmed' | 'expired' | 'cancelled';
   created_at: string;
   updated_at: string;
@@ -24,12 +25,16 @@ export interface Reservation {
   };
 }
 
-export const createReservation = async (offerId: string, merchantId: string) => {
+export const createReservation = async (offerId: string, merchantId: string, quantity: number = 1) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return { success: false, error: 'User not authenticated' };
+    }
+
+    if (quantity < 1) {
+      return { success: false, error: 'Quantity must be at least 1' };
     }
 
     const { data, error } = await supabase
@@ -38,6 +43,7 @@ export const createReservation = async (offerId: string, merchantId: string) => 
         client_id: user.id,
         merchant_id: merchantId,
         offer_id: offerId,
+        quantity: quantity,
         status: 'pending'
       })
       .select()
