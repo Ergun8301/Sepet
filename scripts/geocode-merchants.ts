@@ -16,7 +16,7 @@ const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/search';
 const USER_AGENT = 'resqfood-geocoder/1.0 (contact@example.com)';
 const RATE_LIMIT_DELAY_MS = 1000;
 
-interface Client {
+interface Merchant {
   id: string;
   street: string | null;
   city: string | null;
@@ -45,9 +45,9 @@ async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// 🏗️ Construction de l’adresse complète
-function buildAddress(client: Client): string | null {
-  const parts = [client.street, client.postal_code, client.city, client.country].filter(Boolean);
+// 🏗️ Construction de l'adresse complète
+function buildAddress(merchant: Merchant): string | null {
+  const parts = [merchant.street, merchant.postal_code, merchant.city, merchant.country].filter(Boolean);
   if (parts.length === 0) return null;
   return parts.join(', ');
 }
@@ -75,75 +75,75 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
   }
 }
 
-// 📍 Mise à jour client dans Supabase
-async function updateClientLocation(
-  clientId: string,
+// 📍 Mise à jour merchant dans Supabase
+async function updateMerchantLocation(
+  merchantId: string,
   coords: { lat: number; lon: number } | null,
   status: 'success' | 'not_found' | 'http_error'
 ): Promise<void> {
   if (coords && status === 'success') {
     // Utiliser RPC pour mettre à jour avec PostGIS
-    const { error } = await supabase.rpc('update_client_location', {
-      client_id: clientId,
+    const { error } = await supabase.rpc('update_merchant_location', {
+      merchant_id: merchantId,
       longitude: coords.lon,
       latitude: coords.lat,
       status: status
     });
 
     if (error) {
-      console.error(`Failed to update client ${clientId}:`, error);
+      console.error(`Failed to update merchant ${merchantId}:`, error);
       throw error;
     }
   } else {
     const { error } = await supabase
-      .from('clients')
+      .from('merchants')
       .update({
         geocode_status: status,
         geocoded_at: new Date().toISOString()
       })
-      .eq('id', clientId);
+      .eq('id', merchantId);
 
     if (error) {
-      console.error(`Failed to update client ${clientId} status:`, error);
+      console.error(`Failed to update merchant ${merchantId} status:`, error);
       throw error;
     }
   }
 }
 
 // 🚀 Fonction principale
-export async function geocodeClients(): Promise<GeocodeStats> {
-  console.log('👥 Starting client geocoding process...\n');
+export async function geocodeMerchants(): Promise<GeocodeStats> {
+  console.log('🏪 Starting merchant geocoding process...\n');
 
-  const { data: clients, error: fetchError } = await supabase
-    .from('clients')
+  const { data: merchants, error: fetchError } = await supabase
+    .from('merchants')
     .select('id, street, city, postal_code, country')
     .is('location', null);
 
   if (fetchError) {
-    console.error('❌ Failed to fetch clients:', fetchError);
-    return;
+    console.error('❌ Failed to fetch merchants:', fetchError);
+    throw fetchError;
   }
 
-  if (!clients || clients.length === 0) {
-    console.log('✅ No clients need geocoding. All done!');
+  if (!merchants || merchants.length === 0) {
+    console.log('✅ No merchants need geocoding. All done!');
     return { total: 0, success: 0, not_found: 0, http_error: 0, skipped: 0 };
   }
 
-  console.log(`📍 Found ${clients.length} clients to geocode\n`);
+  console.log(`📍 Found ${merchants.length} merchants to geocode\n`);
 
   const stats: GeocodeStats = {
-    total: clients.length,
+    total: merchants.length,
     success: 0,
     not_found: 0,
     http_error: 0,
     skipped: 0
   };
 
-  for (let i = 0; i < clients.length; i++) {
-    const client = clients[i];
-    const address = buildAddress(client);
+  for (let i = 0; i < merchants.length; i++) {
+    const merchant = merchants[i];
+    const address = buildAddress(merchant);
 
-    console.log(`[${i + 1}/${clients.length}] Processing client ${client.id}...`);
+    console.log(`[${i + 1}/${merchants.length}] Processing merchant ${merchant.id}...`);
 
     if (!address) {
       console.log('  ⚠️ Skipped: No address components available');
@@ -157,30 +157,30 @@ export async function geocodeClients(): Promise<GeocodeStats> {
       const coords = await geocodeAddress(address);
 
       if (coords) {
-        await updateClientLocation(client.id, coords, 'success');
+        await updateMerchantLocation(merchant.id, coords, 'success');
         console.log(`  ✅ Success: ${coords.lat}, ${coords.lon}`);
         stats.success++;
       } else {
-        await updateClientLocation(client.id, null, 'not_found');
+        await updateMerchantLocation(merchant.id, null, 'not_found');
         console.log('  ❌ Not found');
         stats.not_found++;
       }
     } catch (error) {
       console.log('  ⚠️ HTTP Error:', (error as Error).message);
       try {
-        await updateClientLocation(client.id, null, 'http_error');
+        await updateMerchantLocation(merchant.id, null, 'http_error');
       } catch {
         console.log('  ⚠️ Failed to update error status');
       }
       stats.http_error++;
     }
 
-    if (i < clients.length - 1) await sleep(RATE_LIMIT_DELAY_MS);
+    if (i < merchants.length - 1) await sleep(RATE_LIMIT_DELAY_MS);
     console.log('');
   }
 
   console.log('\n═══════════════════════════════════════');
-  console.log('📊 CLIENT GEOCODING SUMMARY');
+  console.log('📊 MERCHANT GEOCODING SUMMARY');
   console.log('═══════════════════════════════════════');
   console.log(`Total processed:  ${stats.total}`);
   console.log(`✅ Success:       ${stats.success}`);
@@ -194,7 +194,7 @@ export async function geocodeClients(): Promise<GeocodeStats> {
 
 // Si exécuté directement
 if (import.meta.url === `file://${process.argv[1]}`) {
-  geocodeClients().catch(error => {
+  geocodeMerchants().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });
