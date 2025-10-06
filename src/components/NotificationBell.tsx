@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Check, ShoppingCart, Star, AlertCircle, TrendingUp, Package } from 'lucide-react';
 import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
-import { markNotificationAsRead, markAllNotificationsAsRead } from '../api/notifications';
+import { markNotificationAsRead, markAllNotificationsAsRead, Notification } from '../api/notifications';
 import { useAuth } from '../hooks/useAuth';
 
 export const NotificationBell = () => {
   const { user } = useAuth();
   const { notifications, unreadCount, refetch } = useRealtimeNotifications(user?.id || null);
   const [isOpen, setIsOpen] = useState(false);
+  const [toast, setToast] = useState<Notification | null>(null);
+
+  useEffect(() => {
+    if (notifications.length > 0 && !notifications[0].is_read) {
+      const latestNotif = notifications[0];
+      setToast(latestNotif);
+
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [notifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     await markNotificationAsRead(notificationId);
@@ -19,12 +33,51 @@ export const NotificationBell = () => {
     refetch();
   };
 
-  const getStatusColor = (type: string, message: string) => {
-    if (message.includes('confirmed')) return 'text-green-600';
-    if (message.includes('cancelled')) return 'text-red-600';
-    if (message.includes('expired')) return 'text-gray-600';
-    if (message.includes('pending')) return 'text-yellow-600';
-    return 'text-blue-600';
+  const getTypeStyles = (type: string) => {
+    switch (type) {
+      case 'reservation':
+        return {
+          color: 'text-yellow-600',
+          bgColor: 'bg-yellow-50',
+          icon: ShoppingCart,
+          badge: '🟡'
+        };
+      case 'review':
+        return {
+          color: 'text-purple-600',
+          bgColor: 'bg-purple-50',
+          icon: Star,
+          badge: '💬'
+        };
+      case 'stock_empty':
+        return {
+          color: 'text-red-600',
+          bgColor: 'bg-red-50',
+          icon: AlertCircle,
+          badge: '🔴'
+        };
+      case 'daily_summary':
+        return {
+          color: 'text-green-600',
+          bgColor: 'bg-green-50',
+          icon: TrendingUp,
+          badge: '🟢'
+        };
+      case 'offer':
+        return {
+          color: 'text-blue-600',
+          bgColor: 'bg-blue-50',
+          icon: Package,
+          badge: '🔵'
+        };
+      default:
+        return {
+          color: 'text-gray-600',
+          bgColor: 'bg-gray-50',
+          icon: Bell,
+          badge: '⚪'
+        };
+    }
   };
 
   if (!user) return null;
@@ -75,41 +128,92 @@ export const NotificationBell = () => {
                   No notifications yet
                 </div>
               ) : (
-                notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                      !notification.is_read ? 'bg-blue-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className={`font-semibold ${getStatusColor(notification.type, notification.message)}`}>
-                          {notification.title}
-                        </h4>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                          {new Date(notification.created_at).toLocaleString()}
-                        </p>
+                notifications.map((notification) => {
+                  const styles = getTypeStyles(notification.type);
+                  const Icon = styles.icon;
+
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                        !notification.is_read ? styles.bgColor : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full ${styles.bgColor}`}>
+                          <Icon className={`w-5 h-5 ${styles.color}`} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <h4 className={`font-semibold ${styles.color}`}>
+                              {styles.badge} {notification.title}
+                            </h4>
+                            {!notification.is_read && (
+                              <button
+                                onClick={() => handleMarkAsRead(notification.id)}
+                                className="ml-2 p-1 text-gray-400 hover:text-green-600 transition-colors"
+                                title="Mark as read"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {new Date(notification.created_at).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      {!notification.is_read && (
-                        <button
-                          onClick={() => handleMarkAsRead(notification.id)}
-                          className="ml-2 p-1 text-gray-400 hover:text-green-600 transition-colors"
-                          title="Mark as read"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                      )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
         </>
+      )}
+
+      {/* Toast for new notifications */}
+      {toast && !isOpen && (
+        <div className="fixed top-20 right-4 z-50 animate-slide-down">
+          <div
+            className={`${getTypeStyles(toast.type).bgColor} border-l-4 ${
+              getTypeStyles(toast.type).color.replace('text', 'border')
+            } rounded-lg shadow-lg p-4 max-w-sm cursor-pointer hover:shadow-xl transition-shadow`}
+            onClick={() => {
+              setIsOpen(true);
+              setToast(null);
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`p-2 rounded-full bg-white`}>
+                {React.createElement(getTypeStyles(toast.type).icon, {
+                  className: `w-5 h-5 ${getTypeStyles(toast.type).color}`
+                })}
+              </div>
+              <div className="flex-1">
+                <h4 className={`font-semibold ${getTypeStyles(toast.type).color} flex items-center gap-2`}>
+                  <span>{getTypeStyles(toast.type).badge}</span>
+                  {toast.title}
+                </h4>
+                <p className="text-sm text-gray-700 mt-1">
+                  {toast.message}
+                </p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setToast(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
