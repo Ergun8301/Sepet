@@ -358,21 +358,72 @@ const MerchantDashboardPage = () => {
   };
 
   const toggleOfferStatus = async (offerId: string, currentStatus: boolean) => {
-    if (!user) return;
+    if (!user) {
+      console.error('User not authenticated');
+      setToast({ message: 'Please log in to update offer status', type: 'error' });
+      return;
+    }
+
+    const newStatus = !currentStatus;
+    const actionText = newStatus ? 'Activating' : 'Pausing';
+
+    console.log(`${actionText} offer...`, {
+      offer_id: offerId,
+      old_status: currentStatus,
+      new_status: newStatus
+    });
 
     try {
-      const { error } = await supabase
+      console.log('Updating is_active in Supabase...');
+      const { data, error } = await supabase
         .from('offers')
-        .update({ is_active: !currentStatus })
+        .update({ is_active: newStatus })
         .eq('id', offerId)
-        .eq('merchant_id', user.id);
+        .eq('merchant_id', user.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
-      setOffers(offers.map(o => o.id === offerId ? { ...o, is_active: !currentStatus } : o));
-      setToast({ message: 'Product status updated', type: 'success' });
+      console.log('✅ Offer status updated successfully:', data);
+      console.log('New is_active value:', data.is_active);
+
+      // Verify audit log entry was created
+      const { data: auditLog, error: auditError } = await supabase
+        .from('audit_log')
+        .select('*')
+        .eq('table_name', 'offers')
+        .eq('record_id', offerId)
+        .eq('action', 'UPDATE')
+        .order('changed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (auditLog) {
+        console.log('✅ Audit log entry created:', auditLog);
+        console.log('Audit log old_data.is_active:', auditLog.old_data?.is_active);
+        console.log('Audit log new_data.is_active:', auditLog.new_data?.is_active);
+      } else if (auditError) {
+        console.warn('Could not verify audit log:', auditError);
+      } else {
+        console.warn('No audit log entry found for this update');
+      }
+
+      setOffers(offers.map(o => o.id === offerId ? data : o));
+
+      const successMessage = newStatus ? '✅ Offer activated' : '✅ Offer paused';
+      setToast({ message: successMessage, type: 'success' });
     } catch (error: any) {
-      console.error('Error updating offer status:', error);
+      console.error('❌ Error updating offer status:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       setToast({ message: error.message || 'Failed to update status', type: 'error' });
     }
   };
