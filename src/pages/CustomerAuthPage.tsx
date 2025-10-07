@@ -93,7 +93,7 @@ const CustomerAuthPage = () => {
         // Redirect to customer offers page
         navigate('/offers');
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -110,12 +110,35 @@ const CustomerAuthPage = () => {
           }
         });
 
-        if (error) throw error;
-        if (!data.user) throw new Error('Registration failed');
+        if (signUpError) throw signUpError;
+        if (!authData.user) throw new Error('Registration failed');
 
-        // Profile is automatically created by database trigger
-        // Wait a moment to ensure trigger completes
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const userId = authData.user.id;
+
+        // Wait for the profile to be created by the trigger
+        // Poll the database to confirm the client record exists
+        let clientExists = false;
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        while (!clientExists && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 300));
+
+          const { data: client, error: checkError } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (client && !checkError) {
+            clientExists = true;
+          }
+        }
+
+        if (!clientExists) {
+          throw new Error('Profile creation timeout. Please contact support.');
+        }
 
         // Set location if available
         await setCustomerLocation();

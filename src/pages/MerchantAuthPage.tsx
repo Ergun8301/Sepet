@@ -82,7 +82,7 @@ const MerchantAuthPage = () => {
         navigate('/merchant/dashboard');
       } else {
         // Registration flow
-        const { data, error } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -99,13 +99,36 @@ const MerchantAuthPage = () => {
             }
           }
         });
-        
-        if (error) throw error;
-        if (!data.user) throw new Error('Registration failed');
 
-        // Profile is automatically created by database trigger
-        // Wait a moment to ensure trigger completes
-        await new Promise(resolve => setTimeout(resolve, 500));
+        if (signUpError) throw signUpError;
+        if (!authData.user) throw new Error('Registration failed');
+
+        const userId = authData.user.id;
+
+        // Wait for the profile to be created by the trigger
+        // Poll the database to confirm the merchant record exists
+        let merchantExists = false;
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        while (!merchantExists && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 300));
+
+          const { data: merchant, error: checkError } = await supabase
+            .from('merchants')
+            .select('id')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (merchant && !checkError) {
+            merchantExists = true;
+          }
+        }
+
+        if (!merchantExists) {
+          throw new Error('Profile creation timeout. Please contact support.');
+        }
 
         // Set location if available
         await setMerchantLocation();
