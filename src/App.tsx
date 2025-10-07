@@ -14,6 +14,7 @@ import CustomerOnboardingPage from './pages/CustomerOnboardingPage';
 import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import CustomerAppPage from './pages/CustomerAppPage';
 import MerchantDashboardPage from './pages/MerchantDashboardPage';
+import MerchantStatsPage from './pages/MerchantStatsPage';
 import MerchantProfilePage from './pages/MerchantProfilePage';
 import MerchantSettingsPage from './pages/MerchantSettingsPage';
 import DevTestPage from './pages/DevTestPage';
@@ -38,6 +39,7 @@ function App() {
               <Route path="/merchant" element={<Navigate to="/merchant/dashboard" replace />} />
               <Route path="/merchant/home" element={<Navigate to="/merchant/dashboard" replace />} />
               <Route path="/merchant/dashboard" element={<MerchantDashboardPage />} />
+              <Route path="/merchant/stats" element={<MerchantStatsPage />} />
               <Route path="/merchant/profile" element={<MerchantProfilePage />} />
               <Route path="/merchant/settings" element={<MerchantSettingsPage />} />
               <Route path="/merchants" element={<MerchantsPage />} />

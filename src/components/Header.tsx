@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus, TrendingUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
@@ -114,6 +114,16 @@ const Header = () => {
                           >
                             <LayoutDashboard className="w-4 h-4 mr-2" />
                             My Dashboard
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsUserMenuOpen(false);
+                              navigate('/merchant/stats');
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Statistics
                           </button>
                           <button
                             onClick={() => {
