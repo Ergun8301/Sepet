@@ -45,6 +45,32 @@ const MerchantDashboardPage = () => {
 
   useEffect(() => {
     loadOffers();
+
+    // Subscribe to realtime updates for merchant's offers
+    if (!user) return;
+
+    console.log('Subscribing to realtime updates for merchant offers...');
+    const channel = supabase
+      .channel('merchant-offers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'offers',
+          filter: `merchant_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Merchant offers table changed:', payload);
+          loadOffers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Unsubscribing from merchant offers realtime...');
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -203,45 +229,105 @@ const MerchantDashboardPage = () => {
   };
 
   const handlePublish = async () => {
-    if (!user) return;
+    if (!user) {
+      console.error('User not authenticated');
+      setToast({ message: 'Please log in to create an offer', type: 'error' });
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.title.trim()) {
+      setToast({ message: 'Title is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.price_before || parseFloat(formData.price_before) <= 0) {
+      setToast({ message: 'Valid price before is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.price_after || parseFloat(formData.price_after) <= 0) {
+      setToast({ message: 'Valid price after is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.quantity || parseInt(formData.quantity) <= 0) {
+      setToast({ message: 'Valid quantity is required', type: 'error' });
+      return;
+    }
+
+    if (parseFloat(formData.price_after) >= parseFloat(formData.price_before)) {
+      setToast({ message: 'Discounted price must be lower than original price', type: 'error' });
+      return;
+    }
+
+    console.log('Creating new offer...', {
+      merchant_id: user.id,
+      title: formData.title,
+      price_before: formData.price_before,
+      price_after: formData.price_after,
+      quantity: formData.quantity
+    });
 
     setIsPublishing(true);
     try {
       let imageUrl = null;
       if (formData.image) {
+        console.log('Uploading image to Supabase storage...');
         const randomId = crypto.randomUUID();
         const path = `offers/${user.id}/${randomId}.jpg`;
         imageUrl = await uploadImageToSupabase(formData.image, path);
+        console.log('Image uploaded successfully:', imageUrl);
       }
 
       const discountPercent = calculateDiscount(formData.price_before, formData.price_after);
+      console.log('Calculated discount:', discountPercent + '%');
+
+      const offerData = {
+        merchant_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        image_url: imageUrl,
+        price_before: parseFloat(formData.price_before),
+        price_after: parseFloat(formData.price_after),
+        quantity: parseInt(formData.quantity),
+        available_from: formData.available_from,
+        available_until: formData.available_until,
+        is_active: true,
+        discount_percent: discountPercent
+      };
+
+      console.log('Inserting offer into Supabase:', offerData);
 
       const { data, error } = await supabase
         .from('offers')
-        .insert([{
-          merchant_id: user.id,
-          title: formData.title,
-          description: formData.description,
-          image_url: imageUrl,
-          price_before: parseFloat(formData.price_before),
-          price_after: parseFloat(formData.price_after),
-          quantity: parseInt(formData.quantity) || 0,
-          available_from: formData.available_from,
-          available_until: formData.available_until,
-          is_active: true
-        }])
+        .insert([offerData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
 
-      if (data && discountPercent > 0) {
-        await supabase
-          .from('offers')
-          .update({ discount_percent: discountPercent })
-          .eq('id', data.id);
+      console.log('✅ Offer created successfully:', data);
+      console.log('Offer ID:', data.id);
+      console.log('Created at:', data.created_at);
 
-        data.discount_percent = discountPercent;
+      // Verify audit log entry was created
+      const { data: auditLog, error: auditError } = await supabase
+        .from('audit_log')
+        .select('*')
+        .eq('table_name', 'offers')
+        .eq('record_id', data.id)
+        .eq('action', 'INSERT')
+        .maybeSingle();
+
+      if (auditLog) {
+        console.log('✅ Audit log entry created:', auditLog);
+        console.log('Audit log new_data:', auditLog.new_data);
+      } else if (auditError) {
+        console.warn('Could not verify audit log:', auditError);
       }
 
       setOffers([data, ...offers]);
@@ -260,10 +346,10 @@ const MerchantDashboardPage = () => {
         duration: '2h',
         customDuration: ''
       });
-      setToast({ message: 'Offer published successfully', type: 'success' });
+      setToast({ message: '✅ Offer added successfully', type: 'success' });
     } catch (error: any) {
-      console.error('Error publishing product:', error);
-      setToast({ message: error.message || 'Failed to publish product', type: 'error' });
+      console.error('❌ Error publishing offer:', error);
+      setToast({ message: error.message || 'Failed to publish offer', type: 'error' });
     } finally {
       setIsPublishing(false);
     }
