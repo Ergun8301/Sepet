@@ -12,7 +12,7 @@ interface Offer {
   image_url: string | null;
   price_before: number;
   price_after: number;
-  discount_percent: number | null;
+  discount_percent: number | null; // GENERATED column in DB (read-only, computed from price_before/price_after)
   available_from: string;
   available_until: string;
   is_active: boolean;
@@ -296,8 +296,8 @@ const MerchantDashboardPage = () => {
         quantity: parseInt(formData.quantity),
         available_from: formData.available_from,
         available_until: formData.available_until,
-        is_active: true,
-        discount_percent: discountPercent
+        is_active: true
+        // NOTE: discount_percent is a GENERATED column in DB - do NOT send it
       };
 
       console.log('Inserting offer into Supabase:', offerData);
@@ -565,8 +565,8 @@ const MerchantDashboardPage = () => {
         price_after: parseFloat(formData.price_after),
         quantity: parseInt(formData.quantity),
         available_from: formData.available_from,
-        available_until: formData.available_until,
-        discount_percent: discountPercent
+        available_until: formData.available_until
+        // NOTE: discount_percent is a GENERATED column in DB - do NOT send it
       };
 
       console.log('=== AFTER UPDATE (new data) ===');
