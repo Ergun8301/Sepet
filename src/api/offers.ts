@@ -38,6 +38,8 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
   try {
     console.log('Fetching active offers from Supabase...');
 
+    const now = new Date().toISOString();
+
     const { data, error } = await supabase
       .from('offers')
       .select(`
@@ -45,6 +47,8 @@ export const getActiveOffers = async (): Promise<Offer[]> => {
         merchants(company_name, city, location, street, avg_rating)
       `)
       .eq('is_active', true)
+      .gte('available_until', now)
+      .lte('available_from', now)
       .order('created_at', { ascending: false });
 
     if (error) {
