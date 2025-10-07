@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus, TrendingUp } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus, TrendingUp, Map } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
@@ -45,6 +45,7 @@ const Header = () => {
 
   const navigation = [
     { name: 'Explore Offers', href: '/customer/teaser' },
+    { name: '🗺️ Carte', href: '/offers/map', icon: Map },
     { name: 'For Merchants', href: '/merchant/info' },
     { name: 'Download App', href: '/download' },
   ];
