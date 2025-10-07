@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { OffersMap } from '../components/OffersMap';
 import { QuantityModal } from '../components/QuantityModal';
-import { createReservation } from '@/api/reservations';
-import { ewkbPointToLatLng } from '@/utils/ewkb';
-import { haversineKm, formatDistance } from '@/utils/distance';
-import { getCurrentUserPosition, requestBrowserGeolocation, isGeolocationAvailable } from '@/utils/userLocation';
+import { createReservation } from '../api/reservations';
+import { ewkbPointToLatLng } from '../utils/ewkb';
+import { haversineKm, formatDistance } from '../utils/distance';
+import { getCurrentUserPosition, requestBrowserGeolocation, isGeolocationAvailable } from '../utils/userLocation';
 
 interface OfferWithLocation {
   id: string;
