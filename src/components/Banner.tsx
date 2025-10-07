@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getBannerSlides, type BannerSlide } from '../../lib/api';
+import { getBannerSlides, type BannerSlide } from '../api';
 
 const Banner = () => {
   const [slides, setSlides] = useState<BannerSlide[]>([]);

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Heart, ArrowRight } from 'lucide-react';
-import { getActiveOffers, type Offer } from '../../lib/api';
+import { getActiveOffers, type Offer } from '../api/offers';
 import { useAuth } from '../hooks/useAuth';
 import { QuantityModal } from './QuantityModal';
 import { createReservation } from '../api/reservations';
+import { supabase } from '../lib/supabaseClient';
 
 const FeaturedOffers = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -15,6 +16,27 @@ const FeaturedOffers = () => {
 
   useEffect(() => {
     fetchOffers();
+
+    // Subscribe to realtime updates on offers table
+    const channel = supabase
+      .channel('featured-offers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'offers'
+        },
+        (payload) => {
+          console.log('Featured offers table changed:', payload);
+          fetchOffers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {

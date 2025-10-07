@@ -181,6 +181,31 @@ export function useNearbyOffers({
 
   useEffect(() => {
     fetchOffers();
+
+    // Subscribe to realtime updates on offers table
+    if (!clientId || !enabled) {
+      return;
+    }
+
+    const channel = supabase
+      .channel('offers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'offers'
+        },
+        (payload) => {
+          console.log('Offers table changed:', payload);
+          fetchOffers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [clientId, radiusKm, enabled]);
 
   return {

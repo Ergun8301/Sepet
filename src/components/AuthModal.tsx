@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../../lib/api';
+import { signUp, signIn, signInWithGoogle, signInWithFacebook, resetPassword } from '../api';
 
 interface AuthModalProps {
   isOpen: boolean;

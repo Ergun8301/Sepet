@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, Lock } from 'lucide-react';
-import { getActiveOffers, type Offer } from '../../lib/api';
+import { getActiveOffers, type Offer } from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const CustomerTeaserPage = () => {

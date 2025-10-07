@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Award } from 'lucide-react';
-import { getMerchants, type Merchant } from '../../lib/api';
+import { getMerchants, type Merchant } from '../api';
 
 const MerchantsSection = () => {
   const [merchants, setMerchants] = useState<Merchant[]>([]);

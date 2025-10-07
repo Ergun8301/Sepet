@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { getPartners, type Partner } from '../../lib/api';
+import { getPartners, type Partner } from '../api';
 
 const PartnersSection = () => {
   const [partners, setPartners] = useState<Partner[]>([]);

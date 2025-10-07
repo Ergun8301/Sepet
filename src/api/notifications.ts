@@ -14,11 +14,14 @@ export interface Notification {
 
 export const getNotifications = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (sessionError || !session?.user) {
+      console.error('Session error:', sessionError);
       return { success: false, error: 'User not authenticated', data: [] };
     }
+
+    const user = session.user;
 
     const { data, error } = await supabase
       .from('notifications')
@@ -41,11 +44,14 @@ export const getNotifications = async () => {
 
 export const getUnreadNotifications = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (sessionError || !session?.user) {
+      console.error('Session error:', sessionError);
       return { success: false, error: 'User not authenticated', data: [] };
     }
+
+    const user = session.user;
 
     const { data, error } = await supabase
       .from('notifications')
@@ -89,11 +95,14 @@ export const markNotificationAsRead = async (notificationId: string) => {
 
 export const markAllNotificationsAsRead = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (sessionError || !session?.user) {
+      console.error('Session error:', sessionError);
       return { success: false, error: 'User not authenticated' };
     }
+
+    const user = session.user;
 
     const { error } = await supabase
       .from('notifications')

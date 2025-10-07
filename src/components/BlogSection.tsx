@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Calendar, User, ArrowRight } from 'lucide-react';
-import { getBlogPosts, type BlogPost } from '../../lib/api';
+import { getBlogPosts, type BlogPost } from '../api';
 
 const BlogSection = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);

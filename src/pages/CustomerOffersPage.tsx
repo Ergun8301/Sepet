@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, User, LogOut, Navigation } from 'lucide-react';
-import { getActiveOffers, type Offer } from '../../lib/api';
+import { getActiveOffers, type Offer } from '../api';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';

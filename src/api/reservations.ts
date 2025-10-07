@@ -87,11 +87,14 @@ export const createReservation = async (offerId: string, merchantId: string, qua
 
 export const getClientReservations = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (sessionError || !session?.user) {
+      console.error('Session error:', sessionError);
       return { success: false, error: 'User not authenticated', data: [] };
     }
+
+    const user = session.user;
 
     const { data, error } = await supabase
       .from('reservations')
@@ -117,11 +120,14 @@ export const getClientReservations = async () => {
 
 export const getMerchantReservations = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (sessionError || !session?.user) {
+      console.error('Session error:', sessionError);
       return { success: false, error: 'User not authenticated', data: [] };
     }
+
+    const user = session.user;
 
     const { data, error } = await supabase
       .from('reservations')

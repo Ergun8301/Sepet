@@ -1,19 +1,14 @@
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase, isSupabaseAvailable } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseAvailable()) {
-      setLoading(false);
-      return;
-    }
-
     // Get initial session
-    supabase!.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
       }
@@ -30,7 +25,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase!.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
 
       if (event === 'SIGNED_IN' && session) {
