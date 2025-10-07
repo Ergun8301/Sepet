@@ -1,215 +1,50 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, MapPinOff, LogOut, User, ShoppingCart, Map as MapIcon } from 'lucide-react';
+import { Clock, MapPinOff, Settings, LogOut, User, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { useClientLocation } from '../hooks/useClientLocation';
+import { useNearbyOffers } from '../hooks/useNearbyOffers';
+import { createReservation } from '../api/reservations';
 import { OffersMap } from '../components/OffersMap';
 import { QuantityModal } from '../components/QuantityModal';
-import { createReservation } from '../api/reservations';
-
-interface OfferWithLocation {
-  id: string;
-  merchant_id: string;
-  merchant_name: string;
-  title: string;
-  description: string;
-  image_url: string | null;
-  price_before: number;
-  price_after: number;
-  discount_percent: number;
-  available_from: string;
-  available_until: string;
-  quantity: number;
-  location: string | null;
-  distance_m?: number;
-}
+import { smartSortOffers, formatTimeLeft, getUrgencyColor } from '../utils/offersSorting';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
 const CustomerOffersMapPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const [offers, setOffers] = useState<OfferWithLocation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [radiusKm, setRadiusKm] = useState(20);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showAllOffers, setShowAllOffers] = useState(false);
-
   const offerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Parse PostGIS POINT format
-  const parseLocation = (locationString: string | null): { lat: number; lng: number } | null => {
-    if (!locationString) return null;
-    const match = locationString.match(/POINT\(([^ ]+) ([^ ]+)\)/);
-    if (!match) return null;
-    const lng = parseFloat(match[1]);
-    const lat = parseFloat(match[2]);
-    if (isNaN(lat) || isNaN(lng)) return null;
-    return { lat, lng };
-  };
+  const { location, loading: locationLoading } = useClientLocation(user?.id || null);
 
-  // Calculate distance between two points (Haversine formula)
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371000; // Earth radius in meters
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const {
+    offers: nearbyOffers,
+    loading: offersLoading,
+    refetch
+  } = useNearbyOffers({
+    clientId: user?.id || null,
+    radiusKm: showAllOffers ? 1000 : radiusKm, // 1000km = essentially all offers
+    enabled: !!user && !!location
+  });
 
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  // Smart sort offers
+  const sortedOffers = smartSortOffers(nearbyOffers);
 
-    return R * c;
-  };
-
-  // Fetch user location from clients table
-  useEffect(() => {
-    const fetchUserLocation = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('clients')
-          .select('location')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching user location:', error);
-          return;
-        }
-
-        if (data?.location) {
-          const coords = parseLocation(data.location);
-          if (coords) {
-            setUserLocation(coords);
-          }
-        }
-      } catch (err) {
-        console.error('Error:', err);
-      }
-    };
-
-    fetchUserLocation();
-  }, [user]);
-
-  // Fetch offers with location
-  useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        setLoading(true);
-        const now = new Date().toISOString();
-
-        const { data, error } = await supabase
-          .from('offers')
-          .select(`
-            id,
-            merchant_id,
-            title,
-            description,
-            image_url,
-            price_before,
-            price_after,
-            discount_percent,
-            available_from,
-            available_until,
-            quantity,
-            location,
-            merchants!inner(company_name)
-          `)
-          .eq('is_active', true)
-          .gte('available_until', now)
-          .lte('available_from', now)
-          .not('location', 'is', null);
-
-        if (error) {
-          console.error('Error fetching offers:', error);
-          return;
-        }
-
-        if (!data) {
-          setOffers([]);
-          return;
-        }
-
-        // Format offers and calculate distances
-        const formattedOffers: OfferWithLocation[] = data.map((offer: any) => ({
-          id: offer.id,
-          merchant_id: offer.merchant_id,
-          merchant_name: offer.merchants?.company_name || 'Unknown',
-          title: offer.title,
-          description: offer.description || '',
-          image_url: offer.image_url,
-          price_before: parseFloat(offer.price_before),
-          price_after: parseFloat(offer.price_after),
-          discount_percent: offer.discount_percent,
-          available_from: offer.available_from,
-          available_until: offer.available_until,
-          quantity: offer.quantity,
-          location: offer.location
-        }));
-
-        // Filter by radius if user location is available
-        if (userLocation && !showAllOffers) {
-          const filteredOffers = formattedOffers
-            .map(offer => {
-              const offerCoords = parseLocation(offer.location);
-              if (!offerCoords) return null;
-
-              const distance = calculateDistance(
-                userLocation.lat,
-                userLocation.lng,
-                offerCoords.lat,
-                offerCoords.lng
-              );
-
-              return { ...offer, distance_m: distance };
-            })
-            .filter((offer): offer is OfferWithLocation & { distance_m: number } =>
-              offer !== null && offer.distance_m <= radiusKm * 1000
-            )
-            .sort((a, b) => a.distance_m - b.distance_m);
-
-          setOffers(filteredOffers);
-        } else {
-          // Show all offers if showAllOffers or no user location
-          setOffers(formattedOffers);
-        }
-      } catch (err) {
-        console.error('Error fetching offers:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchOffers();
-
-      // Subscribe to realtime updates
-      const channel = supabase
-        .channel('offers-map-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'offers'
-          },
-          () => {
-            fetchOffers();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user, userLocation, radiusKm, showAllOffers]);
+  // Prepare offers for map
+  const mapOffers = sortedOffers.map(offer => ({
+    id: offer.id,
+    title: offer.title,
+    lat: 0, // Will be set from location
+    lng: 0,
+    price: offer.price_after,
+    image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+    discount: offer.discount_percent
+  }));
 
   useEffect(() => {
     if (toast) {
@@ -217,41 +52,6 @@ const CustomerOffersMapPage = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-  const formatTimeLeft = (dateString: string): string => {
-    const now = new Date();
-    const end = new Date(dateString);
-    const diff = end.getTime() - now.getTime();
-
-    if (diff <= 0) return 'Expired';
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (hours >= 24) {
-      const days = Math.floor(hours / 24);
-      return `${days} day${days > 1 ? 's' : ''} left`;
-    }
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m left`;
-    }
-
-    return `${minutes}m left`;
-  };
-
-  const getUrgencyColor = (dateString: string): string => {
-    const now = new Date();
-    const end = new Date(dateString);
-    const hours = (end.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    if (hours < 0) return 'text-gray-400';
-    if (hours <= 2) return 'text-red-600 font-bold';
-    if (hours <= 6) return 'text-red-600';
-    if (hours <= 12) return 'text-orange-600';
-    if (hours <= 24) return 'text-yellow-600';
-    return 'text-green-600';
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -263,11 +63,12 @@ const CustomerOffersMapPage = () => {
       setToast({ message: 'Please sign in to make a reservation', type: 'error' });
       return;
     }
+
     setSelectedOfferId(offerId);
   };
 
   const handleConfirmReservation = async (quantity: number) => {
-    const offer = offers.find(o => o.id === selectedOfferId);
+    const offer = sortedOffers.find(o => o.id === selectedOfferId);
     if (!offer) return;
 
     setReserving(true);
@@ -277,13 +78,7 @@ const CustomerOffersMapPage = () => {
       if (result.success) {
         setToast({ message: '✓ Reservation confirmed!', type: 'success' });
         setSelectedOfferId(null);
-
-        // Update local state
-        setOffers(prevOffers =>
-          prevOffers.map(o =>
-            o.id === offer.id ? { ...o, quantity: o.quantity - quantity } : o
-          )
-        );
+        refetch();
       } else {
         setToast({ message: result.error || 'Failed to create reservation', type: 'error' });
       }
@@ -305,22 +100,16 @@ const CustomerOffersMapPage = () => {
     }
   };
 
-  // Prepare offers for map
-  const mapOffers = offers
-    .map(offer => {
-      const coords = parseLocation(offer.location);
-      if (!coords) return null;
-      return {
-        id: offer.id,
-        title: offer.title,
-        lat: coords.lat,
-        lng: coords.lng,
-        price: offer.price_after,
-        image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
-        discount: offer.discount_percent
-      };
-    })
-    .filter((offer): offer is NonNullable<typeof offer> => offer !== null);
+  const handleChangeLocation = () => {
+    navigate('/profile');
+  };
+
+  const userLocationCoords = location
+    ? (() => {
+        const match = location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+        return match ? { lat: parseFloat(match[2]), lng: parseFloat(match[1]) } : null;
+      })()
+    : null;
 
   if (!user) {
     return (
@@ -329,7 +118,7 @@ const CustomerOffersMapPage = () => {
           <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
           <p className="text-gray-600 mb-6">
-            Please sign in to view offers near you on the map.
+            Please sign in to view offers near you and make reservations.
           </p>
           <button
             onClick={() => navigate('/customer/auth')}
@@ -342,7 +131,7 @@ const CustomerOffersMapPage = () => {
     );
   }
 
-  if (loading) {
+  if (locationLoading || offersLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -360,15 +149,21 @@ const CustomerOffersMapPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-                <MapIcon className="w-6 h-6 text-green-600" />
-                <span>Offers Map</span>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Offers Near You
               </h1>
               <p className="text-sm text-gray-600">
-                {offers.length} offer{offers.length !== 1 ? 's' : ''} {showAllOffers ? 'in all areas' : `within ${radiusKm} km`}
+                {sortedOffers.length} offer{sortedOffers.length !== 1 ? 's' : ''} within {showAllOffers ? 'all areas' : `${radiusKm} km`}
               </p>
             </div>
             <div className="flex items-center space-x-3">
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Settings"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
               <button
                 onClick={() => navigate('/profile')}
                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -389,24 +184,8 @@ const CustomerOffersMapPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* No location warning */}
-        {!userLocation && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6">
-            <h3 className="text-lg font-semibold text-yellow-900 mb-2">Location Not Set</h3>
-            <p className="text-yellow-800 mb-4">
-              Please set your location in your profile to see offers on the map.
-            </p>
-            <button
-              onClick={() => navigate('/profile')}
-              className="bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-700 transition-colors"
-            >
-              Go to Profile
-            </button>
-          </div>
-        )}
-
         {/* No offers message */}
-        {userLocation && !showAllOffers && offers.length === 0 && (
+        {!showAllOffers && sortedOffers.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center mb-8">
             <MapPinOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -423,7 +202,7 @@ const CustomerOffersMapPage = () => {
                 View All Offers
               </button>
               <button
-                onClick={() => navigate('/profile')}
+                onClick={handleChangeLocation}
                 className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
               >
                 Change Location
@@ -433,10 +212,10 @@ const CustomerOffersMapPage = () => {
         )}
 
         {/* Map */}
-        {userLocation && mapOffers.length > 0 && (
+        {userLocationCoords && sortedOffers.length > 0 && (
           <div className="mb-8">
             <OffersMap
-              userLocation={userLocation}
+              userLocation={userLocationCoords}
               offers={mapOffers}
               radiusKm={radiusKm}
               onRadiusChange={(radius) => {
@@ -449,9 +228,9 @@ const CustomerOffersMapPage = () => {
         )}
 
         {/* Offers Grid */}
-        {offers.length > 0 && (
+        {sortedOffers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {offers.map((offer) => (
+            {sortedOffers.map((offer) => (
               <div
                 key={offer.id}
                 ref={(el) => { offerRefs.current[offer.id] = el; }}
@@ -466,7 +245,7 @@ const CustomerOffersMapPage = () => {
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
                     -{offer.discount_percent}%
                   </div>
-                  <div className={`absolute top-4 right-4 flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-semibold ${getUrgencyColor(offer.available_until)} bg-white`}>
+                  <div className={`absolute top-4 right-4 flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-semibold ${getUrgencyColor(offer.expiresInHours)} bg-white`}>
                     <Clock className="w-4 h-4" />
                     <span>{formatTimeLeft(offer.available_until)}</span>
                   </div>
@@ -478,12 +257,8 @@ const CustomerOffersMapPage = () => {
 
                   <div className="flex items-center text-sm text-gray-500 mb-3">
                     <span>{offer.merchant_name}</span>
-                    {offer.distance_m !== undefined && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{(offer.distance_m / 1000).toFixed(1)} km away</span>
-                      </>
-                    )}
+                    <span className="mx-2">•</span>
+                    <span>{(offer.distance_m / 1000).toFixed(1)} km away</span>
                   </div>
 
                   <div className="flex items-center justify-between mb-4">
@@ -516,7 +291,7 @@ const CustomerOffersMapPage = () => {
 
       {/* Quantity Modal */}
       {selectedOfferId && (() => {
-        const offer = offers.find(o => o.id === selectedOfferId);
+        const offer = sortedOffers.find(o => o.id === selectedOfferId);
         return offer ? (
           <QuantityModal
             isOpen={true}
