@@ -29,6 +29,7 @@ const MerchantDashboardPage = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [togglingOfferId, setTogglingOfferId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -364,6 +365,12 @@ const MerchantDashboardPage = () => {
       return;
     }
 
+    // Prevent double-clicks
+    if (togglingOfferId === offerId) {
+      console.log('Already toggling this offer, ignoring...');
+      return;
+    }
+
     const newStatus = !currentStatus;
     const actionText = newStatus ? 'Activating' : 'Pausing';
 
@@ -372,6 +379,8 @@ const MerchantDashboardPage = () => {
       old_status: currentStatus,
       new_status: newStatus
     });
+
+    setTogglingOfferId(offerId);
 
     try {
       console.log('Updating is_active in Supabase...');
@@ -412,6 +421,7 @@ const MerchantDashboardPage = () => {
         console.warn('No audit log entry found for this update');
       }
 
+      // Update local state immediately
       setOffers(offers.map(o => o.id === offerId ? data : o));
 
       const successMessage = newStatus ? '✅ Offer activated' : '✅ Offer paused';
@@ -424,7 +434,9 @@ const MerchantDashboardPage = () => {
         details: error.details,
         hint: error.hint
       });
-      setToast({ message: error.message || 'Failed to update status', type: 'error' });
+      setToast({ message: '❌ Failed to update offer status', type: 'error' });
+    } finally {
+      setTogglingOfferId(null);
     }
   };
 
@@ -694,13 +706,26 @@ const MerchantDashboardPage = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => toggleOfferStatus(offer.id, offer.is_active)}
-                      className={'flex-1 flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (status === 'active' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : status === 'paused' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 cursor-not-allowed')}
-                      disabled={status === 'expired'}
+                      className={'flex-1 flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ' +
+                        (togglingOfferId === offer.id
+                          ? 'bg-gray-200 text-gray-500 cursor-wait opacity-60'
+                          : status === 'active'
+                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : status === 'paused'
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        )}
+                      disabled={status === 'expired' || togglingOfferId === offer.id}
                     >
-                      {status === 'active' ? (
-                        <><Pause className="w-4 h-4 mr-1" /> Pause</>
+                      {togglingOfferId === offer.id ? (
+                        <>
+                          <div className="w-4 h-4 mr-1 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          {status === 'active' ? 'Pausing...' : 'Activating...'}
+                        </>
+                      ) : status === 'active' ? (
+                        <><Pause className="w-4 h-4 mr-1" /> Pause Offer</>
                       ) : (
-                        <><Play className="w-4 h-4 mr-1" /> Activate</>
+                        <><Play className="w-4 h-4 mr-1" /> Activate Offer</>
                       )}
                     </button>
                     <button
