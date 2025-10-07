@@ -82,7 +82,22 @@ const MerchantAuthPage = () => {
         navigate('/merchant/dashboard');
       } else {
         // Registration flow
-        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        console.log('=== MERCHANT SIGNUP DEBUG ===');
+        console.log('Email:', formData.email);
+        console.log('Password length:', formData.password.length);
+        console.log('Form data:', {
+          user_type: 'merchant',
+          company_name: formData.company_name,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          street: formData.street,
+          city: formData.city,
+          postal_code: formData.postal_code,
+          country: formData.country
+        });
+
+        const signUpPayload = {
           email: formData.email,
           password: formData.password,
           options: {
@@ -98,12 +113,35 @@ const MerchantAuthPage = () => {
               country: formData.country
             }
           }
+        };
+
+        console.log('SignUp payload:', JSON.stringify(signUpPayload, null, 2));
+
+        const { data: authData, error: signUpError } = await supabase.auth.signUp(signUpPayload);
+
+        console.log('SignUp response:', {
+          hasData: !!authData,
+          hasUser: !!authData?.user,
+          userId: authData?.user?.id,
+          userEmail: authData?.user?.email,
+          hasError: !!signUpError,
+          errorMessage: signUpError?.message,
+          errorDetails: signUpError,
+          fullResponse: authData
         });
 
-        if (signUpError) throw signUpError;
-        if (!authData.user) throw new Error('Registration failed');
+        if (signUpError) {
+          console.error('SignUp error details:', signUpError);
+          throw signUpError;
+        }
+
+        if (!authData.user) {
+          console.error('No user in authData:', authData);
+          throw new Error('Registration failed - no user returned');
+        }
 
         const userId = authData.user.id;
+        console.log('User ID from auth:', userId);
 
         // Wait for the profile to be created by the trigger
         // Poll the database to confirm the merchant record exists
@@ -111,8 +149,11 @@ const MerchantAuthPage = () => {
         let attempts = 0;
         const maxAttempts = 10;
 
+        console.log('Starting profile verification polling...');
+
         while (!merchantExists && attempts < maxAttempts) {
           attempts++;
+          console.log(`Polling attempt ${attempts}/${maxAttempts}...`);
           await new Promise(resolve => setTimeout(resolve, 300));
 
           const { data: merchant, error: checkError } = await supabase
@@ -121,12 +162,21 @@ const MerchantAuthPage = () => {
             .eq('id', userId)
             .maybeSingle();
 
+          console.log(`Attempt ${attempts} result:`, {
+            hasMerchant: !!merchant,
+            merchantId: merchant?.id,
+            hasError: !!checkError,
+            error: checkError
+          });
+
           if (merchant && !checkError) {
             merchantExists = true;
+            console.log('Merchant profile confirmed!');
           }
         }
 
         if (!merchantExists) {
+          console.error('Profile creation timeout after', attempts, 'attempts');
           throw new Error('Profile creation timeout. Please contact support.');
         }
 
@@ -137,7 +187,16 @@ const MerchantAuthPage = () => {
         setTimeout(() => navigate('/merchant/dashboard'), 1500);
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      console.error('=== SIGNUP ERROR ===');
+      console.error('Error object:', err);
+      console.error('Error message:', err.message);
+      console.error('Error name:', err.name);
+      console.error('Error stack:', err.stack);
+      console.error('Full error:', JSON.stringify(err, null, 2));
+
+      const errorMessage = err.message || 'An error occurred';
+      console.error('Setting error message:', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
