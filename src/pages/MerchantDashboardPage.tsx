@@ -27,6 +27,8 @@ const MerchantDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -395,6 +397,165 @@ const MerchantDashboardPage = () => {
     }
   };
 
+  const openEditModal = (offer: Offer) => {
+    console.log('Opening edit modal for offer:', offer);
+    setEditingOffer(offer);
+    setFormData({
+      title: offer.title,
+      description: offer.description,
+      image: null,
+      imagePreview: offer.image_url || '',
+      price_before: offer.price_before.toString(),
+      price_after: offer.price_after.toString(),
+      quantity: offer.quantity.toString(),
+      available_from: offer.available_from,
+      available_until: offer.available_until,
+      startNow: false,
+      duration: '2h',
+      customDuration: ''
+    });
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingOffer(null);
+    setFormData({
+      title: '',
+      description: '',
+      image: null,
+      imagePreview: '',
+      price_before: '',
+      price_after: '',
+      quantity: '',
+      available_from: '',
+      available_until: '',
+      startNow: true,
+      duration: '2h',
+      customDuration: ''
+    });
+  };
+
+  const handleUpdateOffer = async () => {
+    if (!user || !editingOffer) {
+      console.error('User not authenticated or no offer selected');
+      setToast({ message: 'Cannot update offer', type: 'error' });
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.title.trim()) {
+      setToast({ message: 'Title is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.price_before || parseFloat(formData.price_before) <= 0) {
+      setToast({ message: 'Valid price before is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.price_after || parseFloat(formData.price_after) <= 0) {
+      setToast({ message: 'Valid price after is required', type: 'error' });
+      return;
+    }
+
+    if (!formData.quantity || parseInt(formData.quantity) < 0) {
+      setToast({ message: 'Valid quantity is required', type: 'error' });
+      return;
+    }
+
+    if (parseFloat(formData.price_after) >= parseFloat(formData.price_before)) {
+      setToast({ message: 'Discounted price must be lower than original price', type: 'error' });
+      return;
+    }
+
+    console.log('=== BEFORE UPDATE ===');
+    console.log('Old offer data:', {
+      id: editingOffer.id,
+      title: editingOffer.title,
+      description: editingOffer.description,
+      price_before: editingOffer.price_before,
+      price_after: editingOffer.price_after,
+      quantity: editingOffer.quantity,
+      discount_percent: editingOffer.discount_percent
+    });
+
+    setIsPublishing(true);
+    try {
+      let imageUrl = editingOffer.image_url;
+      if (formData.image) {
+        console.log('Uploading new image to Supabase storage...');
+        const randomId = crypto.randomUUID();
+        const path = `offers/${user.id}/${randomId}.jpg`;
+        imageUrl = await uploadImageToSupabase(formData.image, path);
+        console.log('New image uploaded successfully:', imageUrl);
+      }
+
+      const discountPercent = calculateDiscount(formData.price_before, formData.price_after);
+      console.log('Calculated new discount:', discountPercent + '%');
+
+      const updatedData = {
+        title: formData.title,
+        description: formData.description,
+        image_url: imageUrl,
+        price_before: parseFloat(formData.price_before),
+        price_after: parseFloat(formData.price_after),
+        quantity: parseInt(formData.quantity),
+        available_from: formData.available_from,
+        available_until: formData.available_until,
+        discount_percent: discountPercent
+      };
+
+      console.log('=== AFTER UPDATE (new data) ===');
+      console.log('Updated offer data:', updatedData);
+
+      console.log('Updating offer in Supabase...');
+      const { data, error } = await supabase
+        .from('offers')
+        .update(updatedData)
+        .eq('id', editingOffer.id)
+        .eq('merchant_id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('✅ Offer updated successfully:', data);
+      console.log('Updated offer ID:', data.id);
+
+      // Verify audit log entry was created
+      const { data: auditLog, error: auditError } = await supabase
+        .from('audit_log')
+        .select('*')
+        .eq('table_name', 'offers')
+        .eq('record_id', data.id)
+        .eq('action', 'UPDATE')
+        .order('changed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (auditLog) {
+        console.log('✅ Audit log entry created:', auditLog);
+        console.log('Audit log old_data:', auditLog.old_data);
+        console.log('Audit log new_data:', auditLog.new_data);
+      } else if (auditError) {
+        console.warn('Could not verify audit log:', auditError);
+      }
+
+      setOffers(offers.map(o => o.id === editingOffer.id ? data : o));
+      closeEditModal();
+      setToast({ message: '✅ Offer updated successfully', type: 'success' });
+    } catch (error: any) {
+      console.error('❌ Error updating offer:', error);
+      setToast({ message: error.message || 'Failed to update offer', type: 'error' });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -490,6 +651,13 @@ const MerchantDashboardPage = () => {
                       ) : (
                         <><Play className="w-4 h-4 mr-1" /> Activate</>
                       )}
+                    </button>
+                    <button
+                      onClick={() => openEditModal(offer)}
+                      className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => deleteOffer(offer.id)}
@@ -706,6 +874,152 @@ const MerchantDashboardPage = () => {
                 className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPublishing ? 'Publishing...' : 'Publish Product'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingOffer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Edit Product</h2>
+              <button onClick={closeEditModal} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Fresh Croissants Box"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                  placeholder="Describe your product..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                <div className="flex items-center space-x-4">
+                  <label className="flex-1 flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
+                    <Upload className="w-5 h-5 text-gray-400 mr-2" />
+                    <span className="text-sm text-gray-600">
+                      {formData.image ? formData.image.name : 'Upload new image (optional)'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {formData.imagePreview && (
+                  <div className="mt-3">
+                    <img src={formData.imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Original Price</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      name="price_before"
+                      value={formData.price_before}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      min="0"
+                      placeholder="20.00"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <span className="absolute right-3 top-2.5 text-gray-500">€</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Discounted Price</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      name="price_after"
+                      value={formData.price_after}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      min="0"
+                      placeholder="10.00"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <span className="absolute right-3 top-2.5 text-gray-500">€</span>
+                  </div>
+                  {formData.price_before && formData.price_after && (
+                    <p className="text-sm text-green-600 mt-1">
+                      {calculateDiscount(formData.price_before, formData.price_after)}% discount
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity Available</label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  min="0"
+                  placeholder="10"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available From</label>
+                <input
+                  type="datetime-local"
+                  name="available_from"
+                  value={formData.available_from}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Until</label>
+                <input
+                  type="datetime-local"
+                  name="available_until"
+                  value={formData.available_until}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <button
+                onClick={handleUpdateOffer}
+                disabled={isPublishing || !formData.title || !formData.description || !formData.price_before || !formData.price_after || !formData.available_from || !formData.available_until}
+                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isPublishing ? 'Updating...' : 'Update Product'}
               </button>
             </div>
           </div>
