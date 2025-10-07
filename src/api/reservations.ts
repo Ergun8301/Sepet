@@ -27,7 +27,7 @@ export interface Reservation {
 
 export const createReservation = async (offerId: string, merchantId: string, quantity: number = 1) => {
   try {
-    console.log('Creating reservation:', { offerId, merchantId, quantity });
+    console.log('Creating reservation with stock check:', { offerId, merchantId, quantity });
 
     // Get current session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -54,21 +54,18 @@ export const createReservation = async (offerId: string, merchantId: string, qua
       return { success: false, error: 'Invalid offer: missing merchant information' };
     }
 
-    console.log('Inserting reservation into Supabase...');
-    const { data, error } = await supabase
-      .from('reservations')
-      .insert({
-        client_id: userId,
-        merchant_id: merchantId,
-        offer_id: offerId,
-        quantity: quantity,
-        status: 'pending'
-      })
-      .select()
-      .single();
+    console.log('Calling create_reservation_with_stock_check function...');
+
+    // Call PostgreSQL function for atomic reservation with stock deduction
+    const { data, error } = await supabase.rpc('create_reservation_with_stock_check', {
+      p_client_id: userId,
+      p_merchant_id: merchantId,
+      p_offer_id: offerId,
+      p_quantity: quantity
+    });
 
     if (error) {
-      console.error('Supabase error creating reservation:', {
+      console.error('Supabase RPC error:', {
         code: error.code,
         message: error.message,
         details: error.details,
@@ -77,8 +74,19 @@ export const createReservation = async (offerId: string, merchantId: string, qua
       return { success: false, error: error.message };
     }
 
-    console.log('Reservation created successfully:', data);
-    return { success: true, data };
+    console.log('RPC response:', data);
+
+    // The function returns a JSON object with success/error
+    if (!data || !data.success) {
+      const errorMessage = data?.error || 'Failed to create reservation';
+      console.error('Reservation failed:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
+
+    console.log('Reservation created successfully with stock deduction:', data.data);
+    console.log('Remaining stock:', data.data.remaining_stock);
+
+    return { success: true, data: data.data };
   } catch (err: any) {
     console.error('Exception creating reservation:', err);
     return { success: false, error: err.message || 'An unexpected error occurred' };

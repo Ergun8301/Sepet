@@ -17,6 +17,7 @@ interface Offer {
   available_until: string;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
   quantity: number;
 }
 
@@ -91,7 +92,7 @@ const MerchantDashboardPage = () => {
         .from('offers')
         .select('*')
         .eq('merchant_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
       setOffers(data || []);

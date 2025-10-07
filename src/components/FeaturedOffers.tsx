@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Star, Heart, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Star, Heart, ArrowRight, MapPinOff } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../api/offers';
 import { useAuth } from '../hooks/useAuth';
 import { QuantityModal } from './QuantityModal';
 import { createReservation } from '../api/reservations';
 import { supabase } from '../lib/supabaseClient';
+import { useNearbyOffers } from '../hooks/useNearbyOffers';
+import { useClientLocation } from '../hooks/useClientLocation';
 
 const FeaturedOffers = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -13,31 +15,71 @@ const FeaturedOffers = () => {
   const [reserving, setReserving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { user } = useAuth();
+  const { location: clientLocation } = useClientLocation(user?.id || null);
+
+  // Use nearby offers for authenticated users, all offers for guests
+  const {
+    offers: nearbyOffers,
+    loading: nearbyLoading
+  } = useNearbyOffers({
+    clientId: user?.id || null,
+    radiusKm: 50,
+    enabled: !!user && !!clientLocation
+  });
 
   useEffect(() => {
-    fetchOffers();
+    // For non-authenticated users, fetch all offers
+    if (!user) {
+      fetchOffers();
 
-    // Subscribe to realtime updates on offers table
-    const channel = supabase
-      .channel('featured-offers-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'offers'
-        },
-        (payload) => {
-          console.log('Featured offers table changed:', payload);
-          fetchOffers();
-        }
-      )
-      .subscribe();
+      // Subscribe to realtime updates on offers table
+      const channel = supabase
+        .channel('featured-offers-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'offers'
+          },
+          (payload) => {
+            console.log('Featured offers table changed:', payload);
+            fetchOffers();
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      // For authenticated users, use nearby offers from hook
+      setLoading(nearbyLoading);
+      if (!nearbyLoading) {
+        const formattedOffers = nearbyOffers.map(offer => ({
+          id: offer.id,
+          title: offer.title,
+          description: offer.description,
+          original_price: offer.price_before,
+          discounted_price: offer.price_after,
+          discount_percentage: offer.discount_percent,
+          image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
+          quantity: offer.quantity,
+          merchant_id: offer.merchant_id,
+          merchant: {
+            company_name: offer.merchant_name,
+            full_address: '',
+            street: '',
+            city: '',
+            avg_rating: 4.5
+          },
+          available_until: offer.available_until,
+          is_active: true
+        }));
+        setOffers(formattedOffers);
+      }
+    }
+  }, [user, nearbyOffers, nearbyLoading]);
 
   useEffect(() => {
     if (toast) {
@@ -77,6 +119,12 @@ const FeaturedOffers = () => {
     if (!user) {
       console.log('User not authenticated, cannot reserve');
       setToast({ message: 'Please sign in to make a reservation', type: 'error' });
+      return;
+    }
+
+    if (!clientLocation) {
+      console.warn('User location not available yet');
+      setToast({ message: 'Please wait while we load your location...', type: 'error' });
       return;
     }
 
@@ -164,12 +212,29 @@ const FeaturedOffers = () => {
 
         {offers.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600 mb-6">
-              No offers available yet. Check back soon!
-            </p>
-            <p className="text-gray-500">
-              Merchants can add offers through their dashboard.
-            </p>
+            {user ? (
+              <>
+                <MapPinOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-xl text-gray-600 mb-6">
+                  Aucune offre disponible dans votre zone
+                </p>
+                <p className="text-gray-500 mb-4">
+                  Nous n'avons trouvé aucune offre dans un rayon de 50km autour de votre position.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Modifiez votre adresse dans votre profil ou vérifiez plus tard pour de nouvelles offres.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl text-gray-600 mb-6">
+                  No offers available yet. Check back soon!
+                </p>
+                <p className="text-gray-500">
+                  Merchants can add offers through their dashboard.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>
