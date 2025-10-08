@@ -47,6 +47,16 @@ const CustomerOffersMapPage = () => {
   }));
 
   useEffect(() => {
+    const savedRadius = localStorage.getItem('searchRadius');
+    if (savedRadius) {
+      const radius = parseInt(savedRadius, 10);
+      if (!isNaN(radius) && radius >= 1 && radius <= 50) {
+        setRadiusKm(radius);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 4000);
       return () => clearTimeout(timer);

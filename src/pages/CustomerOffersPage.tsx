@@ -28,10 +28,18 @@ const CustomerOffersPage = () => {
   const categories = ['All', 'Bakery', 'Fruits', 'Ready Meals', 'Drinks'];
 
   useEffect(() => {
+    const savedRadius = localStorage.getItem('searchRadius');
+    if (savedRadius) {
+      const radius = parseInt(savedRadius, 10);
+      if (!isNaN(radius) && radius >= 1 && radius <= 50) {
+        setRadiusKm(radius);
+      }
+    }
+
     const radiusParam = searchParams.get('radius');
     if (radiusParam) {
       const radius = parseInt(radiusParam, 10);
-      if (!isNaN(radius) && radius >= 1 && radius <= 30) {
+      if (!isNaN(radius) && radius >= 1 && radius <= 50) {
         setRadiusKm(radius);
       }
     }
