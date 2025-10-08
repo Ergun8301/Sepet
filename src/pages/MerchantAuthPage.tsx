@@ -67,10 +67,6 @@ const MerchantAuthPage = () => {
     setError('');
     setSuccess('');
 
-    console.log('=== FORM SUBMISSION ===');
-    console.log('Active tab:', activeTab);
-    console.log('Form data snapshot:', JSON.stringify(formData, null, 2));
-
     try {
       if (activeTab === 'login') {
         const { error } = await supabase.auth.signInWithPassword({
@@ -86,21 +82,6 @@ const MerchantAuthPage = () => {
         navigate('/merchant/dashboard');
       } else {
         // Registration flow
-        console.log('=== MERCHANT SIGNUP DEBUG ===');
-        console.log('Email:', formData.email);
-        console.log('Password length:', formData.password.length);
-        console.log('Form data:', {
-          user_type: 'merchant',
-          company_name: formData.company_name,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          phone: formData.phone,
-          street: formData.street,
-          city: formData.city,
-          postal_code: formData.postal_code,
-          country: formData.country
-        });
-
         const signUpOptions = {
           data: {
             user_type: 'merchant',
@@ -116,141 +97,40 @@ const MerchantAuthPage = () => {
           emailRedirectTo: `${window.location.origin}/merchant/dashboard`
         };
 
-        console.log('=== SIGNUP OPTIONS.DATA ===', JSON.stringify(signUpOptions.data, null, 2));
-        console.log('Company name value:', signUpOptions.data.company_name);
-        console.log('User type value:', signUpOptions.data.user_type);
-
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: signUpOptions
         });
 
-        console.log('=== SIGNUP RESPONSE ===');
-        console.log('Has data:', !!authData);
-        console.log('Has user:', !!authData?.user);
-        console.log('User ID:', authData?.user?.id);
-        console.log('User email:', authData?.user?.email);
-        console.log('User metadata:', authData?.user?.user_metadata);
-        console.log('Raw user metadata:', authData?.user?.raw_user_meta_data);
-        console.log('Has error:', !!signUpError);
-        console.log('Error message:', signUpError?.message);
-        console.log('Full auth data:', authData);
-        console.log('Full error:', signUpError);
+        if (signUpError) throw signUpError;
 
-        if (signUpError) {
-          console.error('SignUp error details:', signUpError);
-          throw signUpError;
-        }
-
-        if (!authData.user) {
-          console.error('No user in authData:', authData);
-          throw new Error('Registration failed - no user returned');
-        }
+        if (!authData.user) throw new Error('Registration failed - no user returned');
 
         const userId = authData.user.id;
-        console.log('=== PROFILE POLLING ===');
-        console.log('POLL id =', userId);
-        console.log('User metadata from response:', authData.user.user_metadata);
 
         // Wait for the profile to be created by the trigger
-        // Poll the database to confirm the merchant record exists
         let merchantExists = false;
         let attempts = 0;
-        const maxAttempts = 10;
-
-        console.log('Starting profile verification polling for user:', userId);
+        const maxAttempts = 5;
 
         while (!merchantExists && attempts < maxAttempts) {
           attempts++;
-          console.log(`\n--- Polling attempt ${attempts}/${maxAttempts} ---`);
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 400));
 
           const { data: merchant, error: checkError } = await supabase
             .from('merchants')
-            .select('id, company_name, email, created_at')
+            .select('id')
             .eq('id', userId)
             .maybeSingle();
 
-          console.log('Query result:', {
-            hasMerchant: !!merchant,
-            merchant: merchant,
-            hasError: !!checkError,
-            errorCode: checkError?.code,
-            errorMessage: checkError?.message,
-            errorDetails: checkError
-          });
-
           if (merchant && !checkError) {
             merchantExists = true;
-            console.log('✓ Merchant profile confirmed!', merchant);
-          } else if (checkError) {
-            console.error('Error checking merchant:', checkError);
-          } else {
-            console.log('Merchant not found yet, will retry...');
           }
         }
 
         if (!merchantExists) {
-          console.error('=== PROFILE CREATION TIMEOUT ===');
-          console.error('Profile creation timeout after', attempts, 'attempts (3 seconds)');
-          console.error('User ID:', userId);
-          console.error('This means the trigger did not create the merchant profile');
-
-          // Check if user exists in auth.users
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          console.error('Current authenticated user:', currentUser);
-
-          // Fallback: Call Edge Function to create profile manually
-          console.log('=== ATTEMPTING FALLBACK: EDGE FUNCTION ===');
-          try {
-            const fallbackData = {
-              user_id: userId,
-              email: formData.email,
-              company_name: formData.company_name,
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              phone: formData.phone,
-              street: formData.street,
-              city: formData.city,
-              postal_code: formData.postal_code,
-              country: formData.country || 'FR'
-            };
-
-            console.log('Calling create-merchant-profile with data:', fallbackData);
-
-            const { data: session } = await supabase.auth.getSession();
-            const token = session?.session?.access_token;
-
-            if (!token) {
-              throw new Error('No access token available');
-            }
-
-            const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-merchant-profile`,
-              {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(fallbackData)
-              }
-            );
-
-            const result = await response.json();
-            console.log('Edge function response:', result);
-
-            if (result.success) {
-              console.log('✓ Merchant profile created via Edge Function!');
-              merchantExists = true;
-            } else {
-              throw new Error(result.error || 'Edge function failed');
-            }
-          } catch (fallbackError: any) {
-            console.error('Edge function fallback failed:', fallbackError);
-            throw new Error('Profile creation failed both via trigger and fallback. Please contact support.');
-          }
+          throw new Error('Profile creation timeout. Please try again or contact support.');
         }
 
         // Set location if available
@@ -260,15 +140,8 @@ const MerchantAuthPage = () => {
         setTimeout(() => navigate('/merchant/dashboard'), 1500);
       }
     } catch (err: any) {
-      console.error('=== SIGNUP ERROR ===');
-      console.error('Error object:', err);
-      console.error('Error message:', err.message);
-      console.error('Error name:', err.name);
-      console.error('Error stack:', err.stack);
-      console.error('Full error:', JSON.stringify(err, null, 2));
-
+      console.error('Merchant auth error:', err);
       const errorMessage = err.message || 'An error occurred';
-      console.error('Setting error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
