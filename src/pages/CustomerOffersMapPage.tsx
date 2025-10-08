@@ -198,8 +198,24 @@ const CustomerOffersMapPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Map - Always show if user has location */}
+        {userLocationCoords && (
+          <div className="mb-8">
+            <OffersMap
+              userLocation={userLocationCoords}
+              offers={mapOffers}
+              radiusKm={radiusKm}
+              onRadiusChange={(radius) => {
+                setRadiusKm(radius);
+                setShowAllOffers(false);
+              }}
+              onOfferClick={handleOfferClick}
+            />
+          </div>
+        )}
+
         {/* No offers message */}
-        {!showAllOffers && sortedOffers.length === 0 && (
+        {!showAllOffers && sortedOffers.length === 0 && userLocationCoords && (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center mb-8">
             <MapPinOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -222,22 +238,6 @@ const CustomerOffersMapPage = () => {
                 Change Location
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Map */}
-        {userLocationCoords && sortedOffers.length > 0 && (
-          <div className="mb-8">
-            <OffersMap
-              userLocation={userLocationCoords}
-              offers={mapOffers}
-              radiusKm={radiusKm}
-              onRadiusChange={(radius) => {
-                setRadiusKm(radius);
-                setShowAllOffers(false);
-              }}
-              onOfferClick={handleOfferClick}
-            />
           </div>
         )}
 

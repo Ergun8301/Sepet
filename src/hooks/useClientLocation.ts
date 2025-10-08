@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-interface ClientLocation {
-  latitude: number;
-  longitude: number;
-}
-
 interface UseClientLocationReturn {
-  location: ClientLocation | null;
+  location: string | null;
   loading: boolean;
   error: string | null;
   requestGeolocation: () => Promise<void>;
@@ -15,7 +10,7 @@ interface UseClientLocationReturn {
 }
 
 export function useClientLocation(clientId: string | null): UseClientLocationReturn {
-  const [location, setLocation] = useState<ClientLocation | null>(null);
+  const [location, setLocation] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,12 +43,7 @@ export function useClientLocation(clientId: string | null): UseClientLocationRet
       }
 
       if (data?.location) {
-        const match = data.location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
-        if (match) {
-          const longitude = parseFloat(match[1]);
-          const latitude = parseFloat(match[2]);
-          setLocation({ latitude, longitude });
-        }
+        setLocation(data.location);
       }
     } catch (err) {
       console.error('Error in fetchClientLocation:', err);
@@ -95,7 +85,7 @@ export function useClientLocation(clientId: string | null): UseClientLocationRet
               setError('Impossible de sauvegarder votre position');
               reject(updateError);
             } else {
-              setLocation({ latitude, longitude });
+              setLocation(`POINT(${longitude} ${latitude})`);
               resolve();
             }
           } catch (err) {
