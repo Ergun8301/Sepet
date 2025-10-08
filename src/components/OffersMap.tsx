@@ -10,6 +10,8 @@ interface OfferLocation {
   lat: number;
   lng: number;
   price: number;
+  price_before?: number;
+  distance_km?: string;
   image_url: string;
   discount: number;
 }
@@ -153,15 +155,25 @@ export const OffersMap: React.FC<OffersMapProps> = ({
                     className="w-full h-32 object-cover rounded-lg mb-2"
                   />
                   <h4 className="font-bold text-gray-900 mb-1">{offer.title}</h4>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-green-600">${offer.price.toFixed(2)}</span>
+                  {offer.distance_km && (
+                    <p className="text-sm text-gray-600 mb-2">{offer.distance_km} km away</p>
+                  )}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg font-bold text-green-600">${offer.price.toFixed(2)}</span>
+                      {offer.price_before && (
+                        <span className="text-sm text-gray-400 line-through">
+                          ${offer.price_before.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                     <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
                       -{offer.discount}%
                     </span>
                   </div>
                   <button
                     onClick={() => onOfferClick(offer.id)}
-                    className="w-full mt-2 bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
+                    className="w-full bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
                   >
                     View Offer
                   </button>

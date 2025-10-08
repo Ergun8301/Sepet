@@ -36,15 +36,19 @@ const CustomerOffersMapPage = () => {
   const sortedOffers = smartSortOffers(nearbyOffers);
 
   // Prepare offers for map
-  const mapOffers = sortedOffers.map(offer => ({
-    id: offer.id,
-    title: offer.title,
-    lat: 0, // Will be set from location
-    lng: 0,
-    price: offer.price_after,
-    image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
-    discount: offer.discount_percent
-  }));
+  const mapOffers = sortedOffers
+    .filter(offer => offer.offer_lat && offer.offer_lng)
+    .map(offer => ({
+      id: offer.id,
+      title: offer.title,
+      lat: offer.offer_lat!,
+      lng: offer.offer_lng!,
+      price: offer.price_after,
+      price_before: offer.price_before,
+      distance_km: (offer.distance_m / 1000).toFixed(1),
+      image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+      discount: offer.discount_percent
+    }));
 
   useEffect(() => {
     const savedRadius = localStorage.getItem('searchRadius');

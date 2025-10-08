@@ -15,6 +15,8 @@ export interface NearbyOffer {
   available_until: string;
   quantity: number;
   distance_m: number;
+  offer_lat?: number;
+  offer_lng?: number;
 }
 
 interface UseNearbyOffersOptions {
@@ -150,7 +152,9 @@ export function useNearbyOffers({
           available_from: offer.available_from,
           available_until: offer.available_until,
           quantity: offer.quantity,
-          distance_m: distance
+          distance_m: distance,
+          offer_lat: offerLat,
+          offer_lng: offerLon
         };
       })
       .filter((offer): offer is NearbyOffer => offer !== null)
