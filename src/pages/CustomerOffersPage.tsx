@@ -517,6 +517,8 @@ const CustomerOffersPage = () => {
             merchant_street: isNearbyOffer ? (offer as NearbyOffer).merchant_street : undefined,
             merchant_city: isNearbyOffer ? (offer as NearbyOffer).merchant_city : undefined,
             merchant_postal_code: isNearbyOffer ? (offer as NearbyOffer).merchant_postal_code : undefined,
+            merchant_lat: isNearbyOffer ? (offer as NearbyOffer).offer_lat : undefined,
+            merchant_lng: isNearbyOffer ? (offer as NearbyOffer).offer_lng : undefined,
           };
 
           return (
@@ -529,9 +531,9 @@ const CustomerOffersPage = () => {
                 handleReserve(offer.id, merchantId);
               }}
               offer={offerData}
-              onViewMap={isNearbyOffer ? () => {
+              onViewMap={isNearbyOffer && offerData.merchant_lat && offerData.merchant_lng ? () => {
                 setViewDetailsOfferId(null);
-                navigate('/offers/map');
+                navigate(`/offers/map?lat=${offerData.merchant_lat}&lng=${offerData.merchant_lng}&offerId=${offer.id}`);
               } : undefined}
             />
           );

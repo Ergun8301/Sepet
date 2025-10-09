@@ -20,6 +20,8 @@ interface OfferDetailsModalProps {
     merchant_street?: string;
     merchant_city?: string;
     merchant_postal_code?: string;
+    merchant_lat?: number;
+    merchant_lng?: number;
   };
   onViewMap?: () => void;
 }

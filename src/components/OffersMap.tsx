@@ -22,6 +22,9 @@ interface OffersMapProps {
   radiusKm: number;
   onRadiusChange: (radius: number) => void;
   onOfferClick: (offerId: string) => void;
+  centerLat?: number;
+  centerLng?: number;
+  highlightOfferId?: string;
 }
 
 // Fix Leaflet default icon issue with Vite
@@ -30,6 +33,15 @@ Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const highlightIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
@@ -47,17 +59,23 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   offers,
   radiusKm,
   onRadiusChange,
-  onOfferClick
+  onOfferClick,
+  centerLat,
+  centerLng,
+  highlightOfferId
 }) => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
   const [mapZoom, setMapZoom] = useState(6);
 
   useEffect(() => {
-    if (userLocation) {
+    if (centerLat && centerLng) {
+      setMapCenter([centerLat, centerLng]);
+      setMapZoom(15);
+    } else if (userLocation) {
       setMapCenter([userLocation.lat, userLocation.lng]);
       setMapZoom(radiusKm <= 10 ? 13 : radiusKm <= 20 ? 11 : radiusKm <= 30 ? 10 : 9);
     }
-  }, [userLocation, radiusKm]);
+  }, [userLocation, radiusKm, centerLat, centerLng]);
 
   const radiusOptions = [10, 20, 30, 40, 50];
 
@@ -143,6 +161,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             <Marker
               key={offer.id}
               position={[offer.lat, offer.lng]}
+              icon={highlightOfferId === offer.id ? highlightIcon : undefined}
               eventHandlers={{
                 click: () => onOfferClick(offer.id)
               }}

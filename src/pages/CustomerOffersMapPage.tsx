@@ -7,18 +7,23 @@ import { createReservation } from '../api/reservations';
 import { OffersMap } from '../components/OffersMap';
 import { QuantityModal } from '../components/QuantityModal';
 import { smartSortOffers, formatTimeLeft, getUrgencyColor } from '../utils/offersSorting';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 const CustomerOffersMapPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [radiusKm, setRadiusKm] = useState(20);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showAllOffers, setShowAllOffers] = useState(false);
   const offerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const centerLat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')!) : undefined;
+  const centerLng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : undefined;
+  const highlightOfferId = searchParams.get('offerId') || undefined;
 
   const { location, loading: locationLoading } = useClientLocation(user?.id || null);
 
@@ -230,6 +235,9 @@ const CustomerOffersMapPage = () => {
                 setShowAllOffers(false);
               }}
               onOfferClick={handleOfferClick}
+              centerLat={centerLat}
+              centerLng={centerLng}
+              highlightOfferId={highlightOfferId}
             />
           </div>
         )}
