@@ -8,6 +8,7 @@ import { useClientLocation } from '../hooks/useClientLocation';
 import { useNearbyOffers, type NearbyOffer } from '../hooks/useNearbyOffers';
 import { createReservation } from '../api/reservations';
 import { QuantityModal } from '../components/QuantityModal';
+import { OfferDetailsModal } from '../components/OfferDetailsModal';
 
 const CustomerOffersPage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -17,6 +18,7 @@ const CustomerOffersPage = () => {
   const [radiusKm, setRadiusKm] = useState(10);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [viewDetailsOfferId, setViewDetailsOfferId] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { user } = useAuth();
@@ -212,7 +214,12 @@ const CustomerOffersPage = () => {
     return Math.round(100 * (1 - priceAfter / priceBefore));
   };
 
-  const displayOffers = hasLocation ? nearbyOffers : offers;
+  const unsortedOffers = hasLocation ? nearbyOffers : offers;
+  const displayOffers = [...unsortedOffers].sort((a, b) => {
+    const dateA = new Date(a.created_at || 0).getTime();
+    const dateB = new Date(b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
   const isLoading = loading || offersLoading || locationLoading;
 
   if (isLoading) {
@@ -353,7 +360,11 @@ const CustomerOffersPage = () => {
               : (offer as Offer).discount_percentage;
 
             return (
-            <div key={offer.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
+            <div
+              key={offer.id}
+              onClick={() => setViewDetailsOfferId(offer.id)}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer"
+            >
               <div className="relative">
                 <img
                   src={offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg'}
@@ -411,13 +422,13 @@ const CustomerOffersPage = () => {
                     </span>
                   </div>
                   <button
-                    onClick={() => {
-                      const merchantId = isNearbyOffer ? (offer as NearbyOffer).merchant_id : '';
-                      handleReserve(offer.id, merchantId);
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewDetailsOfferId(offer.id);
                     }}
                     className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors shadow-md"
                   >
-                    Reserve Now
+                    Voir détails
                   </button>
                 </div>
               </div>
@@ -482,6 +493,48 @@ const CustomerOffersPage = () => {
               loading={reserving}
             />
           ) : null;
+        })()}
+
+        {/* Offer Details Modal */}
+        {viewDetailsOfferId && (() => {
+          const offer = displayOffers.find((o: any) => o.id === viewDetailsOfferId);
+          const isNearbyOffer = offer && 'merchant_id' in offer;
+
+          if (!offer) return null;
+
+          const offerData = {
+            id: offer.id,
+            title: offer.title,
+            description: offer.description,
+            image_url: offer.image_url,
+            price_before: isNearbyOffer ? (offer as NearbyOffer).price_before : parseFloat((offer as Offer).original_price),
+            price_after: isNearbyOffer ? (offer as NearbyOffer).price_after : parseFloat((offer as Offer).discounted_price),
+            quantity: isNearbyOffer ? (offer as NearbyOffer).quantity : 10,
+            available_until: isNearbyOffer ? (offer as NearbyOffer).available_until : (offer as Offer).available_until,
+            category: isNearbyOffer ? (offer as NearbyOffer).category : (offer as Offer).category,
+            distance_km: isNearbyOffer ? (offer as NearbyOffer).distance_m / 1000 : undefined,
+            merchant_address: isNearbyOffer ? (offer as NearbyOffer).merchant_address : undefined,
+            merchant_street: isNearbyOffer ? (offer as NearbyOffer).merchant_street : undefined,
+            merchant_city: isNearbyOffer ? (offer as NearbyOffer).merchant_city : undefined,
+            merchant_postal_code: isNearbyOffer ? (offer as NearbyOffer).merchant_postal_code : undefined,
+          };
+
+          return (
+            <OfferDetailsModal
+              isOpen={true}
+              onClose={() => setViewDetailsOfferId(null)}
+              onReserve={() => {
+                const merchantId = isNearbyOffer ? (offer as NearbyOffer).merchant_id : '';
+                setViewDetailsOfferId(null);
+                handleReserve(offer.id, merchantId);
+              }}
+              offer={offerData}
+              onViewMap={isNearbyOffer ? () => {
+                setViewDetailsOfferId(null);
+                navigate('/offers/map');
+              } : undefined}
+            />
+          );
         })()}
 
         {/* Toast Notification */}
