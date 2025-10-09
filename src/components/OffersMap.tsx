@@ -79,6 +79,20 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   highlightOfferId,
   onLocationUpdate
 }) => {
+  if (!Array.isArray(offers)) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Erreur de données
+        </h3>
+        <p className="text-gray-600">
+          Les données des offres ne sont pas disponibles.
+        </p>
+      </div>
+    );
+  }
+
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
   const [mapZoom, setMapZoom] = useState(6);
   const [locating, setLocating] = useState(false);
@@ -97,7 +111,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
     } else if (effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng)) {
       setMapCenter([effectiveUserLocation.lat, effectiveUserLocation.lng]);
       setMapZoom(radiusKm <= 10 ? 13 : radiusKm <= 20 ? 11 : radiusKm <= 30 ? 10 : 9);
-    } else if (offers.length > 0 && isValidLatLng(offers[0].lat, offers[0].lng)) {
+    } else if (Array.isArray(offers) && offers.length > 0 && isValidLatLng(offers[0].lat, offers[0].lng)) {
       setMapCenter([offers[0].lat, offers[0].lng]);
       setMapZoom(12);
     } else {
@@ -141,6 +155,35 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   };
 
   const effectiveUserLocation = localUserLocation || userLocation;
+
+  const hasValidMapCenter = isValidLatLng(mapCenter[0], mapCenter[1]);
+  const hasAnyGeographicData =
+    hasValidMapCenter ||
+    (effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng)) ||
+    (offers.length > 0 && offers.some(offer => isValidLatLng(offer.lat, offer.lng)));
+
+  if (!hasAnyGeographicData) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Aucune donnée géographique disponible
+        </h3>
+        <p className="text-gray-600 mb-4">
+          Aucune offre avec position GPS n'est disponible pour le moment.
+        </p>
+        {!effectiveUserLocation && (
+          <button
+            onClick={handleActivateLocation}
+            disabled={locating}
+            className="px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {locating ? 'Localisation...' : 'Activer ma position'}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -219,7 +262,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           )}
 
           {/* Offer Markers */}
-          {offers.filter(offer => isValidLatLng(offer.lat, offer.lng)).map((offer) => (
+          {Array.isArray(offers) && offers.filter(offer => offer && isValidLatLng(offer.lat, offer.lng)).map((offer) => (
             <Marker
               key={offer.id}
               position={[offer.lat, offer.lng]}
@@ -269,9 +312,9 @@ export const OffersMap: React.FC<OffersMapProps> = ({
       <div className="p-4 bg-gray-50 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">
-            <span className="font-semibold text-gray-900">{offers.length}</span> offer{offers.length !== 1 ? 's' : ''} within {radiusKm} km
+            <span className="font-semibold text-gray-900">{Array.isArray(offers) ? offers.length : 0}</span> offer{(Array.isArray(offers) && offers.length !== 1) ? 's' : ''} within {radiusKm} km
           </span>
-          {offers.length === 0 && (
+          {Array.isArray(offers) && offers.length === 0 && (
             <span className="text-orange-600 font-medium">
               Try increasing the search radius
             </span>
