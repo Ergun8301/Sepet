@@ -345,7 +345,7 @@ const CustomerOffersPage = () => {
         )}
 
         {/* Map View */}
-        {showMap && (
+        {showMap && hasLocation && userLocationCoords && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-bold text-gray-900">Carte des offres</h3>
@@ -372,9 +372,6 @@ const CustomerOffersPage = () => {
               centerLat={mapCenter?.lat}
               centerLng={mapCenter?.lng}
               highlightOfferId={highlightOfferId || undefined}
-              onLocationUpdate={(location) => {
-                console.log('Location updated:', location);
-              }}
             />
           </div>
         )}

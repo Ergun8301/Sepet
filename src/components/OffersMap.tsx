@@ -25,7 +25,6 @@ interface OffersMapProps {
   centerLat?: number;
   centerLng?: number;
   highlightOfferId?: string;
-  onLocationUpdate?: (location: { lat: number; lng: number }) => void;
 }
 
 // Fix Leaflet default icon issue with Vite
@@ -76,147 +75,36 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   onOfferClick,
   centerLat,
   centerLng,
-  highlightOfferId,
-  onLocationUpdate
+  highlightOfferId
 }) => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
   const [mapZoom, setMapZoom] = useState(6);
-  const [locating, setLocating] = useState(false);
-  const [localUserLocation, setLocalUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation);
-  const [showAddressInput, setShowAddressInput] = useState(false);
-  const [addressInput, setAddressInput] = useState('');
 
   useEffect(() => {
-    setLocalUserLocation(userLocation);
-  }, [userLocation]);
-
-  useEffect(() => {
-    const effectiveUserLocation = localUserLocation || userLocation;
-
     if (isValidLatLng(centerLat, centerLng)) {
       setMapCenter([centerLat!, centerLng!]);
       setMapZoom(15);
-    } else if (effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng)) {
-      setMapCenter([effectiveUserLocation.lat, effectiveUserLocation.lng]);
+    } else if (userLocation && isValidLatLng(userLocation.lat, userLocation.lng)) {
+      setMapCenter([userLocation.lat, userLocation.lng]);
       setMapZoom(radiusKm <= 10 ? 13 : radiusKm <= 20 ? 11 : radiusKm <= 30 ? 10 : 9);
-    } else if (Array.isArray(offers) && offers.length > 0 && isValidLatLng(offers[0].lat, offers[0].lng)) {
-      setMapCenter([offers[0].lat, offers[0].lng]);
-      setMapZoom(12);
     } else {
       setMapCenter([46.5, 3]);
       setMapZoom(6);
     }
-  }, [localUserLocation, userLocation, radiusKm, centerLat, centerLng, offers]);
+  }, [userLocation, radiusKm, centerLat, centerLng]);
 
   const radiusOptions = [10, 20, 30, 40, 50];
 
-  const handleActivateLocation = () => {
-    setLocating(true);
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setLocalUserLocation(newLocation);
-          setMapCenter([newLocation.lat, newLocation.lng]);
-          setMapZoom(13);
-          setLocating(false);
-          if (onLocationUpdate) {
-            onLocationUpdate(newLocation);
-          }
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          setLocating(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      setLocating(false);
-    }
-  };
-
-  const handleAddressSearch = async () => {
-    if (!addressInput.trim()) return;
-
-    setLocating(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressInput)}&limit=1`
-      );
-      const data = await response.json();
-
-      if (data && data.length > 0) {
-        const newLocation = {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon)
-        };
-        setLocalUserLocation(newLocation);
-        setMapCenter([newLocation.lat, newLocation.lng]);
-        setMapZoom(13);
-        setShowAddressInput(false);
-        setAddressInput('');
-        if (onLocationUpdate) {
-          onLocationUpdate(newLocation);
-        }
-      } else {
-        alert('Adresse introuvable. Veuillez réessayer.');
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      alert('Erreur lors de la recherche de l\'adresse.');
-    } finally {
-      setLocating(false);
-    }
-  };
-
-  const effectiveUserLocation = localUserLocation || userLocation;
-
-  if (!Array.isArray(offers)) {
+  if (!userLocation || !isValidLatLng(userLocation.lat, userLocation.lng)) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Erreur de données
+          Location Required
         </h3>
         <p className="text-gray-600">
-          Les données des offres ne sont pas disponibles.
+          Please sign in and set your location to view nearby offers on the map.
         </p>
-      </div>
-    );
-  }
-
-  const hasValidMapCenter = isValidLatLng(mapCenter[0], mapCenter[1]);
-  const hasAnyGeographicData =
-    hasValidMapCenter ||
-    (effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng)) ||
-    (offers.length > 0 && offers.some(offer => isValidLatLng(offer.lat, offer.lng)));
-
-  if (!hasAnyGeographicData) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Aucune donnée géographique disponible
-        </h3>
-        <p className="text-gray-600 mb-4">
-          Aucune offre avec position GPS n'est disponible pour le moment.
-        </p>
-        {!effectiveUserLocation && (
-          <button
-            onClick={handleActivateLocation}
-            disabled={locating}
-            className="px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {locating ? 'Localisation...' : 'Activer ma position'}
-          </button>
-        )}
       </div>
     );
   }
@@ -230,24 +118,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             <Navigation className="w-5 h-5 text-green-600" />
             <span className="font-medium text-gray-700">Search Radius:</span>
           </div>
-          <div className="flex space-x-2 items-center flex-wrap">
-            {!effectiveUserLocation && (
-              <>
-                <button
-                  onClick={handleActivateLocation}
-                  disabled={locating}
-                  className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {locating ? 'Localisation...' : 'Activer ma position'}
-                </button>
-                <button
-                  onClick={() => setShowAddressInput(!showAddressInput)}
-                  className="px-4 py-2 rounded-lg font-medium bg-gray-500 text-white hover:bg-gray-600 transition-all"
-                >
-                  {showAddressInput ? 'Annuler' : 'Entrer une adresse'}
-                </button>
-              </>
-            )}
+          <div className="flex space-x-2">
             {radiusOptions.map((radius) => (
               <button
                 key={radius}
@@ -263,26 +134,6 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             ))}
           </div>
         </div>
-        {showAddressInput && (
-          <div className="mt-4 flex gap-2">
-            <input
-              type="text"
-              value={addressInput}
-              onChange={(e) => setAddressInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddressSearch()}
-              placeholder="Entrez votre adresse (ex: 123 Rue de Paris, Lyon)"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={locating}
-            />
-            <button
-              onClick={handleAddressSearch}
-              disabled={locating || !addressInput.trim()}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {locating ? 'Recherche...' : 'Rechercher'}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Map */}
@@ -300,9 +151,9 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           />
 
           {/* User Location Circle */}
-          {effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng) && (
+          {isValidLatLng(userLocation.lat, userLocation.lng) && (
             <Circle
-              center={[effectiveUserLocation.lat, effectiveUserLocation.lng]}
+              center={[userLocation.lat, userLocation.lng]}
               radius={radiusKm * 1000}
               pathOptions={{
                 color: '#10b981',
@@ -314,8 +165,8 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           )}
 
           {/* User Marker */}
-          {effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng) && (
-          <Marker position={[effectiveUserLocation.lat, effectiveUserLocation.lng]}>
+          {isValidLatLng(userLocation.lat, userLocation.lng) && (
+          <Marker position={[userLocation.lat, userLocation.lng]}>
             <Popup>
               <div className="text-center">
                 <p className="font-semibold text-green-600">Your Location</p>
@@ -326,7 +177,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           )}
 
           {/* Offer Markers */}
-          {Array.isArray(offers) && offers.filter(offer => offer && isValidLatLng(offer.lat, offer.lng)).map((offer) => (
+          {offers.filter(offer => isValidLatLng(offer.lat, offer.lng)).map((offer) => (
             <Marker
               key={offer.id}
               position={[offer.lat, offer.lng]}
@@ -376,9 +227,9 @@ export const OffersMap: React.FC<OffersMapProps> = ({
       <div className="p-4 bg-gray-50 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">
-            <span className="font-semibold text-gray-900">{Array.isArray(offers) ? offers.length : 0}</span> offer{(Array.isArray(offers) && offers.length !== 1) ? 's' : ''} within {radiusKm} km
+            <span className="font-semibold text-gray-900">{offers.length}</span> offer{offers.length !== 1 ? 's' : ''} within {radiusKm} km
           </span>
-          {Array.isArray(offers) && offers.length === 0 && (
+          {offers.length === 0 && (
             <span className="text-orange-600 font-medium">
               Try increasing the search radius
             </span>
