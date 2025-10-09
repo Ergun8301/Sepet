@@ -5,6 +5,9 @@ export interface NearbyOffer {
   id: string;
   merchant_id: string;
   merchant_name: string;
+  merchant_street?: string;
+  merchant_city?: string;
+  merchant_postal_code?: string;
   title: string;
   description: string;
   image_url: string | null;
@@ -17,6 +20,7 @@ export interface NearbyOffer {
   distance_m: number;
   offer_lat?: number;
   offer_lng?: number;
+  created_at?: string;
 }
 
 interface UseNearbyOffersOptions {
