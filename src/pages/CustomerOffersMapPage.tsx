@@ -73,30 +73,50 @@ const CustomerOffersMapPage = () => {
   };
 
   const handleReserve = (offerId: string) => {
+    console.log('🔵 [SEPET] handleReserve called for offerId:', offerId);
     if (!user) {
+      console.warn('⚠️ [SEPET] No user authenticated');
       setToast({ message: 'Please sign in to make a reservation', type: 'error' });
       return;
     }
-
+    console.log('✓ [SEPET] User authenticated:', user.id);
+    console.log('✓ [SEPET] Opening quantity modal for offerId:', offerId);
     setSelectedOfferId(offerId);
   };
 
   const handleConfirmReservation = async (quantity: number) => {
+    console.log('🟢 [SEPET] handleConfirmReservation called with quantity:', quantity);
     const offer = sortedOffers.find(o => o.id === selectedOfferId);
-    if (!offer) return;
+    if (!offer) {
+      console.error('❌ [SEPET] Offer not found for selectedOfferId:', selectedOfferId);
+      return;
+    }
+
+    console.log('📦 [SEPET] Offer found:', {
+      id: offer.id,
+      title: offer.title,
+      merchant_id: offer.merchant_id,
+      quantity_available: offer.quantity,
+      requested_quantity: quantity
+    });
 
     setReserving(true);
     try {
+      console.log('🚀 [SEPET] Calling createReservation API...');
       const result = await createReservation(offer.id, offer.merchant_id, quantity);
+      console.log('📥 [SEPET] createReservation response:', result);
 
       if (result.success) {
+        console.log('✅ [SEPET] Reservation SUCCESS!');
         setToast({ message: '✓ Reservation confirmed!', type: 'success' });
         setSelectedOfferId(null);
         refetch();
       } else {
+        console.error('❌ [SEPET] Reservation FAILED:', result.error);
         setToast({ message: result.error || 'Failed to create reservation', type: 'error' });
       }
     } catch (error: any) {
+      console.error('💥 [SEPET] Exception during reservation:', error);
       setToast({ message: error.message || 'An error occurred', type: 'error' });
     } finally {
       setReserving(false);

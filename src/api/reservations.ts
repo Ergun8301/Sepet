@@ -27,34 +27,40 @@ export interface Reservation {
 
 export const createReservation = async (offerId: string, merchantId: string, quantity: number = 1) => {
   try {
-    console.log('Creating reservation with stock check:', { offerId, merchantId, quantity });
+    console.log('🟢 [SEPET API] Creating reservation with stock check:', { offerId, merchantId, quantity });
 
     // Get current session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
-      console.error('Session error:', sessionError);
+      console.error('❌ [SEPET API] Session error:', sessionError);
       return { success: false, error: 'Failed to get session: ' + sessionError.message };
     }
 
     if (!session || !session.user) {
-      console.error('No active session or user');
+      console.error('❌ [SEPET API] No active session or user');
       return { success: false, error: 'You must be logged in to make a reservation' };
     }
 
     const userId = session.user.id;
-    console.log('User authenticated:', userId);
+    console.log('✅ [SEPET API] User authenticated:', userId);
 
     if (quantity < 1) {
       return { success: false, error: 'Quantity must be at least 1' };
     }
 
     if (!merchantId) {
-      console.error('Missing merchant_id');
+      console.error('❌ [SEPET API] Missing merchant_id');
       return { success: false, error: 'Invalid offer: missing merchant information' };
     }
 
-    console.log('Calling create_reservation_with_stock_check function...');
+    console.log('🚀 [SEPET API] Calling Supabase RPC: create_reservation_with_stock_check');
+    console.log('📤 [SEPET API] RPC parameters:', {
+      p_client_id: userId,
+      p_merchant_id: merchantId,
+      p_offer_id: offerId,
+      p_quantity: quantity
+    });
 
     // Call PostgreSQL function for atomic reservation with stock deduction
     const { data, error } = await supabase.rpc('create_reservation_with_stock_check', {
@@ -65,7 +71,7 @@ export const createReservation = async (offerId: string, merchantId: string, qua
     });
 
     if (error) {
-      console.error('Supabase RPC error:', {
+      console.error('🚨 [SEPET API] Supabase RPC error:', {
         code: error.code,
         message: error.message,
         details: error.details,
@@ -74,21 +80,22 @@ export const createReservation = async (offerId: string, merchantId: string, qua
       return { success: false, error: error.message };
     }
 
-    console.log('RPC response:', data);
+    console.log('📥 [SEPET API] RPC response received:', data);
 
     // The function returns a JSON object with success/error
     if (!data || !data.success) {
       const errorMessage = data?.error || 'Failed to create reservation';
-      console.error('Reservation failed:', errorMessage);
+      console.error('❌ [SEPET API] Reservation failed:', errorMessage);
       return { success: false, error: errorMessage };
     }
 
-    console.log('Reservation created successfully with stock deduction:', data.data);
-    console.log('Remaining stock:', data.data.remaining_stock);
+    console.log('✅ [SEPET API] Reservation created successfully!');
+    console.log('📦 [SEPET API] Reservation data:', data.data);
+    console.log('📊 [SEPET API] Remaining stock:', data.data.remaining_stock);
 
     return { success: true, data: data.data };
   } catch (err: any) {
-    console.error('Exception creating reservation:', err);
+    console.error('💥 [SEPET API] Exception creating reservation:', err);
     return { success: false, error: err.message || 'An unexpected error occurred' };
   }
 };

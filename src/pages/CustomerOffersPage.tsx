@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useClientLocation } from '../hooks/useClientLocation';
 import { useNearbyOffers, type NearbyOffer } from '../hooks/useNearbyOffers';
+import { createReservation } from '../api/reservations';
+import { QuantityModal } from '../components/QuantityModal';
 
 const CustomerOffersPage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -14,6 +16,9 @@ const CustomerOffersPage = () => {
   const [clientId, setClientId] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [reserving, setReserving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -134,6 +139,67 @@ const CustomerOffersPage = () => {
       console.error('Failed to get location:', err);
     }
   };
+
+  const handleReserve = (offerId: string, merchantId: string) => {
+    console.log('🔵 [SEPET] Reserve button clicked for offerId:', offerId);
+    if (!user) {
+      console.warn('⚠️ [SEPET] No user authenticated');
+      setToast({ message: 'Please sign in to make a reservation', type: 'error' });
+      setTimeout(() => navigate('/customer/auth'), 2000);
+      return;
+    }
+    console.log('✓ [SEPET] User authenticated:', user.id);
+    console.log('✓ [SEPET] Opening quantity modal');
+    setSelectedOfferId(offerId);
+  };
+
+  const handleConfirmReservation = async (quantity: number) => {
+    console.log('🟢 [SEPET] Confirming reservation with quantity:', quantity);
+    const offer = displayOffers.find((o: any) => o.id === selectedOfferId);
+    if (!offer) {
+      console.error('❌ [SEPET] Offer not found for selectedOfferId:', selectedOfferId);
+      return;
+    }
+
+    const merchantId = 'merchant_id' in offer ? (offer as NearbyOffer).merchant_id : '';
+
+    console.log('📦 [SEPET] Offer details:', {
+      id: offer.id,
+      title: 'title' in offer ? offer.title : '',
+      merchant_id: merchantId,
+      quantity_available: 'quantity' in offer ? (offer as NearbyOffer).quantity : 'unknown',
+      requested_quantity: quantity
+    });
+
+    setReserving(true);
+    try {
+      console.log('🚀 [SEPET] Calling createReservation API...');
+      const result = await createReservation(offer.id, merchantId, quantity);
+      console.log('📥 [SEPET] createReservation response:', result);
+
+      if (result.success) {
+        console.log('✅ [SEPET] Reservation SUCCESS!');
+        setToast({ message: '✓ Reservation confirmed!', type: 'success' });
+        setSelectedOfferId(null);
+        refetch();
+      } else {
+        console.error('❌ [SEPET] Reservation FAILED:', result.error);
+        setToast({ message: result.error || 'Failed to create reservation', type: 'error' });
+      }
+    } catch (error: any) {
+      console.error('💥 [SEPET] Exception during reservation:', error);
+      setToast({ message: error.message || 'An error occurred', type: 'error' });
+    } finally {
+      setReserving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const formatDistance = (meters: number): string => {
     if (meters < 1000) {
@@ -344,7 +410,13 @@ const CustomerOffersPage = () => {
                       }
                     </span>
                   </div>
-                  <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors shadow-md">
+                  <button
+                    onClick={() => {
+                      const merchantId = isNearbyOffer ? (offer as NearbyOffer).merchant_id : '';
+                      handleReserve(offer.id, merchantId);
+                    }}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors shadow-md"
+                  >
                     Reserve Now
                   </button>
                 </div>
@@ -393,6 +465,35 @@ const CustomerOffersPage = () => {
             <span className="font-medium">Available on iOS and Android</span>
           </div>
         </div>
+
+        {/* Quantity Modal */}
+        {selectedOfferId && (
+          <QuantityModal
+            isOpen={!!selectedOfferId}
+            onClose={() => setSelectedOfferId(null)}
+            onConfirm={handleConfirmReservation}
+            maxQuantity={(() => {
+              const offer = displayOffers.find((o: any) => o.id === selectedOfferId);
+              return offer && 'quantity' in offer ? (offer as NearbyOffer).quantity : 10;
+            })()}
+            loading={reserving}
+          />
+        )}
+
+        {/* Toast Notification */}
+        {toast && (
+          <div className="fixed top-20 right-4 z-50 animate-slide-down">
+            <div className={`${
+              toast.type === 'success' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+            } border-l-4 rounded-lg shadow-lg p-4 max-w-sm`}>
+              <p className={`font-semibold ${
+                toast.type === 'success' ? 'text-green-900' : 'text-red-900'
+              }`}>
+                {toast.message}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
