@@ -21,6 +21,7 @@ import MerchantSettingsPage from './pages/MerchantSettingsPage';
 import DevTestPage from './pages/DevTestPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import Footer from './components/Footer';
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
               <Route path="/app" element={<CustomerAppPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/dev" element={<DevTestPage />} />
             </Routes>
           </main>

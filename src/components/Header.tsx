@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus, TrendingUp } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut, ArrowRight, Store, LayoutDashboard, Plus, TrendingUp, Bell } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
+import { NotificationBell } from './NotificationBell';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -85,11 +86,13 @@ const Header = () => {
               {loading ? (
                 <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
               ) : user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 text-gray-700 hover:text-green-500 transition-colors"
-                  >
+                <>
+                  <NotificationBell />
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                      className="flex items-center space-x-2 text-gray-700 hover:text-green-500 transition-colors"
+                    >
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                       {isMerchant ? (
                         <Store className="w-4 h-4 text-green-600" />
@@ -172,6 +175,13 @@ const Header = () => {
                             <Settings className="w-4 h-4 mr-2" />
                             Settings
                           </a>
+                          <a
+                            href="/notifications"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            <Bell className="w-4 h-4 mr-2" />
+                            Notifications
+                          </a>
                         </>
                       )}
                       <hr className="my-1" />
@@ -184,7 +194,8 @@ const Header = () => {
                       </button>
                     </div>
                   )}
-                </div>
+                  </div>
+                </>
               ) : (
                 <div className="relative">
                   <button
