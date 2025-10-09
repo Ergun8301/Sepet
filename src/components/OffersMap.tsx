@@ -44,11 +44,24 @@ const highlightIcon = new Icon({
   shadowSize: [41, 41]
 });
 
+const isValidCoordinate = (value: any): value is number => {
+  return typeof value === 'number' && !isNaN(value) && isFinite(value);
+};
+
+const isValidLatLng = (lat: any, lng: any): boolean => {
+  return isValidCoordinate(lat) && isValidCoordinate(lng) &&
+         lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+};
+
 const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(center, zoom);
+    if (isValidLatLng(center[0], center[1])) {
+      map.setView(center, zoom);
+    } else {
+      map.setView([46.5, 3], 6);
+    }
   }, [center, zoom, map]);
 
   return null;
@@ -68,18 +81,21 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   const [mapZoom, setMapZoom] = useState(6);
 
   useEffect(() => {
-    if (centerLat && centerLng) {
-      setMapCenter([centerLat, centerLng]);
+    if (isValidLatLng(centerLat, centerLng)) {
+      setMapCenter([centerLat!, centerLng!]);
       setMapZoom(15);
-    } else if (userLocation) {
+    } else if (userLocation && isValidLatLng(userLocation.lat, userLocation.lng)) {
       setMapCenter([userLocation.lat, userLocation.lng]);
       setMapZoom(radiusKm <= 10 ? 13 : radiusKm <= 20 ? 11 : radiusKm <= 30 ? 10 : 9);
+    } else {
+      setMapCenter([46.5, 3]);
+      setMapZoom(6);
     }
   }, [userLocation, radiusKm, centerLat, centerLng]);
 
   const radiusOptions = [10, 20, 30, 40, 50];
 
-  if (!userLocation) {
+  if (!userLocation || !isValidLatLng(userLocation.lat, userLocation.lng)) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -135,18 +151,21 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           />
 
           {/* User Location Circle */}
-          <Circle
-            center={[userLocation.lat, userLocation.lng]}
-            radius={radiusKm * 1000}
-            pathOptions={{
-              color: '#10b981',
-              fillColor: '#10b981',
-              fillOpacity: 0.1,
-              weight: 2
-            }}
-          />
+          {isValidLatLng(userLocation.lat, userLocation.lng) && (
+            <Circle
+              center={[userLocation.lat, userLocation.lng]}
+              radius={radiusKm * 1000}
+              pathOptions={{
+                color: '#10b981',
+                fillColor: '#10b981',
+                fillOpacity: 0.1,
+                weight: 2
+              }}
+            />
+          )}
 
           {/* User Marker */}
+          {isValidLatLng(userLocation.lat, userLocation.lng) && (
           <Marker position={[userLocation.lat, userLocation.lng]}>
             <Popup>
               <div className="text-center">
@@ -155,9 +174,10 @@ export const OffersMap: React.FC<OffersMapProps> = ({
               </div>
             </Popup>
           </Marker>
+          )}
 
           {/* Offer Markers */}
-          {offers.map((offer) => (
+          {offers.filter(offer => isValidLatLng(offer.lat, offer.lng)).map((offer) => (
             <Marker
               key={offer.id}
               position={[offer.lat, offer.lng]}
