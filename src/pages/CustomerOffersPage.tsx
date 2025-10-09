@@ -9,6 +9,7 @@ import { useNearbyOffers, type NearbyOffer } from '../hooks/useNearbyOffers';
 import { createReservation } from '../api/reservations';
 import { QuantityModal } from '../components/QuantityModal';
 import { OfferDetailsModal } from '../components/OfferDetailsModal';
+import { OffersMap } from '../components/OffersMap';
 
 const CustomerOffersPage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -19,6 +20,9 @@ const CustomerOffersPage = () => {
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [viewDetailsOfferId, setViewDetailsOfferId] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [highlightOfferId, setHighlightOfferId] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { user } = useAuth();
@@ -222,6 +226,27 @@ const CustomerOffersPage = () => {
   });
   const isLoading = loading || offersLoading || locationLoading;
 
+  const mapOffers = nearbyOffers
+    .filter(offer => offer.offer_lat && offer.offer_lng)
+    .map(offer => ({
+      id: offer.id,
+      title: offer.title,
+      lat: offer.offer_lat!,
+      lng: offer.offer_lng!,
+      price: offer.price_after,
+      price_before: offer.price_before,
+      distance_km: (offer.distance_m / 1000).toFixed(1),
+      image_url: offer.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+      discount: offer.discount_percent
+    }));
+
+  const userLocationCoords = location ? { lat: location.latitude, lng: location.longitude } : null;
+
+  const handleOfferClickOnMap = (offerId: string) => {
+    setShowMap(false);
+    setViewDetailsOfferId(offerId);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -318,31 +343,66 @@ const CustomerOffersPage = () => {
             )}
           </div>
         )}
-        {/* Filter Bar */}
-        <div className="mb-12">
-          <div className="flex items-center mb-6">
-            <Filter className="w-5 h-5 text-gray-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900">Filter by category</h3>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
-                  selectedCategory === category
-                    ? 'bg-green-500 text-white shadow-lg'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-green-300'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Offers Grid */}
-        {displayOffers.length === 0 && !isLoading ? (
+        {/* Map View */}
+        {showMap && hasLocation && userLocationCoords && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">Carte des offres</h3>
+              <button
+                onClick={() => {
+                  setShowMap(false);
+                  setMapCenter(null);
+                  setHighlightOfferId(null);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              >
+                Fermer la carte
+              </button>
+            </div>
+            <OffersMap
+              userLocation={userLocationCoords}
+              offers={mapOffers}
+              radiusKm={radiusKm}
+              onRadiusChange={(radius) => {
+                setRadiusKm(radius);
+                localStorage.setItem('searchRadius', radius.toString());
+              }}
+              onOfferClick={handleOfferClickOnMap}
+              centerLat={mapCenter?.lat}
+              centerLng={mapCenter?.lng}
+              highlightOfferId={highlightOfferId || undefined}
+            />
+          </div>
+        )}
+
+        {/* Filter Bar - Hidden when map is shown */}
+        {!showMap && (
+          <div className="mb-12">
+            <div className="flex items-center mb-6">
+              <Filter className="w-5 h-5 text-gray-600 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">Filter by category</h3>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-6 py-3 rounded-full font-medium transition-all ${
+                    selectedCategory === category
+                      ? 'bg-green-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-green-300'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Offers Grid - Hidden when map is shown */}
+        {!showMap && displayOffers.length === 0 && !isLoading ? (
           <div className="text-center py-16">
             <p className="text-xl text-gray-600 mb-4">
               No offers available at the moment
@@ -351,7 +411,7 @@ const CustomerOffersPage = () => {
               Check back soon for new deals from local merchants!
             </p>
           </div>
-        ) : (
+        ) : !showMap ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {displayOffers.map((offer) => {
             const isNearbyOffer = 'distance_m' in offer;
@@ -436,9 +496,10 @@ const CustomerOffersPage = () => {
             );
           })}
         </div>
-        )}
+        ) : null}
 
-        {/* App Download CTA */}
+        {/* App Download CTA - Hidden when map is shown */}
+        {!showMap && (
         <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Get instant notifications with our mobile app
@@ -476,6 +537,7 @@ const CustomerOffersPage = () => {
             <span className="font-medium">Available on iOS and Android</span>
           </div>
         </div>
+        )}
 
         {/* Quantity Modal */}
         {selectedOfferId && (() => {
@@ -533,7 +595,12 @@ const CustomerOffersPage = () => {
               offer={offerData}
               onViewMap={isNearbyOffer && offerData.merchant_lat && offerData.merchant_lng ? () => {
                 setViewDetailsOfferId(null);
-                navigate(`/offers/map?lat=${offerData.merchant_lat}&lng=${offerData.merchant_lng}&offerId=${offer.id}`);
+                setMapCenter({ lat: offerData.merchant_lat!, lng: offerData.merchant_lng! });
+                setHighlightOfferId(offer.id);
+                setShowMap(true);
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
               } : undefined}
             />
           );
