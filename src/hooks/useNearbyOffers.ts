@@ -17,6 +17,12 @@ export interface NearbyOffer {
   distance_m: number;
   offer_lat?: number;
   offer_lng?: number;
+  merchant_address?: string;
+  merchant_street?: string;
+  merchant_city?: string;
+  merchant_postal_code?: string;
+  category?: string;
+  created_at?: string;
 }
 
 interface UseNearbyOffersOptions {

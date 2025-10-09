@@ -25,6 +25,7 @@ interface OffersMapProps {
   centerLat?: number;
   centerLng?: number;
   highlightOfferId?: string;
+  onLocationUpdate?: (location: { lat: number; lng: number }) => void;
 }
 
 // Fix Leaflet default icon issue with Vite
@@ -75,39 +76,71 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   onOfferClick,
   centerLat,
   centerLng,
-  highlightOfferId
+  highlightOfferId,
+  onLocationUpdate
 }) => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
   const [mapZoom, setMapZoom] = useState(6);
+  const [locating, setLocating] = useState(false);
+  const [localUserLocation, setLocalUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation);
 
   useEffect(() => {
+    setLocalUserLocation(userLocation);
+  }, [userLocation]);
+
+  useEffect(() => {
+    const effectiveUserLocation = localUserLocation || userLocation;
+
     if (isValidLatLng(centerLat, centerLng)) {
       setMapCenter([centerLat!, centerLng!]);
       setMapZoom(15);
-    } else if (userLocation && isValidLatLng(userLocation.lat, userLocation.lng)) {
-      setMapCenter([userLocation.lat, userLocation.lng]);
+    } else if (effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng)) {
+      setMapCenter([effectiveUserLocation.lat, effectiveUserLocation.lng]);
       setMapZoom(radiusKm <= 10 ? 13 : radiusKm <= 20 ? 11 : radiusKm <= 30 ? 10 : 9);
+    } else if (offers.length > 0 && isValidLatLng(offers[0].lat, offers[0].lng)) {
+      setMapCenter([offers[0].lat, offers[0].lng]);
+      setMapZoom(12);
     } else {
       setMapCenter([46.5, 3]);
       setMapZoom(6);
     }
-  }, [userLocation, radiusKm, centerLat, centerLng]);
+  }, [localUserLocation, userLocation, radiusKm, centerLat, centerLng, offers]);
 
   const radiusOptions = [10, 20, 30, 40, 50];
 
-  if (!userLocation || !isValidLatLng(userLocation.lat, userLocation.lng)) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Location Required
-        </h3>
-        <p className="text-gray-600">
-          Please sign in and set your location to view nearby offers on the map.
-        </p>
-      </div>
-    );
-  }
+  const handleActivateLocation = () => {
+    setLocating(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setLocalUserLocation(newLocation);
+          setMapCenter([newLocation.lat, newLocation.lng]);
+          setMapZoom(13);
+          setLocating(false);
+          if (onLocationUpdate) {
+            onLocationUpdate(newLocation);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setLocating(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      setLocating(false);
+    }
+  };
+
+  const effectiveUserLocation = localUserLocation || userLocation;
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -119,6 +152,15 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             <span className="font-medium text-gray-700">Search Radius:</span>
           </div>
           <div className="flex space-x-2">
+            {!effectiveUserLocation && (
+              <button
+                onClick={handleActivateLocation}
+                disabled={locating}
+                className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+              >
+                {locating ? 'Localisation...' : 'Activer ma position'}
+              </button>
+            )}
             {radiusOptions.map((radius) => (
               <button
                 key={radius}
@@ -151,9 +193,9 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           />
 
           {/* User Location Circle */}
-          {isValidLatLng(userLocation.lat, userLocation.lng) && (
+          {effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng) && (
             <Circle
-              center={[userLocation.lat, userLocation.lng]}
+              center={[effectiveUserLocation.lat, effectiveUserLocation.lng]}
               radius={radiusKm * 1000}
               pathOptions={{
                 color: '#10b981',
@@ -165,8 +207,8 @@ export const OffersMap: React.FC<OffersMapProps> = ({
           )}
 
           {/* User Marker */}
-          {isValidLatLng(userLocation.lat, userLocation.lng) && (
-          <Marker position={[userLocation.lat, userLocation.lng]}>
+          {effectiveUserLocation && isValidLatLng(effectiveUserLocation.lat, effectiveUserLocation.lng) && (
+          <Marker position={[effectiveUserLocation.lat, effectiveUserLocation.lng]}>
             <Popup>
               <div className="text-center">
                 <p className="font-semibold text-green-600">Your Location</p>
