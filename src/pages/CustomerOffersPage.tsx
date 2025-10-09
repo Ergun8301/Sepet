@@ -467,18 +467,22 @@ const CustomerOffersPage = () => {
         </div>
 
         {/* Quantity Modal */}
-        {selectedOfferId && (
-          <QuantityModal
-            isOpen={!!selectedOfferId}
-            onClose={() => setSelectedOfferId(null)}
-            onConfirm={handleConfirmReservation}
-            maxQuantity={(() => {
-              const offer = displayOffers.find((o: any) => o.id === selectedOfferId);
-              return offer && 'quantity' in offer ? (offer as NearbyOffer).quantity : 10;
-            })()}
-            loading={reserving}
-          />
-        )}
+        {selectedOfferId && (() => {
+          const offer = displayOffers.find((o: any) => o.id === selectedOfferId);
+          const isNearbyOffer = offer && 'merchant_id' in offer;
+
+          return offer ? (
+            <QuantityModal
+              isOpen={true}
+              onClose={() => setSelectedOfferId(null)}
+              onConfirm={handleConfirmReservation}
+              offerTitle={isNearbyOffer ? (offer as NearbyOffer).title : (offer as Offer).title}
+              availableQuantity={isNearbyOffer ? (offer as NearbyOffer).quantity : 10}
+              price={isNearbyOffer ? (offer as NearbyOffer).price_after : parseFloat((offer as Offer).discounted_price)}
+              loading={reserving}
+            />
+          ) : null;
+        })()}
 
         {/* Toast Notification */}
         {toast && (
