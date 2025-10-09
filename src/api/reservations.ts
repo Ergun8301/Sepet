@@ -70,6 +70,8 @@ export const createReservation = async (offerId: string, merchantId: string, qua
       p_quantity: quantity
     });
 
+    console.log('🧩 [SEPET API] Supabase RPC raw response:', { data, error });
+
     if (error) {
       console.error('🚨 [SEPET API] Supabase RPC error:', {
         code: error.code,
