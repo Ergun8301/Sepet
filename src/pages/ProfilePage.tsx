@@ -29,6 +29,8 @@ const ProfilePage = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+  const [geoLocation, setGeoLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -183,6 +185,54 @@ const ProfilePage = () => {
       setToast({ message: error.message || 'Échec du téléchargement', type: 'error' });
     } finally {
       setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleActivateGeolocation = async () => {
+    if (!user) return;
+
+    setIsGeolocating(true);
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const newLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setGeoLocation(newLocation);
+
+          try {
+            const { error } = await supabase.rpc('update_client_location', {
+              p_client_id: user.id,
+              p_lat: newLocation.lat,
+              p_lng: newLocation.lng
+            });
+
+            if (error) throw error;
+
+            setToast({ message: 'Géolocalisation enregistrée avec succès', type: 'success' });
+          } catch (error: any) {
+            console.error('Error saving geolocation:', error);
+            setToast({ message: 'Erreur lors de l\'enregistrement de la position', type: 'error' });
+          } finally {
+            setIsGeolocating(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setToast({ message: 'Impossible d\'obtenir votre position', type: 'error' });
+          setIsGeolocating(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      setToast({ message: 'Géolocalisation non disponible sur ce navigateur', type: 'error' });
+      setIsGeolocating(false);
     }
   };
 
@@ -446,6 +496,22 @@ const ProfilePage = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={handleActivateGeolocation}
+                  disabled={isGeolocating}
+                  className="w-full flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MapPin className="w-5 h-5 mr-2" />
+                  {isGeolocating ? 'Localisation en cours...' : 'Activer ma géolocalisation'}
+                </button>
+                {geoLocation && (
+                  <p className="text-sm text-gray-600 mt-2 text-center">
+                    Position enregistrée: {geoLocation.lat.toFixed(6)}, {geoLocation.lng.toFixed(6)}
+                  </p>
+                )}
               </div>
             </div>
 

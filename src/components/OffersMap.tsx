@@ -79,24 +79,12 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   highlightOfferId,
   onLocationUpdate
 }) => {
-  if (!Array.isArray(offers)) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Erreur de données
-        </h3>
-        <p className="text-gray-600">
-          Les données des offres ne sont pas disponibles.
-        </p>
-      </div>
-    );
-  }
-
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
   const [mapZoom, setMapZoom] = useState(6);
   const [locating, setLocating] = useState(false);
   const [localUserLocation, setLocalUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation);
+  const [showAddressInput, setShowAddressInput] = useState(false);
+  const [addressInput, setAddressInput] = useState('');
 
   useEffect(() => {
     setLocalUserLocation(userLocation);
@@ -154,7 +142,55 @@ export const OffersMap: React.FC<OffersMapProps> = ({
     }
   };
 
+  const handleAddressSearch = async () => {
+    if (!addressInput.trim()) return;
+
+    setLocating(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressInput)}&limit=1`
+      );
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const newLocation = {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon)
+        };
+        setLocalUserLocation(newLocation);
+        setMapCenter([newLocation.lat, newLocation.lng]);
+        setMapZoom(13);
+        setShowAddressInput(false);
+        setAddressInput('');
+        if (onLocationUpdate) {
+          onLocationUpdate(newLocation);
+        }
+      } else {
+        alert('Adresse introuvable. Veuillez réessayer.');
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      alert('Erreur lors de la recherche de l\'adresse.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const effectiveUserLocation = localUserLocation || userLocation;
+
+  if (!Array.isArray(offers)) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Erreur de données
+        </h3>
+        <p className="text-gray-600">
+          Les données des offres ne sont pas disponibles.
+        </p>
+      </div>
+    );
+  }
 
   const hasValidMapCenter = isValidLatLng(mapCenter[0], mapCenter[1]);
   const hasAnyGeographicData =
@@ -194,15 +230,23 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             <Navigation className="w-5 h-5 text-green-600" />
             <span className="font-medium text-gray-700">Search Radius:</span>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center flex-wrap">
             {!effectiveUserLocation && (
-              <button
-                onClick={handleActivateLocation}
-                disabled={locating}
-                className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed mr-2"
-              >
-                {locating ? 'Localisation...' : 'Activer ma position'}
-              </button>
+              <>
+                <button
+                  onClick={handleActivateLocation}
+                  disabled={locating}
+                  className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {locating ? 'Localisation...' : 'Activer ma position'}
+                </button>
+                <button
+                  onClick={() => setShowAddressInput(!showAddressInput)}
+                  className="px-4 py-2 rounded-lg font-medium bg-gray-500 text-white hover:bg-gray-600 transition-all"
+                >
+                  {showAddressInput ? 'Annuler' : 'Entrer une adresse'}
+                </button>
+              </>
             )}
             {radiusOptions.map((radius) => (
               <button
@@ -219,6 +263,26 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             ))}
           </div>
         </div>
+        {showAddressInput && (
+          <div className="mt-4 flex gap-2">
+            <input
+              type="text"
+              value={addressInput}
+              onChange={(e) => setAddressInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddressSearch()}
+              placeholder="Entrez votre adresse (ex: 123 Rue de Paris, Lyon)"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={locating}
+            />
+            <button
+              onClick={handleAddressSearch}
+              disabled={locating || !addressInput.trim()}
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {locating ? 'Recherche...' : 'Rechercher'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Map */}
