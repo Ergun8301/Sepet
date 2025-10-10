@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from 'react-le
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 interface OfferLocation {
   id: string;
@@ -69,6 +70,127 @@ const isValidCoordinate = (value: any): value is number => {
 const isValidLatLng = (lat: any, lng: any): boolean => {
   return isValidCoordinate(lat) && isValidCoordinate(lng) &&
          lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+};
+
+const LocationActivation: React.FC = () => {
+  const [isActivating, setIsActivating] = useState(false);
+  const [activationError, setActivationError] = useState<string | null>(null);
+  const [activationSuccess, setActivationSuccess] = useState(false);
+
+  const handleActivateLocation = async () => {
+    if (!navigator.geolocation) {
+      setActivationError('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    setIsActivating(true);
+    setActivationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+
+          if (!user) {
+            setActivationError('Vous devez être connecté pour enregistrer votre position');
+            setIsActivating(false);
+            return;
+          }
+
+          const { error } = await supabase
+            .from('clients')
+            .update({
+              latitude,
+              longitude,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+
+          if (error) {
+            console.error('Erreur lors de l\'enregistrement de la position:', error);
+            setActivationError('Impossible d\'enregistrer votre position. Veuillez réessayer.');
+            setIsActivating(false);
+            return;
+          }
+
+          setActivationSuccess(true);
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+
+        } catch (err) {
+          console.error('Erreur:', err);
+          setActivationError('Une erreur est survenue. Veuillez réessayer.');
+          setIsActivating(false);
+        }
+      },
+      (error) => {
+        let errorMessage = 'Impossible d\'obtenir votre position';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Vous avez refusé l\'accès à votre position. Veuillez autoriser l\'accès dans les paramètres de votre navigateur.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Votre position n\'est pas disponible';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'La demande de position a expiré';
+            break;
+        }
+        setActivationError(errorMessage);
+        setIsActivating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+      <MapPin className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        Activez votre géolocalisation
+      </h3>
+      <p className="text-gray-600 mb-6">
+        Pour voir les offres à proximité sur la carte, nous avons besoin de votre position.
+      </p>
+
+      {!activationSuccess && (
+        <button
+          onClick={handleActivateLocation}
+          disabled={isActivating}
+          className="inline-flex items-center justify-center space-x-2 bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed shadow-lg"
+        >
+          <Navigation className={`w-6 h-6 ${isActivating ? 'animate-pulse' : ''}`} />
+          <span>
+            {isActivating ? 'Activation en cours...' : '📍 Activer ma géolocalisation'}
+          </span>
+        </button>
+      )}
+
+      {activationSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg">
+          <p className="font-semibold">Position enregistrée avec succès !</p>
+          <p className="text-sm">Rechargement de la page...</p>
+        </div>
+      )}
+
+      {activationError && (
+        <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+          <p className="text-sm">{activationError}</p>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-500 mt-6">
+        Votre position sera utilisée uniquement pour vous montrer les offres à proximité.
+      </p>
+    </div>
+  );
 };
 
 const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
@@ -158,17 +280,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   };
 
   if (!userLocation || !isValidLatLng(userLocation.lat, userLocation.lng)) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Location Required
-        </h3>
-        <p className="text-gray-600">
-          Please sign in and set your location to view nearby offers on the map.
-        </p>
-      </div>
-    );
+    return <LocationActivation />;
   }
 
   return (

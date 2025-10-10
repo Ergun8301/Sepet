@@ -20,7 +20,6 @@ const CustomerOffersPage = () => {
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [viewDetailsOfferId, setViewDetailsOfferId] = useState<string | null>(null);
-  const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [highlightOfferId, setHighlightOfferId] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
@@ -243,7 +242,6 @@ const CustomerOffersPage = () => {
   const userLocationCoords = location ? { lat: location.latitude, lng: location.longitude } : null;
 
   const handleOfferClickOnMap = (offerId: string) => {
-    setShowMap(false);
     setViewDetailsOfferId(offerId);
   };
 
@@ -306,20 +304,9 @@ const CustomerOffersPage = () => {
                   Offres à proximité
                 </h3>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500">
-                  {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
-                </span>
-                {nearbyOffers.length > 0 && (
-                  <button
-                    onClick={() => setShowMap(true)}
-                    className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
-                  >
-                    <Map className="w-4 h-4" />
-                    Voir la carte
-                  </button>
-                )}
-              </div>
+              <span className="text-sm text-gray-500">
+                {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
+              </span>
             </div>
 
             <div className="space-y-4">
@@ -356,20 +343,10 @@ const CustomerOffersPage = () => {
         )}
 
         {/* Map View */}
-        {showMap && hasLocation && userLocationCoords && (
+        {hasLocation && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <h3 className="text-2xl font-bold text-gray-900">Carte des offres</h3>
-              <button
-                onClick={() => {
-                  setShowMap(false);
-                  setMapCenter(null);
-                  setHighlightOfferId(null);
-                }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-              >
-                Fermer la carte
-              </button>
             </div>
             <OffersMap
               userLocation={userLocationCoords}
@@ -387,8 +364,8 @@ const CustomerOffersPage = () => {
           </div>
         )}
 
-        {/* Filter Bar - Hidden when map is shown */}
-        {!showMap && (
+        {/* Filter Bar */}
+        {(
           <div className="mb-12">
             <div className="flex items-center mb-6">
               <Filter className="w-5 h-5 text-gray-600 mr-2" />
@@ -412,8 +389,8 @@ const CustomerOffersPage = () => {
           </div>
         )}
 
-        {/* Offers Grid - Hidden when map is shown */}
-        {!showMap && displayOffers.length === 0 && !isLoading ? (
+        {/* Offers Grid */}
+        {displayOffers.length === 0 && !isLoading ? (
           <div className="text-center py-16">
             <p className="text-xl text-gray-600 mb-4">
               No offers available at the moment
@@ -422,7 +399,7 @@ const CustomerOffersPage = () => {
               Check back soon for new deals from local merchants!
             </p>
           </div>
-        ) : !showMap ? (
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {displayOffers.map((offer) => {
             const isNearbyOffer = 'distance_m' in offer;
@@ -507,10 +484,10 @@ const CustomerOffersPage = () => {
             );
           })}
         </div>
-        ) : null}
+        )}
 
-        {/* App Download CTA - Hidden when map is shown */}
-        {!showMap && (
+        {/* App Download CTA */}
+        {(
         <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Get instant notifications with our mobile app
@@ -606,7 +583,6 @@ const CustomerOffersPage = () => {
                 setViewDetailsOfferId(null);
                 setMapCenter({ lat: offerData.merchant_lat!, lng: offerData.merchant_lng! });
                 setHighlightOfferId(offer.id);
-                setShowMap(true);
                 setTimeout(() => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 100);
