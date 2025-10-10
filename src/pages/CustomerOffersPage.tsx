@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, User, LogOut, Navigation } from 'lucide-react';
+import { Clock, MapPin, Star, Heart, ArrowRight, Filter, Smartphone, User, LogOut, Navigation, Map } from 'lucide-react';
 import { getActiveOffers, type Offer } from '../api';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
@@ -306,9 +306,20 @@ const CustomerOffersPage = () => {
                   Offres à proximité
                 </h3>
               </div>
-              <span className="text-sm text-gray-500">
-                {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">
+                  {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
+                </span>
+                {nearbyOffers.length > 0 && (
+                  <button
+                    onClick={() => setShowMap(true)}
+                    className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
+                  >
+                    <Map className="w-4 h-4" />
+                    Voir la carte
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
