@@ -94,35 +94,47 @@ const LocationActivation: React.FC = () => {
           const { data: { user } } = await supabase.auth.getUser();
 
           if (!user) {
+            console.error('User not authenticated');
             setActivationError('Vous devez être connecté pour enregistrer votre position');
             setIsActivating(false);
             return;
           }
 
-          const { error } = await supabase
+          console.log('Updating location for user:', user.id);
+          console.log('Coordinates:', { latitude, longitude });
+
+          const locationWKT = `POINT(${longitude} ${latitude})`;
+
+          const { data, error } = await supabase
             .from('clients')
             .update({
-              latitude,
-              longitude,
+              location: locationWKT,
               updated_at: new Date().toISOString()
             })
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .select();
 
           if (error) {
-            console.error('Erreur lors de l\'enregistrement de la position:', error);
-            setActivationError('Impossible d\'enregistrer votre position. Veuillez réessayer.');
+            console.error('Erreur Supabase complète:', {
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code
+            });
+            setActivationError(`Erreur d'accès Supabase: ${error.message}. Vérifiez les permissions RLS.`);
             setIsActivating(false);
             return;
           }
 
+          console.log('Location updated successfully:', data);
           setActivationSuccess(true);
           setTimeout(() => {
             window.location.reload();
           }, 1500);
 
         } catch (err) {
-          console.error('Erreur:', err);
-          setActivationError('Une erreur est survenue. Veuillez réessayer.');
+          console.error('Erreur générale:', err);
+          setActivationError(`Une erreur est survenue: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
           setIsActivating(false);
         }
       },
