@@ -27,7 +27,7 @@ const HeroBanner = () => {
     },
     {
       id: 5,
-      image: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      image: 'https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg',
       alt: 'Happy Customers'
     }
   ];
