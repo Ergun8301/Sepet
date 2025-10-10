@@ -22,7 +22,7 @@ const HeroBanner = () => {
     },
     {
       id: 4,
-      image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      image: 'https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg',
       alt: 'Fresh Bakery Products'
     },
     {
