@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { useAddProduct } from '../contexts/AddProductContext';
 import { uploadImageToSupabase } from '../lib/uploadImage';
+import { GeolocationButton } from '../components/GeolocationButton';
 
 interface Offer {
   id: string;
@@ -651,13 +652,24 @@ const MerchantDashboardPage = () => {
             <h2 className="text-2xl font-bold text-gray-900">My Products</h2>
             <p className="text-gray-600 mt-1">{offers.length} total products</p>
           </div>
-          <button
-            onClick={openAddProductModal}
-            className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Product
-          </button>
+          <div className="flex items-center gap-4">
+            {user && (
+              <GeolocationButton
+                userRole="merchant"
+                userId={user.id}
+                onSuccess={() => {
+                  setToast({ message: 'Votre position a été mise à jour avec succès !', type: 'success' });
+                }}
+              />
+            )}
+            <button
+              onClick={openAddProductModal}
+              className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Product
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

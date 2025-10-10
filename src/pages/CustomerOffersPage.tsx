@@ -10,6 +10,7 @@ import { createReservation } from '../api/reservations';
 import { QuantityModal } from '../components/QuantityModal';
 import { OfferDetailsModal } from '../components/OfferDetailsModal';
 import { OffersMap } from '../components/OffersMap';
+import { GeolocationButton } from '../components/GeolocationButton';
 
 const CustomerOffersPage = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -304,9 +305,20 @@ const CustomerOffersPage = () => {
                   Offres à proximité
                 </h3>
               </div>
-              <span className="text-sm text-gray-500">
-                {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-500">
+                  {nearbyOffers.length} offre{nearbyOffers.length !== 1 ? 's' : ''} trouvée{nearbyOffers.length !== 1 ? 's' : ''}
+                </span>
+                {user && clientId && (
+                  <GeolocationButton
+                    userRole="client"
+                    userId={user.id}
+                    onSuccess={() => {
+                      window.location.reload();
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

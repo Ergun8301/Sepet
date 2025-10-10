@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Navigation } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import { MapPin } from 'lucide-react';
+import { GeolocationButton } from './GeolocationButton';
+import { useAuth } from '../hooks/useAuth';
 
 interface OfferLocation {
   id: string;
@@ -73,94 +74,7 @@ const isValidLatLng = (lat: any, lng: any): boolean => {
 };
 
 const LocationActivation: React.FC = () => {
-  const [isActivating, setIsActivating] = useState(false);
-  const [activationError, setActivationError] = useState<string | null>(null);
-  const [activationSuccess, setActivationSuccess] = useState(false);
-
-  const handleActivateLocation = async () => {
-    if (!navigator.geolocation) {
-      setActivationError('La géolocalisation n\'est pas supportée par votre navigateur');
-      return;
-    }
-
-    setIsActivating(true);
-    setActivationError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-
-          if (!user) {
-            console.error('User not authenticated');
-            setActivationError('Vous devez être connecté pour enregistrer votre position');
-            setIsActivating(false);
-            return;
-          }
-
-          console.log('Updating location for user:', user.id);
-          console.log('Coordinates:', { latitude, longitude });
-
-          const locationWKT = `POINT(${longitude} ${latitude})`;
-
-          const { data, error } = await supabase
-            .from('clients')
-            .update({
-              location: locationWKT,
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', user.id)
-            .select();
-
-          if (error) {
-            console.error('Erreur Supabase complète:', {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              code: error.code
-            });
-            setActivationError(`Erreur d'accès Supabase: ${error.message}. Vérifiez les permissions RLS.`);
-            setIsActivating(false);
-            return;
-          }
-
-          console.log('Location updated successfully:', data);
-          setActivationSuccess(true);
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-
-        } catch (err) {
-          console.error('Erreur générale:', err);
-          setActivationError(`Une erreur est survenue: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
-          setIsActivating(false);
-        }
-      },
-      (error) => {
-        let errorMessage = 'Impossible d\'obtenir votre position';
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Vous avez refusé l\'accès à votre position. Veuillez autoriser l\'accès dans les paramètres de votre navigateur.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Votre position n\'est pas disponible';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'La demande de position a expiré';
-            break;
-        }
-        setActivationError(errorMessage);
-        setIsActivating(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-  };
+  const { user } = useAuth();
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 text-center">
@@ -172,30 +86,15 @@ const LocationActivation: React.FC = () => {
         Pour voir les offres à proximité sur la carte, nous avons besoin de votre position.
       </p>
 
-      {!activationSuccess && (
-        <button
-          onClick={handleActivateLocation}
-          disabled={isActivating}
-          className="inline-flex items-center justify-center space-x-2 bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed shadow-lg"
-        >
-          <Navigation className={`w-6 h-6 ${isActivating ? 'animate-pulse' : ''}`} />
-          <span>
-            {isActivating ? 'Activation en cours...' : '📍 Activer ma géolocalisation'}
-          </span>
-        </button>
-      )}
-
-      {activationSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg">
-          <p className="font-semibold">Position enregistrée avec succès !</p>
-          <p className="text-sm">Rechargement de la page...</p>
-        </div>
-      )}
-
-      {activationError && (
-        <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-          <p className="text-sm">{activationError}</p>
-        </div>
+      {user && (
+        <GeolocationButton
+          userRole="client"
+          userId={user.id}
+          onSuccess={() => {
+            window.location.reload();
+          }}
+          className="flex justify-center"
+        />
       )}
 
       <p className="text-xs text-gray-500 mt-6">
