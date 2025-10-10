@@ -44,6 +44,24 @@ const highlightIcon = new Icon({
   shadowSize: [41, 41]
 });
 
+const userIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const offerIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 const isValidCoordinate = (value: any): value is number => {
   return typeof value === 'number' && !isNaN(value) && isFinite(value);
 };
@@ -77,8 +95,11 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   centerLng,
   highlightOfferId
 }) => {
-  const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]); // France center default
+  const [mapCenter, setMapCenter] = useState<[number, number]>([46.5, 3]);
   const [mapZoom, setMapZoom] = useState(6);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [hasRequestedGeo, setHasRequestedGeo] = useState(false);
 
   useEffect(() => {
     if (isValidLatLng(centerLat, centerLng)) {
@@ -94,6 +115,47 @@ export const OffersMap: React.FC<OffersMapProps> = ({
   }, [userLocation, radiusKm, centerLat, centerLng]);
 
   const radiusOptions = [10, 20, 30, 40, 50];
+
+  const handleGeolocation = () => {
+    if (!navigator.geolocation) {
+      setGeoError('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    setIsGeolocating(true);
+    setGeoError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setMapCenter([latitude, longitude]);
+        setMapZoom(13);
+        setHasRequestedGeo(true);
+        setIsGeolocating(false);
+      },
+      (error) => {
+        let errorMessage = 'Impossible d\'obtenir votre position';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Vous avez refusé l\'accès à votre position';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Votre position n\'est pas disponible';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'La demande de position a expiré';
+            break;
+        }
+        setGeoError(errorMessage);
+        setIsGeolocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
 
   if (!userLocation || !isValidLatLng(userLocation.lat, userLocation.lng)) {
     return (
@@ -111,6 +173,23 @@ export const OffersMap: React.FC<OffersMapProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Geolocation Button */}
+      {!hasRequestedGeo && (
+        <div className="p-4 border-b border-gray-200 bg-blue-50">
+          <button
+            onClick={handleGeolocation}
+            disabled={isGeolocating}
+            className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+          >
+            <Navigation className={`w-5 h-5 ${isGeolocating ? 'animate-pulse' : ''}`} />
+            <span>{isGeolocating ? 'Géolocalisation en cours...' : '📍 Me géolocaliser'}</span>
+          </button>
+          {geoError && (
+            <p className="text-red-600 text-sm mt-2 text-center">{geoError}</p>
+          )}
+        </div>
+      )}
+
       {/* Radius Selector */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
@@ -166,7 +245,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
 
           {/* User Marker */}
           {isValidLatLng(userLocation.lat, userLocation.lng) && (
-          <Marker position={[userLocation.lat, userLocation.lng]}>
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
             <Popup>
               <div className="text-center">
                 <p className="font-semibold text-green-600">Your Location</p>
@@ -181,7 +260,7 @@ export const OffersMap: React.FC<OffersMapProps> = ({
             <Marker
               key={offer.id}
               position={[offer.lat, offer.lng]}
-              icon={highlightOfferId === offer.id ? highlightIcon : undefined}
+              icon={highlightOfferId === offer.id ? highlightIcon : offerIcon}
               eventHandlers={{
                 click: () => onOfferClick(offer.id)
               }}
