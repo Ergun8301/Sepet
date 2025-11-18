@@ -4,13 +4,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        'tilkapp-green': '#00A690',
-        'tilkapp-beige': '#F7F2E7',
-        'tilkapp-orange': '#F75C00',
-        'kapkurtar-verdigris': '#00A690',
-        'kapkurtar-teal': '#00615F',
-        'kapkurtar-orange': '#F75C00',
-        'kapkurtar-cream': '#F7F2E7',
+        'tilkapp-green': '#39e3cf',
+        'tilkapp-beige': '#ffffff',
+        'tilkapp-orange': '#e2fd66',
+        'kapkurtar-verdigris': '#39e3cf',
+        'kapkurtar-teal': '#545454',
+        'kapkurtar-orange': '#e2fd66',
+        'kapkurtar-cream': '#ffffff',
+        'kapkurtar-turquoise': '#39e3cf',
+        'kapkurtar-yellow': '#e2fd66',
+        'kapkurtar-green': '#51a598',
+        'kapkurtar-gray': '#545454',
       }
     },
   },

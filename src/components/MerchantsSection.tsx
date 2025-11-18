@@ -56,7 +56,7 @@ const MerchantsSection = () => {
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 {merchant.verified && (
-                  <div className="absolute top-4 right-4 bg-[#00A690] text-white p-2 rounded-full">
+                  <div className="absolute top-4 right-4 bg-[#39e3cf] text-white p-2 rounded-full">
                     <Award className="w-4 h-4" />
                   </div>
                 )}
@@ -74,17 +74,17 @@ const MerchantsSection = () => {
 
                 {merchant.verified && (
                   <div className="flex items-center mb-4">
-                    <Award className="w-4 h-4 text-[#00A690] mr-1" />
-                    <span className="text-sm text-[#00A690]">Verified Merchant</span>
+                    <Award className="w-4 h-4 text-[#39e3cf] mr-1" />
+                    <span className="text-sm text-[#39e3cf]">Verified Merchant</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center text-sm text-[#00A690]">
+                  <div className="flex items-center text-sm text-[#39e3cf]">
                     <Clock className="w-4 h-4 mr-1" />
                     <span>Open now</span>
                   </div>
-                  <button className="bg-[#00A690] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300">
+                  <button className="bg-[#39e3cf] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors duration-300">
                     View Menu
                   </button>
                 </div>
@@ -96,7 +96,7 @@ const MerchantsSection = () => {
         <div className="text-center mt-12">
           <a
             href="/merchants"
-            className="bg-[#00A690] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300 inline-block"
+            className="bg-[#39e3cf] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors duration-300 inline-block"
           >
             View All Merchants
           </a>

@@ -95,12 +95,12 @@ const FAQPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-[#00A690] text-white py-16">
+      <div className="bg-[#39e3cf] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Sıkça Sorulan Sorular
           </h1>
-          <p className="text-xl text-[#F7F2E7] mb-8">
+          <p className="text-xl text-[#ffffff] mb-8">
             KapKurtar hakkındaki sorularınızın yanıtlarını hızlıca bulun
           </p>
 
@@ -112,7 +112,7 @@ const FAQPage = () => {
               placeholder="Bir soru arayın..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#F75C00]"
+              className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#e2fd66]"
             />
           </div>
         </div>
@@ -136,7 +136,7 @@ const FAQPage = () => {
                     >
                       <span className="font-medium text-gray-900 pr-4">{faq.question}</span>
                       {openFAQ === globalIndex ? (
-                        <ChevronUp className="w-5 h-5 text-[#00A690] flex-shrink-0" />
+                        <ChevronUp className="w-5 h-5 text-[#39e3cf] flex-shrink-0" />
                       ) : (
                         <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
                       )}
@@ -171,7 +171,7 @@ const FAQPage = () => {
           </p>
           <a
             href="/contact"
-            className="bg-[#00A690] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#F75C00] transition-colors inline-block"
+            className="bg-[#39e3cf] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors inline-block"
           >
             Bize ulaşın
           </a>

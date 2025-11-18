@@ -6,7 +6,7 @@ const BlogArticle9 = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <a href="/blog" className="inline-flex items-center text-[#00A690] hover:text-[#F75C00] transition-colors duration-300">
+          <a href="/blog" className="inline-flex items-center text-[#39e3cf] hover:text-[#e2fd66] transition-colors duration-300">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Bloga dön
           </a>
@@ -16,7 +16,7 @@ const BlogArticle9 = () => {
       <div className="bg-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <span className="bg-[#00A690] text-white px-4 py-2 rounded-full text-sm font-medium">
+            <span className="bg-[#39e3cf] text-white px-4 py-2 rounded-full text-sm font-medium">
               İsraf Karşıtı
             </span>
           </div>
@@ -47,7 +47,7 @@ const BlogArticle9 = () => {
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <TrendingDown className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <TrendingDown className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             "Sağlıklı yemek = pahalı" efsanesi
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">
@@ -64,7 +64,7 @@ const BlogArticle9 = () => {
             </ul>
           </div>
 
-          <blockquote className="border-l-4 border-[#00A690] pl-6 my-8 italic text-gray-700">
+          <blockquote className="border-l-4 border-[#39e3cf] pl-6 my-8 italic text-gray-700">
             "KapKurtar sabah satılanlara eşdeğer kalitede ürünlere, fakat yarı fiyatına erişim sağlıyor.
             Sağlıklı beslenme erişimi için bir devrim."
             <br />
@@ -80,7 +80,7 @@ const BlogArticle9 = () => {
             dengeli bir tabağın ne olduğunu hatırlayalım.
           </p>
 
-          <div className="bg-[#F7F2E7] rounded-lg p-6 my-8">
+          <div className="bg-[#ffffff] rounded-lg p-6 my-8">
             <h3 className="font-bold text-gray-900 mb-4">🍽️ İdeal tabak:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -103,7 +103,7 @@ const BlogArticle9 = () => {
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <Utensils className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <Utensils className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             KapKurtar dengeli beslenmeyi nasıl kolaylaştırıyor
           </h2>
 
@@ -201,7 +201,7 @@ const BlogArticle9 = () => {
               { gun: 'Pazar', ogle: 'Geleneksel aile yemeği', aksam: 'Çorba + ekmek + KapKurtar peynir' }
             ].map((menu, i) => (
               <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="font-bold text-[#00A690] mb-2">{menu.gun}</h4>
+                <h4 className="font-bold text-[#39e3cf] mb-2">{menu.gun}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
                   <div><strong>Öğle:</strong> {menu.ogle}</div>
                   <div><strong>Akşam:</strong> {menu.aksam}</div>
@@ -243,14 +243,14 @@ const BlogArticle9 = () => {
             </div>
           </div>
 
-          <div className="bg-[#00A690] text-white rounded-lg p-8 my-12 text-center">
+          <div className="bg-[#39e3cf] text-white rounded-lg p-8 my-12 text-center">
             <h3 className="text-2xl font-bold mb-4">Bugünden daha iyisini daha ucuza yiyin</h3>
-            <p className="mb-6 text-[#F7F2E7]">
+            <p className="mb-6 text-[#ffffff]">
               KapKurtar'ı indirin ve yakınınızdaki teklifleri keşfedin
             </p>
             <a
               href="/download"
-              className="bg-white text-[#00A690] px-8 py-3 rounded-lg font-medium hover:bg-[#F7F2E7] transition-colors inline-block"
+              className="bg-white text-[#39e3cf] px-8 py-3 rounded-lg font-medium hover:bg-[#ffffff] transition-colors inline-block"
             >
               Uygulamayı indir
             </a>

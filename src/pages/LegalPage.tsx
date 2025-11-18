@@ -7,12 +7,12 @@ const LegalPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-[#00A690] text-white py-16">
+      <div className="bg-[#39e3cf] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Yasal Bildirim
           </h1>
-          <p className="text-xl text-[#F7F2E7]">
+          <p className="text-xl text-[#ffffff]">
             Kullanım koşulları, gizlilik politikası ve yasal bildirim
           </p>
         </div>
@@ -26,7 +26,7 @@ const LegalPage = () => {
               onClick={() => setActiveTab('terms')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
                 activeTab === 'terms'
-                  ? 'border-[#00A690] text-[#00A690]'
+                  ? 'border-[#39e3cf] text-[#39e3cf]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -37,7 +37,7 @@ const LegalPage = () => {
               onClick={() => setActiveTab('privacy')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
                 activeTab === 'privacy'
-                  ? 'border-[#00A690] text-[#00A690]'
+                  ? 'border-[#39e3cf] text-[#39e3cf]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -48,7 +48,7 @@ const LegalPage = () => {
               onClick={() => setActiveTab('mentions')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
                 activeTab === 'mentions'
-                  ? 'border-[#00A690] text-[#00A690]'
+                  ? 'border-[#39e3cf] text-[#39e3cf]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >

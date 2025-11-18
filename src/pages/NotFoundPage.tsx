@@ -28,7 +28,7 @@ export default function NotFoundPage() {
 
           <button
             onClick={() => navigate('/')}
-            className="flex items-center justify-center space-x-2 bg-[#00A690] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300"
+            className="flex items-center justify-center space-x-2 bg-[#39e3cf] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors duration-300"
           >
             <Home className="w-5 h-5" />
             <span>Retour à l'accueil</span>
@@ -42,21 +42,21 @@ export default function NotFoundPage() {
           <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={() => navigate('/offers')}
-              className="text-[#00A690] hover:text-[#00A690] font-medium text-sm"
+              className="text-[#39e3cf] hover:text-[#39e3cf] font-medium text-sm"
             >
               Voir les offres
             </button>
             <span className="text-gray-300">•</span>
             <button
               onClick={() => navigate('/customer/auth')}
-              className="text-[#00A690] hover:text-[#00A690] font-medium text-sm"
+              className="text-[#39e3cf] hover:text-[#39e3cf] font-medium text-sm"
             >
               Se connecter
             </button>
             <span className="text-gray-300">•</span>
             <button
               onClick={() => navigate('/merchant/auth')}
-              className="text-[#00A690] hover:text-[#00A690] font-medium text-sm"
+              className="text-[#39e3cf] hover:text-[#39e3cf] font-medium text-sm"
             >
               Espace commerçant
             </button>

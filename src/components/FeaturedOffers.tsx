@@ -271,7 +271,7 @@ const FeaturedOffers: React.FC<FeaturedOffersProps> = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-[#00A690]">
+                    <span className="text-2xl font-bold text-[#39e3cf]">
                       ${offer.discounted_price}
                     </span>
                     <span className="text-lg text-gray-400 line-through">
@@ -282,14 +282,14 @@ const FeaturedOffers: React.FC<FeaturedOffersProps> = () => {
                     <button
                       onClick={() => handleReserve(offer)}
                       disabled={!offer.quantity || offer.quantity <= 0}
-                      className="bg-[#00A690] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="bg-[#39e3cf] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e2fd66] hover:text-black transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       {!offer.quantity || offer.quantity <= 0 ? 'Tükendi' : 'Şimdi Rezerve Et'}
                     </button>
                   ) : (
                     <button
                       onClick={() => navigate('/offers')}
-                      className="bg-[#00A690] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#F75C00] transition-colors"
+                      className="bg-[#39e3cf] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e2fd66] hover:text-black transition-all duration-300"
                     >
                       Rezerve Etmek İçin Giriş Yapın
                     </button>
@@ -321,7 +321,7 @@ const FeaturedOffers: React.FC<FeaturedOffersProps> = () => {
         <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
           <div
             className={`px-6 py-3 rounded-lg shadow-lg ${
-              toast.type === 'success' ? 'bg-[#00A690]' : 'bg-red-500'
+              toast.type === 'success' ? 'bg-[#39e3cf]' : 'bg-red-500'
             } text-white font-medium`}
           >
             {toast.message}

@@ -37,8 +37,8 @@ const ForMerchantsSection = () => {
             <div className="space-y-6 mb-8">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-start space-x-4">
-                  <div className="bg-[#F7F2E7] p-3 rounded-lg">
-                    <benefit.icon className="w-6 h-6 text-[#00A690]" />
+                  <div className="bg-[#ffffff] p-3 rounded-lg">
+                    <benefit.icon className="w-6 h-6 text-[#39e3cf]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
@@ -51,7 +51,7 @@ const ForMerchantsSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="/for-merchants"
-                className="bg-[#00A690] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300 inline-flex items-center"
+                className="bg-[#39e3cf] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors duration-300 inline-flex items-center"
               >
                 Ortak Olun
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -75,12 +75,12 @@ const ForMerchantsSection = () => {
             
             {/* Floating Stats */}
             <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4">
-              <div className="text-2xl font-bold text-[#00A690]">25%</div>
+              <div className="text-2xl font-bold text-[#39e3cf]">25%</div>
               <div className="text-sm text-gray-600">Ortalama Gelir Artışı</div>
             </div>
 
             <div className="absolute -top-6 -right-6 bg-white rounded-lg shadow-lg p-4">
-              <div className="text-2xl font-bold text-[#00A690]">500+</div>
+              <div className="text-2xl font-bold text-[#39e3cf]">500+</div>
               <div className="text-sm text-gray-600">Ortak Restoran</div>
             </div>
           </div>

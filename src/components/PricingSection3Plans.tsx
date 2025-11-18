@@ -29,9 +29,9 @@ const PricingSection3Plans = () => {
       commission: '12',
       badge: 'ÖNERİLEN',
       icon: TrendingUp,
-      iconBg: 'bg-[#F75C00]',
+      iconBg: 'bg-[#e2fd66]',
       iconColor: 'text-white',
-      gradient: 'from-[#00A690] via-[#00B89F] to-[#00A690]',
+      gradient: 'from-[#39e3cf] via-[#00B89F] to-[#39e3cf]',
       features: [
         'Tüm Temel özellikler',
         'Gelişmiş istatistikler',
@@ -49,7 +49,7 @@ const PricingSection3Plans = () => {
       commission: '8',
       badge: null,
       icon: Award,
-      iconBg: 'bg-[#F75C00]',
+      iconBg: 'bg-[#e2fd66]',
       iconColor: 'text-white',
       gradient: 'from-orange-50 to-white',
       features: [
@@ -71,7 +71,7 @@ const PricingSection3Plans = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-4">
-            <span className="bg-[#F7F2E7] text-[#00A690] px-4 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-[#ffffff] text-[#39e3cf] px-4 py-1 rounded-full text-sm font-semibold">
               💰 Fiyatlandırma
             </span>
           </div>
@@ -81,7 +81,7 @@ const PricingSection3Plans = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
             Tüm planlar için 3 ay ücretsiz deneme! Planınızı sonra seçin.
           </p>
-          <div className="bg-gradient-to-r from-[#00A690] to-[#008C7A] text-white px-10 py-4 rounded-2xl font-bold text-xl shadow-2xl inline-block">
+          <div className="bg-gradient-to-r from-[#39e3cf] to-[#008C7A] text-white px-10 py-4 rounded-2xl font-bold text-xl shadow-2xl inline-block">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🎉</span>
               <div>
@@ -99,7 +99,7 @@ const PricingSection3Plans = () => {
               key={index}
               className={`relative rounded-3xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
                 plan.highlight
-                  ? 'shadow-2xl ring-4 ring-[#00A690] ring-offset-4'
+                  ? 'shadow-2xl ring-4 ring-[#39e3cf] ring-offset-4'
                   : 'shadow-lg'
               }`}
               style={{
@@ -111,7 +111,7 @@ const PricingSection3Plans = () => {
               {/* Badge Recommandé */}
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-gradient-to-r from-[#F75C00] to-[#FF6B1A] text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg">
+                  <div className="bg-gradient-to-r from-[#e2fd66] to-[#FF6B1A] text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg">
                     <Star className="w-4 h-4" fill="currentColor" />
                     {plan.badge}
                     <Star className="w-4 h-4" fill="currentColor" />
@@ -122,7 +122,7 @@ const PricingSection3Plans = () => {
               {/* Header avec gradient */}
               <div className={`relative pt-${plan.badge ? '12' : '8'} pb-8 px-8 bg-gradient-to-br ${plan.gradient}`}>
                 {plan.highlight && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00A690]/10 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#39e3cf]/10 to-transparent"></div>
                 )}
 
                 {/* Icon */}
@@ -138,7 +138,7 @@ const PricingSection3Plans = () => {
                 {/* Prix */}
                 <div className="mb-4">
                   <div className="flex items-baseline gap-2">
-                    <span className={`text-6xl font-black ${plan.highlight ? 'text-[#F75C00]' : 'text-gray-900'}`}>
+                    <span className={`text-6xl font-black ${plan.highlight ? 'text-[#e2fd66]' : 'text-gray-900'}`}>
                       {plan.price}
                     </span>
                     <div className="flex flex-col">
@@ -148,7 +148,7 @@ const PricingSection3Plans = () => {
                   </div>
                   <div className="mt-3 flex items-baseline gap-1">
                     <span className="text-gray-600">+</span>
-                    <span className={`text-3xl font-bold ${plan.highlight ? 'text-[#F75C00]' : 'text-gray-700'}`}>
+                    <span className={`text-3xl font-bold ${plan.highlight ? 'text-[#e2fd66]' : 'text-gray-700'}`}>
                       {plan.commission}%
                     </span>
                     <span className="text-sm text-gray-600">komisyon satışta</span>
@@ -158,7 +158,7 @@ const PricingSection3Plans = () => {
                 {/* Idéal pour */}
                 <div className={`inline-block px-4 py-2 rounded-lg text-sm font-medium ${
                   plan.highlight
-                    ? 'bg-[#F75C00]/10 text-[#F75C00]'
+                    ? 'bg-[#e2fd66]/10 text-[#e2fd66]'
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   📦 {plan.ideal}
@@ -171,7 +171,7 @@ const PricingSection3Plans = () => {
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                        plan.highlight ? 'bg-[#00A690]' : 'bg-gray-200'
+                        plan.highlight ? 'bg-[#39e3cf]' : 'bg-gray-200'
                       }`}>
                         <Check className={`w-4 h-4 ${plan.highlight ? 'text-white' : 'text-gray-600'}`} strokeWidth={3} />
                       </div>
@@ -188,7 +188,7 @@ const PricingSection3Plans = () => {
         <div className="flex justify-center mb-8">
           <a
             href="/merchant/auth"
-            className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#00A690] to-[#008C7A] text-white px-12 py-5 rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+            className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#39e3cf] to-[#008C7A] text-white px-12 py-5 rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

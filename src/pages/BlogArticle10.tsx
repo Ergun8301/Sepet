@@ -6,7 +6,7 @@ const BlogArticle10 = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <a href="/blog" className="inline-flex items-center text-[#00A690] hover:text-[#F75C00] transition-colors duration-300">
+          <a href="/blog" className="inline-flex items-center text-[#39e3cf] hover:text-[#e2fd66] transition-colors duration-300">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Bloga dön
           </a>
@@ -16,7 +16,7 @@ const BlogArticle10 = () => {
       <div className="bg-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <span className="bg-[#00A690] text-white px-4 py-2 rounded-full text-sm font-medium">
+            <span className="bg-[#39e3cf] text-white px-4 py-2 rounded-full text-sm font-medium">
               İsraf Karşıtı
             </span>
           </div>
@@ -46,7 +46,7 @@ const BlogArticle10 = () => {
             Sonuç: hala tüketilebilir tonlarca gıda çöpe gidiyor. Bunları çözmeyi öğrenelim!
           </p>
 
-          <blockquote className="border-l-4 border-[#00A690] pl-6 my-8 italic text-gray-700">
+          <blockquote className="border-l-4 border-[#39e3cf] pl-6 my-8 italic text-gray-700">
             "Türkiye'de evsel gıda israfının %30'u son kullanma tarihlerinin yanlış anlaşılmasıyla ilgili.
             Oysa SKT ile TETT arasındaki fark çok önemli!"
             <br />
@@ -118,7 +118,7 @@ const BlogArticle10 = () => {
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <CheckCircle className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <CheckCircle className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             TETT: Tavsiye Edilen Tüketim Tarihi
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">
@@ -126,7 +126,7 @@ const BlogArticle10 = () => {
             (tat, doku, vitaminler) kaybeder ancak tamamen tüketilebilir ve tehlikesizdir.
           </p>
 
-          <div className="bg-green-50 border-l-4 border-[#00A690] p-6 my-8">
+          <div className="bg-green-50 border-l-4 border-[#39e3cf] p-6 my-8">
             <h3 className="font-bold text-gray-900 mb-4">📋 TETT özellikleri:</h3>
             <ul className="space-y-2 text-gray-700">
               <li>• <strong>İfade:</strong> "Tercihen...tarihinden önce tüketilmeli" / "Tavsiye Edilen Tüketim Tarihi"</li>
@@ -193,7 +193,7 @@ const BlogArticle10 = () => {
           </p>
 
           <div className="space-y-6 my-8">
-            <div className="bg-white border-2 border-[#00A690] rounded-lg p-6">
+            <div className="bg-white border-2 border-[#39e3cf] rounded-lg p-6">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center">
                 <span className="text-2xl mr-3">👀</span> Görme
               </h3>
@@ -204,7 +204,7 @@ const BlogArticle10 = () => {
               </ul>
             </div>
 
-            <div className="bg-white border-2 border-[#00A690] rounded-lg p-6">
+            <div className="bg-white border-2 border-[#39e3cf] rounded-lg p-6">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center">
                 <span className="text-2xl mr-3">👃</span> Koklama
               </h3>
@@ -215,7 +215,7 @@ const BlogArticle10 = () => {
               </ul>
             </div>
 
-            <div className="bg-white border-2 border-[#00A690] rounded-lg p-6">
+            <div className="bg-white border-2 border-[#39e3cf] rounded-lg p-6">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center">
                 <span className="text-2xl mr-3">👅</span> Tadma
               </h3>
@@ -265,7 +265,7 @@ const BlogArticle10 = () => {
             Rahat olun: tamamen tüketilebilir ve kontrol edilmiştir!
           </p>
 
-          <div className="bg-[#F7F2E7] rounded-lg p-6 my-8">
+          <div className="bg-[#ffffff] rounded-lg p-6 my-8">
             <h3 className="font-bold text-gray-900 mb-4">🛡️ TILKAPP garantileri:</h3>
             <ul className="space-y-2 text-gray-700">
               <li>• ✅ Tüm partner işletmeler doğrulanmış ve sertifikalıdır</li>
@@ -275,7 +275,7 @@ const BlogArticle10 = () => {
             </ul>
           </div>
 
-          <blockquote className="border-l-4 border-[#00A690] pl-6 my-8 italic text-gray-700">
+          <blockquote className="border-l-4 border-[#39e3cf] pl-6 my-8 italic text-gray-700">
             "TILKAPP'ta TETT'si geçmiş bir ürün almak, akıllı bir israf karşıtı harekettir.
             Ürün sağlıklı, kalite yerinde, sadece büyük marketlerin pazarlaması
             bizi çok çabuk atmaya alıştırdı!"
@@ -288,7 +288,7 @@ const BlogArticle10 = () => {
             </p>
             <a
               href="/offers"
-              className="bg-[#00A690] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#F75C00] transition-colors duration-300 inline-block"
+              className="bg-[#39e3cf] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#e2fd66] transition-colors duration-300 inline-block"
             >
               Teklifleri görüntüle
             </a>

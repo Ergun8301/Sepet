@@ -6,7 +6,7 @@ const BlogArticle7 = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <a href="/blog" className="inline-flex items-center text-[#00A690] hover:text-[#F75C00] transition-colors duration-300">
+          <a href="/blog" className="inline-flex items-center text-[#39e3cf] hover:text-[#e2fd66] transition-colors duration-300">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Bloga dön
           </a>
@@ -16,7 +16,7 @@ const BlogArticle7 = () => {
       <div className="bg-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <span className="bg-[#00A690] text-white px-4 py-2 rounded-full text-sm font-medium">
+            <span className="bg-[#39e3cf] text-white px-4 py-2 rounded-full text-sm font-medium">
               Haberler
             </span>
           </div>
@@ -47,7 +47,7 @@ const BlogArticle7 = () => {
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <TrendingUp className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <TrendingUp className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             Cesaret verici rakamlar
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">
@@ -55,21 +55,21 @@ const BlogArticle7 = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-            <div className="bg-[#F7F2E7] rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-[#00A690] mb-2">150+</div>
+            <div className="bg-[#ffffff] rounded-lg p-6 text-center">
+              <div className="text-4xl font-bold text-[#39e3cf] mb-2">150+</div>
               <div className="text-gray-700">Partner işletme</div>
             </div>
-            <div className="bg-[#F7F2E7] rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-[#00A690] mb-2">8.000+</div>
+            <div className="bg-[#ffffff] rounded-lg p-6 text-center">
+              <div className="text-4xl font-bold text-[#39e3cf] mb-2">8.000+</div>
               <div className="text-gray-700">Aktif kullanıcı</div>
             </div>
-            <div className="bg-[#F7F2E7] rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-[#00A690] mb-2">25 ton</div>
+            <div className="bg-[#ffffff] rounded-lg p-6 text-center">
+              <div className="text-4xl font-bold text-[#39e3cf] mb-2">25 ton</div>
               <div className="text-gray-700">Kurtarılan gıda</div>
             </div>
           </div>
 
-          <blockquote className="border-l-4 border-[#00A690] pl-6 my-8 italic text-gray-700">
+          <blockquote className="border-l-4 border-[#39e3cf] pl-6 my-8 italic text-gray-700">
             "Bu rakamlar tüm beklentilerimizi aşıyor. Antalya sakinlerinin daha sorumlu
             tüketim alışkanlıkları benimsemeye hazır olduğunu kanıtlıyor."
             <br />
@@ -77,7 +77,7 @@ const BlogArticle7 = () => {
           </blockquote>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <Store className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <Store className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             Tüm sektörlerden işletmeler
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">
@@ -85,7 +85,7 @@ const BlogArticle7 = () => {
             restoranlar, bakkallar... gıda sektörünün tüm aktörleri harekete geçiyor.
           </p>
 
-          <div className="bg-white border-2 border-[#00A690] rounded-lg p-6 my-8">
+          <div className="bg-white border-2 border-[#39e3cf] rounded-lg p-6 my-8">
             <h3 className="font-bold text-gray-900 mb-4">Partner işletmelerin dağılımı:</h3>
             <ul className="space-y-2 text-gray-700">
               <li>• <strong>%45 Fırın-pastaneler</strong> - Hareketin öncüleri</li>
@@ -110,7 +110,7 @@ const BlogArticle7 = () => {
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
-            <Users2 className="inline w-6 h-6 mr-2 text-[#00A690]" />
+            <Users2 className="inline w-6 h-6 mr-2 text-[#39e3cf]" />
             Çeşitli kullanıcı profili
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">
@@ -119,28 +119,28 @@ const BlogArticle7 = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
-            <div className="bg-[#F7F2E7] rounded-lg p-6">
+            <div className="bg-[#ffffff] rounded-lg p-6">
               <h4 className="font-bold text-gray-900 mb-3">👨‍👩‍👧‍👦 Profil 1: Aileler</h4>
               <p className="text-sm text-gray-700">
                 <strong>Kullanıcıların %35'i</strong><br />
                 Motivasyon: tasarruf + çocukları israf karşıtı eğitme
               </p>
             </div>
-            <div className="bg-[#F7F2E7] rounded-lg p-6">
+            <div className="bg-[#ffffff] rounded-lg p-6">
               <h4 className="font-bold text-gray-900 mb-3">👩‍💼 Profil 2: Yoğun çalışanlar</h4>
               <p className="text-sm text-gray-700">
                 <strong>Kullanıcıların %30'u</strong><br />
                 Motivasyon: işten sonra hızlı ve ekonomik yemekler
               </p>
             </div>
-            <div className="bg-[#F7F2E7] rounded-lg p-6">
+            <div className="bg-[#ffffff] rounded-lg p-6">
               <h4 className="font-bold text-gray-900 mb-3">👵 Profil 3: Emekliler</h4>
               <p className="text-sm text-gray-700">
                 <strong>Kullanıcıların %20'si</strong><br />
                 Motivasyon: indirimli kaliteli ürünler
               </p>
             </div>
-            <div className="bg-[#F7F2E7] rounded-lg p-6">
+            <div className="bg-[#ffffff] rounded-lg p-6">
               <h4 className="font-bold text-gray-900 mb-3">🎓 Profil 4: Öğrenciler</h4>
               <p className="text-sm text-gray-700">
                 <strong>Kullanıcıların %15'i</strong><br />
@@ -158,23 +158,23 @@ const BlogArticle7 = () => {
           <div className="space-y-3 my-8">
             <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
               <span className="font-medium text-gray-900">1. Muratpaşa</span>
-              <span className="text-[#00A690] font-bold">42 işletme</span>
+              <span className="text-[#39e3cf] font-bold">42 işletme</span>
             </div>
             <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
               <span className="font-medium text-gray-900">2. Konyaaltı</span>
-              <span className="text-[#00A690] font-bold">38 işletme</span>
+              <span className="text-[#39e3cf] font-bold">38 işletme</span>
             </div>
             <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
               <span className="font-medium text-gray-900">3. Kepez</span>
-              <span className="text-[#00A690] font-bold">31 işletme</span>
+              <span className="text-[#39e3cf] font-bold">31 işletme</span>
             </div>
             <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
               <span className="font-medium text-gray-900">4. Lara</span>
-              <span className="text-[#00A690] font-bold">24 işletme</span>
+              <span className="text-[#39e3cf] font-bold">24 işletme</span>
             </div>
             <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
               <span className="font-medium text-gray-900">5. Diğerleri</span>
-              <span className="text-[#00A690] font-bold">15 işletme</span>
+              <span className="text-[#39e3cf] font-bold">15 işletme</span>
             </div>
           </div>
 
@@ -182,7 +182,7 @@ const BlogArticle7 = () => {
 
           <div className="bg-green-50 rounded-lg p-6 my-6">
             <p className="text-gray-700 mb-3">
-              <strong className="text-[#00A690]">İşletme tarafından:</strong><br />
+              <strong className="text-[#39e3cf]">İşletme tarafından:</strong><br />
               "KapKurtar bize yeni bir müşteri kitlesine ulaşmamızı sağladı. Teklif için gelen bazı müşteriler
               daha sonra normal fiyattan almak için geri geliyor. Aynı zamanda bir pazarlama aracı!"
             </p>
@@ -210,26 +210,26 @@ const BlogArticle7 = () => {
             <li>• <strong>Dernek ortaklıkları</strong>: Hayır kurumlarına bağışlar</li>
           </ul>
 
-          <blockquote className="border-l-4 border-[#00A690] pl-6 my-8 italic text-gray-700">
+          <blockquote className="border-l-4 border-[#39e3cf] pl-6 my-8 italic text-gray-700">
             "2025 hedefimiz: 100 ton gıda kurtarmak ve Antalya bölgesinde 300 partner işletmeye ulaşmak.
             Birlikte işleri değiştirebiliriz!"
           </blockquote>
 
-          <div className="bg-[#00A690] text-white rounded-lg p-8 my-12 text-center">
+          <div className="bg-[#39e3cf] text-white rounded-lg p-8 my-12 text-center">
             <h3 className="text-2xl font-bold mb-4">Harekete katılın!</h3>
-            <p className="mb-6 text-[#F7F2E7]">
+            <p className="mb-6 text-[#ffffff]">
               İster işletme sahibi ister tüketici olun, israf karşıtı devrime katılın
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/merchant/auth"
-                className="bg-white text-[#00A690] px-6 py-3 rounded-lg font-medium hover:bg-[#F7F2E7] transition-colors inline-block"
+                className="bg-white text-[#39e3cf] px-6 py-3 rounded-lg font-medium hover:bg-[#ffffff] transition-colors inline-block"
               >
                 İşletme sahibiyim
               </a>
               <a
                 href="/download"
-                className="bg-[#F75C00] text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors inline-block"
+                className="bg-[#e2fd66] text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors inline-block"
               >
                 Tüketiciyim
               </a>

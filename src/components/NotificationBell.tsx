@@ -182,11 +182,11 @@ export function NotificationBell({ userType }: NotificationBellProps) {
     switch (type) {
       case "offer":
       case "offer_nearby":
-        return "border-l-[#00A690]";
+        return "border-l-[#39e3cf]";
       case "reservation":
         return "border-l-blue-500";
       case "offer_expired":
-        return "border-l-[#00A690]";
+        return "border-l-[#39e3cf]";
       case "stock_empty":
         return "border-l-red-500";
       case "system":
@@ -207,7 +207,7 @@ export function NotificationBell({ userType }: NotificationBellProps) {
           aria-label="Notifications"
         >
           <Bell
-            className="w-6 h-6 text-[#F7F2E7] hover:text-[#F75C00] transition-colors duration-300"
+            className="w-6 h-6 text-[#ffffff] hover:text-[#e2fd66] transition-colors duration-300"
           />
 
           {unreadCount > 0 && (
@@ -226,7 +226,7 @@ export function NotificationBell({ userType }: NotificationBellProps) {
               {notifications.length > 0 && unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-[#00A690] hover:text-[#F75C00] font-medium hover:underline transition-colors duration-300"
+                  className="text-xs text-[#39e3cf] hover:text-[#e2fd66] font-medium hover:underline transition-colors duration-300"
                 >
                   Tümünü Okundu İşaretle
                 </button>
@@ -254,7 +254,7 @@ export function NotificationBell({ userType }: NotificationBellProps) {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#00A690] flex items-center justify-center text-lg shadow-sm">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#39e3cf] flex items-center justify-center text-lg shadow-sm">
                         {getNotificationIcon(n.type)}
                       </div>
 
@@ -277,7 +277,7 @@ export function NotificationBell({ userType }: NotificationBellProps) {
                       </div>
 
                       {!n.is_read && (
-                        <div className="flex-shrink-0 w-2.5 h-2.5 bg-[#00A690] rounded-full mt-1 shadow-sm"></div>
+                        <div className="flex-shrink-0 w-2.5 h-2.5 bg-[#39e3cf] rounded-full mt-1 shadow-sm"></div>
                       )}
                     </div>
                   </div>

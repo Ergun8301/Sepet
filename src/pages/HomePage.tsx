@@ -15,7 +15,7 @@ const HomePage = () => {
       <HeroBanner />
       
       {/* Section HowItWorks - fond turquoise clair */}
-      <div className="bg-[#2DD4BF]/10">
+      <div className="bg-[#51a598]/10">
         <HowItWorks />
       </div>
 
@@ -25,15 +25,15 @@ const HomePage = () => {
       </div>
 
       {/* Section ImpactSection - fond turquoise clair */}
-      <div className="bg-[#2DD4BF]/10">
+      <div className="bg-[#51a598]/10">
         <ImpactSection />
       </div>
 
-      {/* CTA Download Section - fond crème */}
-      <div className="bg-[#F3EACE] py-16">
+      {/* CTA Download Section - fond blanc */}
+      <div className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="flex justify-center mb-6">
-            <div className="bg-[#00615F] rounded-full p-4">
+            <div className="bg-[#39e3cf] rounded-full p-4">
               <Smartphone className="w-12 h-12 text-white" />
             </div>
           </div>
@@ -45,7 +45,7 @@ const HomePage = () => {
           </p>
           <button
             onClick={() => setShowDownloadModal(true)}
-            className="bg-[#F75C00] text-white px-8 py-4 rounded-lg font-bold hover:bg-[#FF7A29] transition-colors duration-300 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+            className="bg-[#e2fd66] text-black px-8 py-4 rounded-lg font-bold hover:brightness-110 transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Şimdi İndir
           </button>
@@ -53,7 +53,7 @@ const HomePage = () => {
       </div>
 
       {/* Section ForMerchants - fond turquoise clair */}
-      <div className="bg-[#2DD4BF]/10">
+      <div className="bg-[#51a598]/10">
         <ForMerchantsSection />
       </div>
 
