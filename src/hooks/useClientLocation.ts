@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { getCurrentPosition, isGeolocationAvailable } from '../utils/geolocation';
 
 interface UseClientLocationReturn {
   location: string | null;
@@ -59,70 +60,64 @@ export function useClientLocation(clientId: string | null): UseClientLocationRet
       return;
     }
 
-    if (!navigator.geolocation) {
+    if (!isGeolocationAvailable()) {
       setError('La géolocalisation n\'est pas supportée par votre navigateur');
       return;
     }
 
-    return new Promise((resolve, reject) => {
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
+    try {
+      // Utiliser le wrapper intelligent (Capacitor en natif, navigator.geolocation sur web)
+      const position = await getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
 
-          try {
-            const { error: updateError } = await supabase.rpc('update_client_location', {
-              client_id: clientId,
-              longitude: longitude,
-              latitude: latitude,
-              status: 'success'
-            });
+      const { latitude, longitude } = position.coords;
 
-            if (updateError) {
-              console.error('Error updating client location:', updateError);
-              setError('Impossible de sauvegarder votre position');
-              reject(updateError);
-            } else {
-              setLocation(`POINT(${longitude} ${latitude})`);
-              resolve();
-            }
-          } catch (err) {
-            console.error('Error saving location:', err);
-            setError('Erreur lors de la sauvegarde de votre position');
-            reject(err);
-          } finally {
-            setLoading(false);
-          }
-        },
-        (err) => {
-          console.error('Geolocation error:', err);
-          let errorMessage = 'Impossible d\'obtenir votre position';
+      try {
+        const { error: updateError } = await supabase.rpc('update_client_location', {
+          client_id: clientId,
+          longitude: longitude,
+          latitude: latitude,
+          status: 'success'
+        });
 
-          switch (err.code) {
-            case err.PERMISSION_DENIED:
-              errorMessage = 'Vous avez refusé l\'accès à votre position';
-              break;
-            case err.POSITION_UNAVAILABLE:
-              errorMessage = 'Votre position n\'est pas disponible';
-              break;
-            case err.TIMEOUT:
-              errorMessage = 'La demande de position a expiré';
-              break;
-          }
-
-          setError(errorMessage);
-          setLoading(false);
-          reject(err);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
+        if (updateError) {
+          console.error('Error updating client location:', updateError);
+          setError('Impossible de sauvegarder votre position');
+        } else {
+          setLocation(`POINT(${longitude} ${latitude})`);
         }
-      );
-    });
+      } catch (err) {
+        console.error('Error saving location:', err);
+        setError('Erreur lors de la sauvegarde de votre position');
+        throw err;
+      }
+    } catch (err: any) {
+      console.error('Geolocation error:', err);
+      let errorMessage = 'Impossible d\'obtenir votre position';
+
+      switch (err.code) {
+        case 1: // PERMISSION_DENIED
+          errorMessage = 'Vous avez refusé l\'accès à votre position';
+          break;
+        case 2: // POSITION_UNAVAILABLE
+          errorMessage = 'Votre position n\'est pas disponible';
+          break;
+        case 3: // TIMEOUT
+          errorMessage = 'La demande de position a expiré';
+          break;
+      }
+
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {

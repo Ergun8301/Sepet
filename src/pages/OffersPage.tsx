@@ -11,6 +11,7 @@ import { useAuth } from "../hooks/useAuth";
 import { OfferDetailsModal } from "../components/OfferDetailsModal";
 import { MerchantBottomSheet } from "../components/MerchantBottomSheet";
 import { useClientNotifications } from "../hooks/useClientNotifications";
+import { getCurrentPosition, isGeolocationAvailable } from "../utils/geolocation";
 
 type Offer = {
   offer_id: string;
@@ -220,7 +221,7 @@ export default function OffersPage() {
     if (!clientId || isGeolocating || hasGeolocated) return;
 
     const geolocateClient = async () => {
-      if (!navigator.geolocation) {
+      if (!isGeolocationAvailable()) {
         console.warn("Géolocalisation non disponible sur cet appareil");
         setUserLocation(DEFAULT_LOCATION);
         setCenter(DEFAULT_LOCATION);
@@ -230,8 +231,51 @@ export default function OffersPage() {
 
       setIsGeolocating(true);
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
+      try {
+        // Première tentative : haute précision
+        console.log("📍 Tentative de géolocalisation haute précision...");
+        const position = await getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 0
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        try {
+          await supabase.rpc("update_client_location", {
+            p_client_id: clientId,
+            p_lat: latitude,
+            p_lng: longitude,
+          });
+
+          setUserLocation([longitude, latitude]);
+          setCenter([longitude, latitude]);
+
+          if (mapRef.current && Number.isFinite(longitude) && Number.isFinite(latitude)) {
+            mapRef.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 12,
+              essential: true,
+            });
+          }
+        } catch (error) {
+          console.error("Erreur lors de la mise à jour de la position:", error);
+        }
+
+        setIsGeolocating(false);
+        setHasGeolocated(true);
+      } catch (error) {
+        console.warn("Géolocalisation haute précision échouée, tentative en mode économique...", error);
+
+        try {
+          // Deuxième tentative : mode économique
+          const position = await getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 15000,
+            maximumAge: 300000
+          });
+
           const { latitude, longitude } = position.coords;
 
           try {
@@ -253,63 +297,27 @@ export default function OffersPage() {
             }
           } catch (error) {
             console.error("Erreur lors de la mise à jour de la position:", error);
-          } finally {
-            setIsGeolocating(false);
-            setHasGeolocated(true);
           }
-        },
-        (error) => {
-          console.warn("Géolocalisation haute précision échouée, tentative en mode économique...", error);
-          
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const { latitude, longitude } = position.coords;
 
-              try {
-                await supabase.rpc("update_client_location", {
-                  p_client_id: clientId,
-                  p_lat: latitude,
-                  p_lng: longitude,
-                });
+          setIsGeolocating(false);
+          setHasGeolocated(true);
+        } catch (fallbackError) {
+          console.warn("Géolocalisation impossible:", fallbackError);
+          // 🔧 FIX : Pas d'alerte, juste utiliser la position par défaut
+          setUserLocation(DEFAULT_LOCATION);
+          setCenter(DEFAULT_LOCATION);
 
-                setUserLocation([longitude, latitude]);
-                setCenter([longitude, latitude]);
-
-                if (mapRef.current && Number.isFinite(longitude) && Number.isFinite(latitude)) {
-                  mapRef.current.flyTo({
-                    center: [longitude, latitude],
-                    zoom: 12,
-                    essential: true,
-                  });
-                }
-              } catch (error) {
-                console.error("Erreur lors de la mise à jour de la position:", error);
-              } finally {
-                setIsGeolocating(false);
-                setHasGeolocated(true);
-              }
-            },
-            (fallbackError) => {
-              console.warn("Géolocalisation impossible:", fallbackError);
-              // 🔧 FIX : Pas d'alerte, juste utiliser la position par défaut
-              setUserLocation(DEFAULT_LOCATION);
-              setCenter(DEFAULT_LOCATION);
-
-              if (mapRef.current) {
-                mapRef.current.flyTo({
-                  center: DEFAULT_LOCATION,
-                  zoom: DEFAULT_ZOOM,
-                  essential: true,
-                });
-              }
-              setIsGeolocating(false);
-              setHasGeolocated(true);
-            },
-            { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
-          );
-        },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-      );
+          if (mapRef.current) {
+            mapRef.current.flyTo({
+              center: DEFAULT_LOCATION,
+              zoom: DEFAULT_ZOOM,
+              essential: true,
+            });
+          }
+          setIsGeolocating(false);
+          setHasGeolocated(true);
+        }
+      }
     };
 
     geolocateClient();

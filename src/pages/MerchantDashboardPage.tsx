@@ -11,6 +11,7 @@ import { uploadImageToSupabase } from '../lib/uploadImage';
 import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 import { type Notification } from '../api/notifications';
 import { OfferForm } from '../components/OfferForm';
+import { getCurrentPosition, isGeolocationAvailable } from '../utils/geolocation';
 
 interface Offer {
   id: string;
@@ -926,41 +927,39 @@ const MerchantDashboardPage = () => {
     }
   };
 
-  const handleGeolocate = () => {
-    if (!navigator.geolocation) {
+  const handleGeolocate = async () => {
+    if (!isGeolocationAvailable()) {
       setToast({ message: 'Géolocalisation non supportée', type: 'error' });
       return;
     }
 
     setToast({ message: '📍 Détection en cours...', type: 'success' });
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-
-        setOnboardingData((prev) => ({
-          ...prev,
-          latitude,
-          longitude,
-        }));
-
-        if (mapRef.current && markerRef.current) {
-          mapRef.current.flyTo({ center: [longitude, latitude], zoom: 15 });
-          markerRef.current.setLngLat([longitude, latitude]);
-        }
-
-        setToast({ message: `✅ Position détectée (précision: ${Math.round(position.coords.accuracy)}m)`, type: 'success' });
-      },
-      (error) => {
-        console.error('❌ Erreur géolocalisation:', error);
-        setToast({ message: '⚠️ ' + error.message, type: 'error' });
-      },
-      {
+    try {
+      const position = await getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      setOnboardingData((prev) => ({
+        ...prev,
+        latitude,
+        longitude,
+      }));
+
+      if (mapRef.current && markerRef.current) {
+        mapRef.current.flyTo({ center: [longitude, latitude], zoom: 15 });
+        markerRef.current.setLngLat([longitude, latitude]);
       }
-    );
+
+      setToast({ message: `✅ Position détectée (précision: ${Math.round(position.coords.accuracy)}m)`, type: 'success' });
+    } catch (error: any) {
+      console.error('❌ Erreur géolocalisation:', error);
+      setToast({ message: '⚠️ ' + (error.message || 'Impossible d\'obtenir votre position'), type: 'error' });
+    }
   };
 
   useEffect(() => {
