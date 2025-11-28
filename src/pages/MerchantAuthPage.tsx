@@ -147,8 +147,13 @@ const MerchantAuthPage = () => {
 
       console.log("🎟️ Flow token créé :", flow.token);
 
-      // 🔹 Redirection Google avec rôle et token dans l'URL
-      const redirectUrl = `${window.location.origin}/auth/callback?role=merchant&flow_token=${flow.token}`;
+      // 🔹 Stocker dans localStorage (Supabase OAuth perd les query params)
+      localStorage.setItem("oauth_flow_token", flow.token);
+      localStorage.setItem("oauth_desired_role", "merchant");
+      console.log("💾 Flow token stocké dans localStorage");
+
+      // 🔹 Redirection Google
+      const redirectUrl = `${window.location.origin}/auth/callback`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

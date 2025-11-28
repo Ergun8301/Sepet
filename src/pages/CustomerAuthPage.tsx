@@ -112,10 +112,14 @@ const CustomerAuthPage = () => {
   // ✅ 5. Auth Google (rôle client)
   const handleGoogleAuth = async () => {
     try {
+      // 🔹 Stocker dans localStorage (Supabase OAuth perd les query params)
+      localStorage.setItem("oauth_desired_role", "client");
+      console.log("💾 Rôle client stocké dans localStorage");
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?role=client`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) throw error;

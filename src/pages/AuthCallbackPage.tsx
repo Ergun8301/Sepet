@@ -12,9 +12,20 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        let role = searchParams.get("role") || "client";
-        const flowToken = searchParams.get("flow_token");
-        console.log("🔁 OAuth callback → rôle URL:", role, "| flow_token:", flowToken);
+        // 🔹 Récupérer depuis localStorage (Supabase OAuth perd les query params)
+        const storedRole = localStorage.getItem("oauth_desired_role");
+        const storedFlowToken = localStorage.getItem("oauth_flow_token");
+
+        // Fallback sur URL params si localStorage vide
+        let role = storedRole || searchParams.get("role") || "client";
+        const flowToken = storedFlowToken || searchParams.get("flow_token");
+
+        console.log("🔁 OAuth callback → rôle:", role, "| flow_token:", flowToken);
+        console.log("📦 Depuis localStorage → role:", storedRole, "| flow_token:", storedFlowToken);
+
+        // 🔹 Nettoyer localStorage après récupération
+        localStorage.removeItem("oauth_desired_role");
+        localStorage.removeItem("oauth_flow_token");
 
         // 🔹 attendre session valide
         let session = null;
