@@ -148,13 +148,14 @@ const MerchantAuthPage = () => {
 
       console.log("🎟️ Flow token créé :", flow.token);
 
-      // 🔹 Stocker dans localStorage (Supabase OAuth perd les query params)
+      // 🔹 Stocker dans localStorage comme fallback
       localStorage.setItem("oauth_flow_token", flow.token);
       localStorage.setItem("oauth_desired_role", "merchant");
       console.log("💾 Flow token stocké dans localStorage");
 
-      // 🔹 Redirection Google
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      // 🔹 Redirection Google avec query params (domaine sans www)
+      const redirectUrl = `https://kapkurtar.com/auth/callback?role=merchant&flow_token=${flow.token}`;
+      console.log("🔗 Redirect URL:", redirectUrl);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

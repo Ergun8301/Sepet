@@ -112,14 +112,18 @@ const CustomerAuthPage = () => {
   // ✅ 5. Auth Google (rôle client)
   const handleGoogleAuth = async () => {
     try {
-      // 🔹 Stocker dans localStorage (Supabase OAuth perd les query params)
+      // 🔹 Stocker dans localStorage comme fallback
       localStorage.setItem("oauth_desired_role", "client");
       console.log("💾 Rôle client stocké dans localStorage");
+
+      // 🔹 Redirection Google avec query params (domaine sans www)
+      const redirectUrl = `https://kapkurtar.com/auth/callback?role=client`;
+      console.log("🔗 Redirect URL:", redirectUrl);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       });
       if (error) throw error;
