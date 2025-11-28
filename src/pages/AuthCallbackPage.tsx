@@ -12,9 +12,9 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        const role = searchParams.get("role") || "client";
+        let role = searchParams.get("role") || "client";
         const flowToken = searchParams.get("flow_token");
-        console.log("🔁 OAuth callback → rôle:", role, "| flow_token:", flowToken);
+        console.log("🔁 OAuth callback → rôle URL:", role, "| flow_token:", flowToken);
 
         // 🔹 attendre session valide
         let session = null;
@@ -36,8 +36,21 @@ const AuthCallbackPage = () => {
         const user = session.user;
         console.log("✅ Session récupérée pour:", user.email);
 
-        // 1️⃣ Si un flow_token est présent → associer à l'utilisateur
+        // 1️⃣ Si un flow_token est présent → récupérer le rôle et associer à l'utilisateur
         if (flowToken) {
+          // ✅ Lire le desired_role depuis flow_states (plus fiable que l'URL)
+          const { data: flowData } = await supabase
+            .from("flow_states")
+            .select("desired_role")
+            .eq("token", flowToken)
+            .maybeSingle();
+
+          if (flowData?.desired_role) {
+            role = flowData.desired_role;
+            console.log("✅ Rôle récupéré depuis flow_states:", role);
+          }
+
+          // Marquer le flow_state comme utilisé
           await supabase
             .from("flow_states")
             .update({ auth_user_id: user.id, used: true })

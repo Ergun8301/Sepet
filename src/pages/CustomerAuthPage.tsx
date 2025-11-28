@@ -95,9 +95,12 @@ const CustomerAuthPage = () => {
         });
         if (error) throw error;
 
-        alert(
-          '✅ Bir onay e-postası gönderildi. Hesabınızı etkinleştirmek için lütfen bağlantıya tıklayın.'
-        );
+        // ✅ Auto-login après signup (email confirmation désactivée dans Supabase)
+        if (data.user) {
+          await refetchProfile();
+          // Redirection vers /customer/auth pour vérifier le profil complet (modal)
+          checkProfileCompletion();
+        }
       }
     } catch (err) {
       setError((err as Error).message);
