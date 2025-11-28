@@ -10,8 +10,12 @@ const AuthCallbackPage = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
+    console.log("🚀🚀🚀 AuthCallbackPage MONTÉ - Version avec localStorage 🚀🚀🚀");
+
     const handleOAuthCallback = async () => {
       try {
+        console.log("🔄 handleOAuthCallback démarré");
+
         // 🔹 Récupérer depuis localStorage (Supabase OAuth perd les query params)
         const storedRole = localStorage.getItem("oauth_desired_role");
         const storedFlowToken = localStorage.getItem("oauth_flow_token");
@@ -69,19 +73,42 @@ const AuthCallbackPage = () => {
         }
 
         // 2️⃣ Mise à jour / création du profil
-        const { error: profileError } = await supabase.from("profiles").upsert(
-          {
-            auth_id: user.id,
-            email: user.email,
-            role,
-          },
-          { onConflict: "auth_id" }
-        );
+        // D'abord vérifier si le profil existe
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id, role")
+          .eq("auth_id", user.id)
+          .maybeSingle();
 
-        if (profileError) {
-          console.warn("⚠️ Erreur profil:", profileError.message);
+        console.log("📋 Profil existant:", existingProfile, "| Rôle souhaité:", role);
+
+        if (existingProfile) {
+          // ✅ Profil existe → UPDATE explicite du rôle
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({ role, email: user.email })
+            .eq("auth_id", user.id);
+
+          if (updateError) {
+            console.warn("⚠️ Erreur UPDATE profil:", updateError.message);
+          } else {
+            console.log("✅ Profil MIS À JOUR avec rôle:", role);
+          }
         } else {
-          console.log("✅ Profil OK:", user.email);
+          // ✅ Profil n'existe pas → INSERT
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              auth_id: user.id,
+              email: user.email,
+              role,
+            });
+
+          if (insertError) {
+            console.warn("⚠️ Erreur INSERT profil:", insertError.message);
+          } else {
+            console.log("✅ Profil CRÉÉ avec rôle:", role);
+          }
         }
 
         // 3️⃣ Vérifier si le profil est complet (pour les clients)

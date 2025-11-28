@@ -134,6 +134,7 @@ const MerchantAuthPage = () => {
 
   // ---------- Google OAuth marchand ----------
   const handleGoogleAuth = async () => {
+    console.log("🚀🚀🚀 handleGoogleAuth APPELÉ - Début OAuth marchand 🚀🚀🚀");
     try {
       // 🔹 Crée un flow_state avec rôle marchand avant OAuth
       const { data: flow, error: flowError } = await supabase
