@@ -51,7 +51,7 @@ const MerchantAuthPage = () => {
             .limit(1);
 
           if (!offers || offers.length === 0) {
-            navigate("/merchant/add-product");
+            navigate("/merchant/dashboard");
             return;
           }
         }
@@ -119,7 +119,11 @@ const MerchantAuthPage = () => {
           });
         if (signUpError) throw signUpError;
 
-        alert("✅ Hesabınızı doğrulamak için e-postanızı kontrol edin.");
+        // ✅ Auto-login après signup (email confirmation désactivée dans Supabase)
+        if (signUpData.user) {
+          await refetchProfile();
+          navigate("/merchant/dashboard");
+        }
       }
     } catch (err) {
       setError((err as Error).message);
