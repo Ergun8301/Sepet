@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 
 const AuthCallbackPage = () => {
+  console.log("🔥🔥🔥 AUTH CALLBACK PAGE LOADED 🔥🔥🔥");
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
