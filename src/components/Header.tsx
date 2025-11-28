@@ -29,6 +29,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMerchant, setIsMerchant] = useState<boolean | null>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const hasCheckedRef = useRef(false);
 
@@ -36,13 +37,13 @@ const Header = () => {
 
   useEffect(() => {
     if (!user || hasCheckedRef.current) return;
-    
+
     const checkUserType = async () => {
       hasCheckedRef.current = true;
 
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("id")
+        .select("id, profile_photo_url")
         .eq("auth_id", user.id)
         .maybeSingle();
 
@@ -51,13 +52,26 @@ const Header = () => {
         return;
       }
 
+      // Stocker la photo de profil du client
+      if (profileData.profile_photo_url) {
+        setProfilePhotoUrl(profileData.profile_photo_url);
+      }
+
       const { data: merchantData } = await supabase
         .from("merchants")
-        .select("id")
+        .select("id, logo_url")
         .eq("profile_id", profileData.id)
         .maybeSingle();
 
-      setIsMerchant(!!merchantData);
+      if (merchantData) {
+        setIsMerchant(true);
+        // Pour les marchands, utiliser logo_url si disponible, sinon profile_photo_url
+        if (merchantData.logo_url) {
+          setProfilePhotoUrl(merchantData.logo_url);
+        }
+      } else {
+        setIsMerchant(false);
+      }
     };
 
     checkUserType();
@@ -85,6 +99,16 @@ const Header = () => {
   };
 
   const getUserDisplayName = () => user?.email?.split("@")[0] || "User";
+
+  // Obtenir les initiales (2 premières lettres de l'email)
+  const getUserInitials = () => {
+    const email = user?.email || "";
+    const name = email.split("@")[0];
+    if (name.length >= 2) {
+      return name.substring(0, 2).toUpperCase();
+    }
+    return name.toUpperCase() || "U";
+  };
 
   const navigation = [
     { name: "Teklifleri Keşfet", href: "/offers" },
@@ -129,8 +153,22 @@ const Header = () => {
                 <NotificationBell userType={isMerchant ? "merchant" : "client"} />
                 <div className="relative" ref={userMenuRef}>
                   <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center space-x-2 text-[#FFFFF0] hover:text-[#F75C00] transition-colors duration-300">
-                    <div className="w-8 h-8 bg-[#FFFFF0] rounded-full flex items-center justify-center">
-                      {isMerchant ? <Store className="w-4 h-4 text-[#00A690]" /> : <User className="w-4 h-4 text-[#00A690]" />}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden bg-[#FFFFF0]">
+                      {profilePhotoUrl ? (
+                        <img
+                          src={profilePhotoUrl}
+                          alt="Profil"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Si l'image ne charge pas, masquer et afficher les initiales
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-[#00A690] font-bold text-xs">
+                          {getUserInitials()}
+                        </span>
+                      )}
                     </div>
                     <span className="hidden sm:block font-medium">{getUserDisplayName()}</span>
                     <ChevronDown className="w-4 h-4" />
