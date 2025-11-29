@@ -125,6 +125,7 @@ export default function OffersPage() {
   const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
   const [merchantOffers, setMerchantOffers] = useState<Offer[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   const getDiscountPercent = (before: number, after: number) => {
     if (!before || before === 0) return 0;
@@ -305,10 +306,10 @@ export default function OffersPage() {
               setIsGeolocating(false);
               setHasGeolocated(true);
             },
-            { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
+            { enableHighAccuracy: false, timeout: 45000, maximumAge: 300000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
       );
     };
 
@@ -336,9 +337,9 @@ export default function OffersPage() {
     mapRef.current = map;
 
     const geolocate = new mapboxgl.GeolocateControl({
-      positionOptions: { 
+      positionOptions: {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 30000,
         maximumAge: 0
       },
       trackUserLocation: false,
@@ -359,9 +360,21 @@ export default function OffersPage() {
       if (input) input.value = "";
     });
 
-    geolocate.on("error", (e) => {
+    geolocate.on("error", (e: GeolocationPositionError) => {
       console.error("❌ Erreur géolocalisation:", e);
-      // 🔧 FIX : Pas d'alerte, gérer silencieusement
+
+      let errorMessage = "Konum alınamadı. Lütfen tekrar deneyin.";
+
+      if (e.code === 1) {
+        errorMessage = "Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum iznini etkinleştirin.";
+      } else if (e.code === 2) {
+        errorMessage = "Konum bilgisi alınamıyor. GPS'in açık olduğundan emin olun.";
+      } else if (e.code === 3) {
+        errorMessage = "Konum isteği zaman aşımına uğradı. Lütfen tekrar deneyin.";
+      }
+
+      setGeoError(errorMessage);
+      setTimeout(() => setGeoError(null), 6000);
     });
 
     const geocoder = new MapboxGeocoder({
@@ -831,6 +844,12 @@ export default function OffersPage() {
       <div className="flex flex-col md:flex-row h-[calc(100vh-100px)]">
         <div className="relative flex-1 border-r border-gray-200 h-1/2 md:h-full">
           <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
+
+          {geoError && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-[90%] text-center text-sm font-medium animate-pulse">
+              {geoError}
+            </div>
+          )}
 
         {viewMode === "nearby" && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[900] bg-white rounded-full shadow-lg px-4 py-2.5 flex items-center space-x-3 border-2 border-[#00A690]/20">
