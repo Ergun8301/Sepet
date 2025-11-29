@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.kapkurtar.app",
+    "sha256_cert_fingerprints": ["46:AD:0E:83:FF:B4:F5:B7:65:8B:E5:A4:E1:B8:DF:87:37:3E:DD:04:D2:F8:53:9D:A2:CD:B3:E4:73:85:AE:18"]
+  }
+}]
