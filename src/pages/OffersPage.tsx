@@ -363,15 +363,7 @@ export default function OffersPage() {
     geolocate.on("error", (e: GeolocationPositionError) => {
       console.error("❌ Erreur géolocalisation:", e);
 
-      let errorMessage = "Konum alınamadı. Lütfen tekrar deneyin.";
-
-      if (e.code === 1) {
-        errorMessage = "Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum iznini etkinleştirin.";
-      } else if (e.code === 2) {
-        errorMessage = "Konum bilgisi alınamıyor. GPS'in açık olduğundan emin olun.";
-      } else if (e.code === 3) {
-        errorMessage = "Konum isteği zaman aşımına uğradı. Lütfen tekrar deneyin.";
-      }
+      const errorMessage = "Bu özellikleri kullanmak için uygulamayı indirin";
 
       setGeoError(errorMessage);
       setTimeout(() => setGeoError(null), 6000);
