@@ -126,6 +126,7 @@ export default function OffersPage() {
   const [merchantOffers, setMerchantOffers] = useState<Offer[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [expiredOfferToast, setExpiredOfferToast] = useState<string | null>(null);
 
   const getDiscountPercent = (before: number, after: number) => {
     if (!before || before === 0) return 0;
@@ -589,9 +590,12 @@ export default function OffersPage() {
     if (!offerId || !mapRef.current || offers.length === 0) return;
 
     const targetOffer = offers.find(o => o.offer_id === offerId);
-    
+
     if (!targetOffer) {
       console.warn('🔍 Offre non trouvée:', offerId);
+      setExpiredOfferToast("Maalesef bu fırsat kaçtı! 😢 Bir dahaki sefere daha hızlı olun!");
+      setSearchParams({}, { replace: true });
+      setTimeout(() => setExpiredOfferToast(null), 4000);
       return;
     }
 
@@ -840,6 +844,13 @@ export default function OffersPage() {
           {geoError && (
             <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-[90%] text-center text-sm font-medium animate-pulse">
               {geoError}
+            </div>
+          )}
+
+          {expiredOfferToast && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] px-6 py-4 rounded-xl shadow-2xl max-w-[90%] text-center text-base font-semibold text-white animate-bounce"
+                 style={{ background: 'linear-gradient(135deg, #F75C00 0%, #ef4444 100%)' }}>
+              {expiredOfferToast}
             </div>
           )}
 
