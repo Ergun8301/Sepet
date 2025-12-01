@@ -34,7 +34,7 @@ const ImpactSection = () => {
       {/* Logo Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <img
-          src="https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/Logo%20g.png"
+          src="https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/FAVICON%20MINI%20rond.png"
           alt=""
           className="w-[500px] h-[500px] opacity-[0.03] grayscale select-none"
         />
