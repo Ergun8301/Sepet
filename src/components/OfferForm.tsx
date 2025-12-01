@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Upload, Camera, ImageIcon } from 'lucide-react';
 
 interface Offer {
   id: string;
@@ -59,6 +59,19 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   });
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -383,6 +396,47 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     <X className="w-4 h-4" />
                   </button>
                 </div>
+              ) : isMobile ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 mb-3">
+                    {mode === 'create'
+                      ? 'Fotoğraf eklemek için seçin:'
+                      : 'Fotoğrafı değiştir (isteğe bağlı)'}
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="flex flex-col items-center gap-2 px-4 py-3 bg-[#00A690] text-white rounded-lg hover:bg-[#F75C00] transition-colors"
+                    >
+                      <Camera className="w-8 h-8" />
+                      <span className="text-xs font-medium">Fotoğraf Çek</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="flex flex-col items-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      <ImageIcon className="w-8 h-8" />
+                      <span className="text-xs font-medium">Galeriden Seç</span>
+                    </button>
+                  </div>
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </div>
               ) : (
                 <label className="cursor-pointer">
                   <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
@@ -402,7 +456,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Orijinal Fiyat (₺)
@@ -471,7 +525,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Başlangıç Tarihi ve Saati
