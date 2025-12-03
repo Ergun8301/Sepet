@@ -69,18 +69,18 @@ const LegalPage = () => {
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. Amaç</h3>
             <p className="text-gray-700 mb-4">
               Bu Genel Kullanım Koşulları (GKK), web sitesi ve mobil uygulama aracılığıyla erişilebilen
-              TILKAPP platformunun kullanım şartlarını ve koşullarını tanımlamayı amaçlamaktadır.
+              KapKurtar platformunun kullanım şartlarını ve koşullarını tanımlamayı amaçlamaktadır.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">2. Koşulların Kabulü</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP platformunun kullanımı, bu GKK'nın tam ve eksiksiz kabulünü gerektirir.
+              KapKurtar platformunun kullanımı, bu GKK'nın tam ve eksiksiz kabulünü gerektirir.
               Bu koşulları kabul etmiyorsanız, lütfen hizmetimizi kullanmayın.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">3. Hizmet Açıklaması</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP, satılmayan gıda ürünlerini indirimli fiyatlarla sunan işletmeleri tüketicilerle
+              KapKurtar, satılmayan gıda ürünlerini indirimli fiyatlarla sunan işletmeleri tüketicilerle
               buluşturan dijital bir platformdur. Platform şunları sağlar:
             </p>
             <ul className="list-disc ml-6 text-gray-700 space-y-2 mb-4">
@@ -91,7 +91,7 @@ const LegalPage = () => {
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">4. Kayıt ve Kullanıcı Hesabı</h3>
             <p className="text-gray-700 mb-4">
-              <strong>4.1.</strong> TILKAPP'ı kullanmak için doğru ve güncel bilgiler vererek bir hesap oluşturmalısınız.
+              <strong>4.1.</strong> KapKurtar'ı kullanmak için doğru ve güncel bilgiler vererek bir hesap oluşturmalısınız.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>4.2.</strong> Giriş bilgilerinizin gizliliğinden siz sorumlusunuz.
@@ -123,7 +123,7 @@ const LegalPage = () => {
               <strong>6.1.</strong> Ödemeler platform aracılığıyla güvenli bir şekilde gerçekleştirilir.
             </p>
             <p className="text-gray-700 mb-4">
-              <strong>6.2.</strong> TILKAPP gerçekleştirilen her işlemden %15 komisyon alır.
+              <strong>6.2.</strong> KapKurtar gerçekleştirilen her işlemden %15 komisyon alır.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>6.3.</strong> İade politikamızda tanımlanan koşullara göre geri ödemeler mümkündür.
@@ -131,24 +131,24 @@ const LegalPage = () => {
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">7. Sorumluluk</h3>
             <p className="text-gray-700 mb-4">
-              <strong>7.1.</strong> TILKAPP, işletmeler ve tüketiciler arasında aracı olarak hareket eder.
+              <strong>7.1.</strong> KapKurtar, işletmeler ve tüketiciler arasında aracı olarak hareket eder.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>7.2.</strong> Ürünlerin kalitesi ve uygunluğu işletmelerin sorumluluğundadır.
             </p>
             <p className="text-gray-700 mb-4">
-              <strong>7.3.</strong> TILKAPP, bir işletme ile tüketici arasındaki anlaşmazlık durumunda sorumlu tutulamaz.
+              <strong>7.3.</strong> KapKurtar, bir işletme ile tüketici arasındaki anlaşmazlık durumunda sorumlu tutulamaz.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">8. Fikri Mülkiyet</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP platformunun tüm unsurları (logo, marka, tasarım, içerik) fikri mülkiyet
+              KapKurtar platformunun tüm unsurları (logo, marka, tasarım, içerik) fikri mülkiyet
               hakları ile korunmaktadır ve izinsiz kullanılamaz.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">9. GKK'nın Değiştirilmesi</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP, bu GKK'yı herhangi bir zamanda değiştirme hakkını saklı tutar. Kullanıcılar
+              KapKurtar, bu GKK'yı herhangi bir zamanda değiştirme hakkını saklı tutar. Kullanıcılar
               önemli değişikliklerden haberdar edilecektir.
             </p>
 
@@ -166,7 +166,7 @@ const LegalPage = () => {
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. Giriş</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP, kullanıcılarının gizliliğini korumayı taahhüt eder. Bu politika,
+              KapKurtar, kullanıcılarının gizliliğini korumayı taahhüt eder. Bu politika,
               kişisel verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.
             </p>
 
@@ -244,7 +244,7 @@ const LegalPage = () => {
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Platform Yayıncısı</h3>
             <div className="bg-gray-100 rounded-lg p-6 mb-6">
-              <p className="text-gray-700 mb-2"><strong>İsim:</strong> TILKAPP</p>
+              <p className="text-gray-700 mb-2"><strong>İsim:</strong> KapKurtar</p>
               <p className="text-gray-700 mb-2"><strong>Yasal statü:</strong> Kuruluş aşamasında</p>
               <p className="text-gray-700 mb-2"><strong>Adres:</strong> Eski Hisar, 9501. Sk. No:3, 07600 Manavgat/Antalya, Türkiye</p>
               <p className="text-gray-700 mb-2"><strong>İletişim:</strong> İletişim formu veya WhatsApp aracılığıyla</p>
@@ -258,13 +258,13 @@ const LegalPage = () => {
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Fikri Mülkiyet</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP platformunun tüm içeriği (metinler, görseller, logolar, tasarım) fikri mülkiyet
+              KapKurtar platformunun tüm içeriği (metinler, görseller, logolar, tasarım) fikri mülkiyet
               hakları ile korunmaktadır. Yetkisiz herhangi bir çoğaltma veya kullanım kesinlikle yasaktır.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Sorumluluk</h3>
             <p className="text-gray-700 mb-4">
-              TILKAPP, platformu erişilebilir ve işlevsel tutmak için çaba gösterir. Ancak, %100
+              KapKurtar, platformu erişilebilir ve işlevsel tutmak için çaba gösterir. Ancak, %100
               kullanılabilirlik garanti edemeyiz ve hizmetin geçici kesintisi durumunda hiçbir
               sorumluluk kabul etmeyiz.
             </p>
