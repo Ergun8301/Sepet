@@ -272,10 +272,10 @@ const FeaturedOffers: React.FC<FeaturedOffersProps> = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl font-bold text-[#00A690]">
-                      ${offer.discounted_price}
+                      ₺{offer.discounted_price}
                     </span>
                     <span className="text-lg text-gray-400 line-through">
-                      ${offer.original_price}
+                      ₺{offer.original_price}
                     </span>
                   </div>
                   {user ? (
