@@ -52,6 +52,48 @@ import BlogArticle8 from "./pages/BlogArticle8";
 import BlogArticle9 from "./pages/BlogArticle9";
 import BlogArticle10 from "./pages/BlogArticle10";
 
+/* 🔁 CONFIGURATION DES ROUTES PAR TYPE */
+
+// Routes publiques : accessibles par TOUS (connectés ou non)
+const publicRoutes = [
+  '/legal',
+  '/blog',
+  '/contact',
+  '/about',
+  '/faq',
+  '/for-merchants',
+  '/download',
+  '/istanbul',
+  '/ankara',
+  '/izmir',
+  '/antalya',
+  '/bursa',
+];
+
+// Routes d'authentification : accessibles par tous
+const authRoutes = [
+  '/customer/auth',
+  '/merchant/auth',
+  '/forgot-password',
+  '/merchant/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/profile/complete',
+];
+
+// Routes client uniquement
+const clientOnlyRoutes = [
+  '/customer/dashboard',
+  '/client/profile',
+  '/favorites',
+  '/reviews',
+];
+
+// Routes marchand uniquement
+const merchantOnlyRoutes = [
+  '/merchant/dashboard',
+];
+
 /* 🔁 Vérifie la session et redirige selon le rôle */
 function SessionRedirect() {
   const nav = useNavigate();
@@ -60,52 +102,83 @@ function SessionRedirect() {
 
   useEffect(() => {
     (async () => {
-      // ✅ Ne pas rediriger si on est déjà sur ces pages protégées
-      const noRedirectPaths = [
-        '/client/profile',
-        '/merchant/dashboard',
-        '/customer/dashboard',
-        '/customer/auth',
-        '/merchant/auth',
-        '/forgot-password',
-        '/merchant/forgot-password',
-        '/reset-password',
-        '/auth/callback',
-        '/profile/complete'
-      ];
-      
-      if (noRedirectPaths.includes(location.pathname)) {
+      const currentPath = location.pathname;
+
+      // ✅ 1. PAGES PUBLIQUES : toujours accessibles
+      if (publicRoutes.includes(currentPath) || currentPath.startsWith('/blog/')) {
         setChecked(true);
         return;
       }
 
+      // ✅ 2. PAGES AUTH : toujours accessibles
+      if (authRoutes.includes(currentPath)) {
+        setChecked(true);
+        return;
+      }
+
+      // ✅ 3. Récupérer l'utilisateur
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      
+
       if (!user) {
         setChecked(true);
         return;
       }
 
+      // ✅ 4. Récupérer le rôle
       const { data, error } = await supabase
         .from("profiles")
         .select("role, first_name, last_name")
         .eq("auth_id", user.id)
         .single();
 
-      if (!error && data?.role === "merchant") {
-        nav("/merchant/dashboard");
-      } else if (!error && data?.role === "client") {
-        // ✅ Vérifier si le profil est complet AVANT de rediriger
-        if (!data.first_name || !data.last_name) {
-          // Profil incomplet → NE PAS rediriger
+      if (error || !data) {
+        setChecked(true);
+        return;
+      }
+
+      const { role, first_name, last_name } = data;
+
+      // ✅ 5. LOGIQUE MARCHANDS
+      if (role === "merchant") {
+        // Bloquer accès pages clients
+        if (clientOnlyRoutes.includes(currentPath)) {
+          nav("/merchant/dashboard");
+          return;
+        }
+        // Auto-redirect depuis home
+        if (currentPath === "/") {
+          nav("/merchant/dashboard");
+          return;
+        }
+        // Sinon laisser passer
+        setChecked(true);
+        return;
+      }
+
+      // ✅ 6. LOGIQUE CLIENTS
+      if (role === "client") {
+        // Profil incomplet → laisser passer (pour compléter le profil)
+        if (!first_name || !last_name) {
           setChecked(true);
           return;
         }
-        // Profil complet → rediriger vers offres
-        nav("/offers");
+        // Bloquer accès pages marchands
+        if (merchantOnlyRoutes.includes(currentPath)) {
+          nav("/offers");
+          return;
+        }
+        // Auto-redirect depuis home
+        if (currentPath === "/") {
+          nav("/offers");
+          return;
+        }
+        // Sinon laisser passer
+        setChecked(true);
+        return;
       }
+
       setChecked(true);
     })();
   }, [nav, location.pathname]);
