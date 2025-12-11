@@ -1,8 +1,55 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, MapPin } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isMerchant, setIsMerchant] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (!user) {
+      setIsMerchant(null);
+      return;
+    }
+
+    const checkUserType = async () => {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+
+      if (!profileData) {
+        setIsMerchant(false);
+        return;
+      }
+
+      const { data: merchantData } = await supabase
+        .from("merchants")
+        .select("id")
+        .eq("profile_id", profileData.id)
+        .maybeSingle();
+
+      setIsMerchant(!!merchantData);
+    };
+
+    checkUserType();
+  }, [user]);
+
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      navigate("/");
+    } else if (isMerchant) {
+      navigate("/merchant/dashboard");
+    } else {
+      navigate("/offers");
+    }
+  };
+
   return (
     <footer className="bg-[#00615F] text-white">
       {/* Section 1 - Logo Banner */}
@@ -29,9 +76,9 @@ style={{ maxHeight: '150px' }}
               <h3 className="text-lg font-bold mb-4">Hızlı Bağlantılar</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link to="/" className="text-[#FFFFF0] hover:text-[#F75C00] transition-colors duration-300 text-sm">
+                  <a href="#" onClick={handleHomeClick} className="text-[#FFFFF0] hover:text-[#F75C00] transition-colors duration-300 text-sm">
                     Ana Sayfa
-                  </Link>
+                  </a>
                 </li>
                 <li>
                   <Link to="/offers" className="text-[#FFFFF0] hover:text-[#F75C00] transition-colors duration-300 text-sm">

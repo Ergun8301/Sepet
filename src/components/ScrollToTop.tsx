@@ -5,15 +5,15 @@ export default function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Désactiver la restauration automatique de scroll (Safari mobile)
+    // Désactiver la restauration automatique (Safari)
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
 
-    // Scroll immédiat avec options explicites
+    // Scroll immédiat
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 
-    // Fallback pour Safari mobile
+    // Fallback Safari
     const timer = setTimeout(() => {
       window.scrollTo(0, 0);
     }, 0);

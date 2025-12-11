@@ -110,7 +110,6 @@ const Header = () => {
     return name.toUpperCase() || "U";
   };
 
-  // Gestion intelligente du clic sur le logo
   const handleLogoClick = () => {
     if (!user) {
       navigate("/");
