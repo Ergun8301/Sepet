@@ -110,6 +110,16 @@ const Header = () => {
     return name.toUpperCase() || "U";
   };
 
+  const handleLogoClick = () => {
+    if (!user) {
+      navigate("/");
+    } else if (isMerchant) {
+      navigate("/merchant/dashboard");
+    } else {
+      navigate("/offers");
+    }
+  };
+
   const navigation = [
     { name: "Teklifleri Keşfet", href: "/offers" },
     { name: "İşletmeler İçin", href: "/for-merchants" },
@@ -121,13 +131,13 @@ const Header = () => {
     <header className="bg-[#00A690] shadow-sm border-b border-[#00A690] sticky top-0 z-40">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <a href="/" className="flex items-center space-x-3">
+          <button onClick={handleLogoClick} className="flex items-center space-x-3 cursor-pointer">
             <img
               src="https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/KK%20fond%20vert%20(6).png"
               alt="KapKurtar"
               className="h-12 w-auto"
             />
-          </a>
+          </button>
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               {navigation.map((item) => (
