@@ -1,8 +1,15 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.kapkurtar.app",
-    "sha256_cert_fingerprints": ["46:AD:0E:83:FF:B4:F5:B7:65:8B:E5:A4:E1:B8:DF:87:37:3E:DD:04:D2:F8:53:9D:A2:CD:B3:E4:73:85:AE:18"]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kapkurtar.app",
+      "sha256_cert_fingerprints": [
+        "46:AD:0E:83:FF:B4:F5:B7:65:8B:E5:A4:E1:B8:DF:87:37:3E:DD:04:D2:F8:53:9D:A2:CD:B3:E4:73:85:AE:18",
+        "0F:20:23:51:A0:5D:27:C5:7A:65:AD:82:FF:5D:2A:44:A8:24:74:E4:1D:E6:1F:34:0E:13:01:0E:50:07:69:9F"
+      ]
+    }
   }
-}]
+]
