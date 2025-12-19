@@ -9,11 +9,7 @@ const __dirname = path.dirname(__filename);
 const downloads = [
   {
     url: 'https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/FAVICON.png',
-    dest: path.join(__dirname, 'public/icons/favicon.png')
-  },
-  {
-    url: 'https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/KK%20fond%20vert%20(6).png',
-    dest: path.join(__dirname, 'public/icons/logo-splash.png')
+    dest: path.join(__dirname, 'public/icons/logo-source.png')
   }
 ];
 

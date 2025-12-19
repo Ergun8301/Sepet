@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'KapKurtar - Anti-Gaspi',
+        name: 'KapKurtar',
         short_name: 'KapKurtar',
         description: 'KapKurtar - Anti-Gaspi : Offres Locales',
         theme_color: '#00A690',
