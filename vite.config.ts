@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'KapKurtar - Anti-Gaspi',
+        name: 'KapKurtar',
         short_name: 'KapKurtar',
         description: 'KapKurtar - Anti-Gaspi : Offres Locales',
         theme_color: '#00A690',
@@ -21,13 +21,13 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-192.png',
+            src: 'https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/FAVICON.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/icons/icon-512.png',
+            src: 'https://zhabjdyzawffsmvziojl.supabase.co/storage/v1/object/public/logos/FAVICON.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
