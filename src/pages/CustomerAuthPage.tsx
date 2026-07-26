@@ -179,7 +179,7 @@ const CustomerAuthPage = () => {
                 </div>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {mode === 'login' ? 'Hoş Geldiniz' : 'SEPET\'e Katılın'}
+                {mode === 'login' ? 'Hoş Geldiniz' : 'KapKurtar\'a Katılın'}
               </h1>
               <p className="text-gray-600">
                 {mode === 'login'

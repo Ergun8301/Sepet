@@ -1,4 +1,4 @@
-# Google OAuth Configuration for SEPET
+# Google OAuth Configuration for KapKurtar
 
 ## ✅ Current Implementation Status
 
@@ -62,11 +62,11 @@ To enable Google OAuth, you need to configure it in your Supabase Dashboard:
 ### 4. Add Site URL
 
 1. In Supabase Dashboard → Authentication → URL Configuration
-2. Set Site URL to your production domain (e.g., `https://sepet.app`)
+2. Set Site URL to your production domain (e.g., `https://kapkurtar.com`)
 3. Add redirect URLs:
    ```
-   https://sepet.app/customer/auth
-   https://sepet.app/merchant/auth
+   https://kapkurtar.com/customer/auth
+   https://kapkurtar.com/merchant/auth
    ```
 
 ### 5. Test Locally

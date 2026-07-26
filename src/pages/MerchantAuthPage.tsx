@@ -207,7 +207,7 @@ const MerchantAuthPage = () => {
             <p className="text-gray-600">
               {mode === "login"
                 ? "Tekliflerinizi yönetin ve israfı azaltın"
-                : "SEPET'e katılın ve satılmayan ürünlerinizi değerlendirin"}
+                : "KapKurtar'a katılın ve satılmayan ürünlerinizi değerlendirin"}
             </p>
           </div>
 

@@ -550,7 +550,7 @@ export const OfferDetailsModal: React.FC<OfferDetailsModalProps> = ({
                 onClick={() => navigate('/merchant/auth')}
                 className="text-[#00A690] hover:text-[#F75C00] font-semibold text-sm"
               >
-                SEPET'e ücretsiz katılın
+                KapKurtar'a ücretsiz katılın
               </button>
             </div>
           </div>

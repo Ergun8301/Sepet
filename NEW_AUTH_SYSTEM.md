@@ -1,4 +1,4 @@
-# SEPET Full Auth + Reservation Integration
+# KapKurtar Full Auth + Reservation Integration
 
 ## Overview
 
